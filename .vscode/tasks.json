@@ -1,0 +1,24 @@
+{
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "Build OSX",
+            "command": "make build_debug",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal":"silent",
+                "revealProblems": "onProblem",
+                "showReuseMessage": false,
+                "close": true
+            }
+        }
+    ],
+    "version": "2.0.0"
+}
