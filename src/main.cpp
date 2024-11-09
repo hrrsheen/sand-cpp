@@ -38,6 +38,8 @@ MouseState getMouseState(sf::Event &event, MouseState currentState) {
 
 int main() {
     const int width {500}, height {500};
+    sf::Clock clock;
+
     State state {width, height};
     Screen screen {width, height, "Falling Sand"};
     screen.setTransform([height]{
@@ -48,8 +50,10 @@ int main() {
     }());
 
     MouseState mState {idle};
+    int elapsed {0};
     while (screen.isOpen())
     {
+        sf::Time dt {clock.restart()};
         sf::Event event;
 
         while (screen.pollEvent(event))
@@ -63,9 +67,17 @@ int main() {
             if (mState == MouseState::drawing) {
                 sf::Vector2i mousePos {screen.mapPixelToCoords(sf::Mouse::getPosition(screen))};
                 state.grid.setCell(mousePos.x, mousePos.y, state.brushType);
+                
             }
         }
-
+        state.tick(dt.asSeconds());
         state.draw(screen);
+
+        if (elapsed >= 1000) {
+            std::cout << "FPS: " << 1.f / dt.asSeconds() << "\n";
+            elapsed = 0;
+        } else {
+            elapsed += dt.asMilliseconds();
+        }
     }
 }
