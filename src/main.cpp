@@ -70,7 +70,7 @@ int main() {
                 
             }
         }
-        state.tick(dt.asSeconds());
+        state.step(dt.asSeconds());
         state.draw(screen);
 
         if (elapsed >= 1000) {

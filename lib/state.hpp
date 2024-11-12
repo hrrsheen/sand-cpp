@@ -9,7 +9,7 @@ public:
     State(int width, int height);
 
     // Performs one iteration of the simulation.
-    void tick(float dt);
+    void step(float dt);
 
     // Draws the grid to the screen.
     void draw(Screen &screen);
@@ -17,8 +17,9 @@ public:
 
     CellType brushType;
     Grid grid;
+
 private:
-    sf::VertexArray vertices;
+    void applyRules(Cell &cell);
 };
 
 #endif

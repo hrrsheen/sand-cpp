@@ -8,9 +8,6 @@ class Grid {
 public:
     Grid(int width, int height);
 
-    // Advances the state of the grid by one iteration.
-    void evolve(float dt);
-
     // Retrieves the cell from the grid at the given index.
     Cell& getCell(int index);
 
@@ -40,7 +37,7 @@ public:
 private:
     void moveCell(Cell &cell, float dt);
 
-    int xyToI(int x, int y);
+    int coordsToIndex(int x, int y);
 
     // The grid that actually contains the cells.
     std::vector<Cell> grid;

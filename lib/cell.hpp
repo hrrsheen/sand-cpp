@@ -7,7 +7,7 @@
 class Grid;
 
 enum CellType : uint8_t {
-    none,
+    air,
     sand,
     water,
     wood
@@ -20,10 +20,9 @@ public:
     Cell(int x, int y);
     Cell(CellType type, int x, int y);
 
-    sf::Vector2i nextPosition(Grid &grid, float dt);
-
     CellType type;
     sf::Vector2i p; // The (x, y) coordinate of this cell within its grid.
+    bool active;
 };
 
 #endif
