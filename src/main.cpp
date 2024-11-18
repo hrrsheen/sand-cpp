@@ -39,15 +39,15 @@ MouseState getMouseState(sf::Event &event, MouseState currentState) {
 int main() {
     const int width {500}, height {500};
     sf::Clock clock;
-
     State state {width, height};
     Screen screen {width, height, "Falling Sand"};
     screen.setTransform([height]{
         sf::Transformable transformation;
-        transformation.setOrigin(0, height); // 1st transform
-        transformation.setScale(1.f, -1.f);  // 2nd transform
+        transformation.setOrigin(0, height); // 1st transform - scale to world height.
+        transformation.setScale(1.f, -1.f);  // 2nd transform - flip so that +y is up.
         return transformation.getTransform();
     }());
+    screen.initGridImage(state.grid);
 
     MouseState mState {idle};
     int elapsed {0};
@@ -64,11 +64,11 @@ int main() {
             }
 
             mState = getMouseState(event, mState);
-            if (mState == MouseState::drawing) {
-                sf::Vector2i mousePos {screen.mapPixelToCoords(sf::Mouse::getPosition(screen))};
-                state.grid.setCell(mousePos.x, mousePos.y, state.brushType);
-                
-            }
+        }
+
+        if (mState == MouseState::drawing) {
+            sf::Vector2i mousePos {screen.mapPixelToCoords(sf::Mouse::getPosition(screen))};
+            state.grid.setCell(mousePos.x, mousePos.y, state.brushType);       
         }
         state.step(dt.asSeconds());
         state.draw(screen);

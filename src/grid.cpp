@@ -4,7 +4,11 @@
 Grid::Grid(int width, int height) : width(width), height(height) {
     grid.resize(width * height);
     for (int i = 0; i < grid.size() - 1; i++) {
-        Cell newCell {CellType::air, i % width, i / width};
+        Cell newCell;
+        newCell.p.y = i / width;
+        newCell.p.x = i % width;
+        newCell.assign(CellType::air);
+        // newCell.redraw = true;
         grid[i] = newCell;
     }
 }
@@ -22,11 +26,11 @@ Cell& Grid::getCell(sf::Vector2i p) {
 }
 
 void Grid::setCell(int index, CellType type) {
-    grid.at(index).type = type;
+    grid.at(index).assign(type);
 }
 
 void Grid::setCell(int x, int y, CellType type) {
-    grid.at(x + y * width).type = type;
+    grid.at(x + y * width).assign(type);
 }
 
 size_t Grid::size() const {

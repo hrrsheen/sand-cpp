@@ -26,6 +26,9 @@ public:
     // Returns the number of elements in the grid.
     size_t size() const;
 
+    // Returns the index of the given (x, y) coordinate within the grid.
+    int coordsToIndex(int x, int y);
+
     // The width of the grid.
     const int width;
 
@@ -36,8 +39,6 @@ public:
 
 private:
     void moveCell(Cell &cell, float dt);
-
-    int coordsToIndex(int x, int y);
 
     // The grid that actually contains the cells.
     std::vector<Cell> grid;

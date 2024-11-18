@@ -25,10 +25,9 @@ void State::draw(Screen &screen) {
     screen.clear();
     for (int i = 0; i < grid.size() - 1; i++) {
         Cell &cell {grid.getCell(i)};
-        if (cell.type != CellType::air) {
-            screen.addCell(sf::Vector2f(cell.p), 1.f, sf::Color::Cyan);
-        } else {
-            // vertices[i].color = sf::Color::Black;
+        if (cell.redraw) {
+            screen.updateCell(cell, i);
+            cell.redraw = false;
         }
     }
     screen.draw();
@@ -46,11 +45,10 @@ void State::applyRules(Cell &cell) {
             sf::Vector2i lookAhead {0, -1};
             Cell &testCell {grid.getCell(cell.p + lookAhead)};
             if (testCell.type == CellType::air) {
-                testCell.type = cell.type;
-                cell.type = CellType::air;
+                swap(cell, testCell);
 
-                cell.active = true;
-                testCell.active = true;
+                cell.redraw = true;
+                testCell.redraw = true;
             }
         }
     }
