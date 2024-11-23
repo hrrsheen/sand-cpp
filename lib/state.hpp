@@ -1,8 +1,15 @@
 #ifndef STATE_HPP
 #define STATE_HPP
 
+#include "cell.hpp"
 #include "grid.hpp"
 #include "screen.hpp"
+#include <vector>
+
+struct Brush {
+    int element;
+    int size;
+};
 
 class State {
 public:
@@ -14,12 +21,17 @@ public:
     // Draws the grid to the screen.
     void draw(Screen &screen);
 
-
-    CellType brushType;
+    Brush brush;
     Grid grid;
 
 private:
     void applyRules(Cell &cell);
+
+    void applySolidRules(Cell &cell, ElementProperties &properties);
+
+    void applyLiquidRules(Cell &cell, ElementProperties &properties);
+
+    void applyGasRules(Cell &cell, ElementProperties &properties);
 };
 
 #endif

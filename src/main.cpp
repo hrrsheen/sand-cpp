@@ -1,7 +1,9 @@
+#include "helpers.hpp"
 #include "screen.hpp"
 #include "state.hpp"
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include <time.h>
 
 enum MouseState {
     idle,
@@ -36,7 +38,31 @@ MouseState getMouseState(sf::Event &event, MouseState currentState) {
     return currentState;
 }
 
+void getElementSelect(Brush &brush, sf::Event &event) {
+    if (event.type == sf::Event::KeyPressed) {
+        int number = event.key.code - 26;
+        if (number >= 0 && number <= 2) {
+            brush.element = number;
+        }
+    }
+}
+
+void paint(sf::Vector2i position, State &state) {
+    if (state.brush.size == 1) {
+        state.grid.setCell(position.x, position.y, state.brush.element);
+    } else {
+        state.grid.setArea(
+            position.x - state.brush.size - 1,
+            position.y - state.brush.size - 1,
+            2 * state.brush.size - 1,
+            2 * state.brush.size - 1,
+            state.brush.element
+        );
+    }
+}
+
 int main() {
+    initRng();
     const int width {500}, height {500};
     sf::Clock clock;
     State state {width, height};
@@ -64,11 +90,12 @@ int main() {
             }
 
             mState = getMouseState(event, mState);
+            getElementSelect(state.brush, event);
         }
 
         if (mState == MouseState::drawing) {
             sf::Vector2i mousePos {screen.mapPixelToCoords(sf::Mouse::getPosition(screen))};
-            state.grid.setCell(mousePos.x, mousePos.y, state.brushType);       
+            paint(mousePos, state);
         }
         state.step(dt.asSeconds());
         state.draw(screen);

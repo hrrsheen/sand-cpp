@@ -1,10 +1,14 @@
+#include "helpers.hpp"
 #include "state.hpp"
 #include <SFML/Graphics.hpp>
 #include <iostream>
 
 State::State(int width, int height) : 
-    brushType(CellType::sand),
+    brush{1, 5}, // TODO: make more general.
     grid(width, height) {
+    std::vector<std::string> els {"air", "sand", "stone"}; // TODO: Remove this, it's debugging code. Use a file instead
+    grid.initProperties(els);
+    grid.initCells();
 }
 
 void State::step(float dt) {
@@ -36,21 +40,53 @@ void State::draw(Screen &screen) {
 
 
 void State::applyRules(Cell &cell) {
+    ElementProperties &properties {grid.getProperties(cell)};
     // Immovable types.
-    if (cell.type == CellType::air) return;
-    if (cell.type == CellType::wood) return;
+    if (properties.type == ElementType::null
+        || properties.type == ElementType::air 
+        || properties.type == ElementType::solidImmovable) {
+        return;
+    }
+    
+    if (properties.type == ElementType::solidMovable) {
+        applySolidRules(cell, properties);
+    } else if (properties.type == ElementType::liquid) {
+        applyLiquidRules(cell, properties);
+    } else if (properties.type == ElementType::gas) {
+        applyGasRules(cell, properties);
+    }
+}
 
-    if (cell.type == CellType::sand) {
-        if (cell.p.y > 0) {
-            sf::Vector2i lookAhead {0, -1};
-            Cell &testCell {grid.getCell(cell.p + lookAhead)};
-            if (testCell.type == CellType::air) {
-                swap(cell, testCell);
+void State::applySolidRules(Cell &cell, ElementProperties &properties) {
+    if (cell.p.y > 0) {
+        sf::Vector2i lookAhead {0, -1};
+        Cell *testCell {&grid.getCell(cell.p + lookAhead)};
+        ElementProperties *testProperties {&grid.getProperties(*testCell)};
+        if (properties.canDisplace(*testProperties)) {
+            swap(&cell, testCell);
+
+            cell.redraw = true;
+            testCell->redraw = true;
+        } else {
+            int randDir {quickRandInt(2)};
+            randDir = 2 * randDir - 1; // Translate to +/- 1.
+            lookAhead.x = randDir;
+            testCell = &grid.getCell(cell.p + lookAhead);
+            testProperties = &grid.getProperties(*testCell);
+            if (properties.canDisplace(*testProperties)) {
+                swap(&cell, testCell);
 
                 cell.redraw = true;
-                testCell.redraw = true;
+                testCell->redraw = true;
             }
         }
     }
 }
 
+void State::applyLiquidRules(Cell &cell, ElementProperties &properties) {
+    
+}
+
+void State::applyGasRules(Cell &cell, ElementProperties &properties) {
+    
+}

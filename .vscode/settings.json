@@ -75,7 +75,9 @@
         "span": "cpp",
         "stack": "cpp",
         "numeric": "cpp",
-        "ranges": "cpp"
+        "ranges": "cpp",
+        "unordered_set": "cpp",
+        "random": "cpp"
     },
     "makefile.launchConfigurations": [
         {
