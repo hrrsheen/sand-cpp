@@ -9,7 +9,7 @@ public:
     Grid(int width, int height);
 
     // Populated the properties container with the properties defined in the given config file.
-    void initProperties(std::vector<std::string> propertiesStr); // TODO: Make this use JSON.
+    void initProperties(std::string_view propertiesFile);
 
     // Initialises each cell within the grid.
     void initCells();

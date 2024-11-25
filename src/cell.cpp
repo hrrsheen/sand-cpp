@@ -2,33 +2,44 @@
 #include "grid.hpp"
 #include "helpers.hpp"
 #include <cmath>
+#include <fstream>
+#include <nlohmann/json.hpp>
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/System/Vector2.hpp>
 
+using json = nlohmann::json;
+
 ////////////////////////////////////////////////////////// Cell Properties //////////////////////////////////////////////////////////
 
-void ElementProperties::loadFromFile(std::string_view fileName) {
-    // PLACEHOLDER for before I add JSON support.
-    if (fileName == "air") {
-        id = 0;
-        type = ElementType::air;
-        name = "air";
-        std::get<colourIndex>(palette).push_back(0x000000ff);
-    } else if (fileName == "sand") {
-        id = 1; // TODO: Add checking that ID is unique.
-        type = ElementType::solidMovable;
-        name = "sand";
-        std::get<colourIndex>(palette).push_back(0xfabf73ff);
-        std::get<colourIndex>(palette).push_back(0xebae60ff);
-    } else if (fileName == "stone") {
-        id = 2;
-        type = ElementType::solidImmovable;
-        name = "stone";
+NLOHMANN_JSON_SERIALIZE_ENUM(ElementType, {
+    {null, "null"},
+    {air, "air"},
+    {solidMovable, "solidMovable"},
+    {solidImmovable, "solidImmovable"},
+    {liquid, "liquid"},
+    {gas, "gas"},
+})
+
+void from_json(const json &j, ElementProperties &ep) {
+    j.at("id").get_to(ep.id);
+    j.at("name").get_to(ep.name);
+    j.at("type").get_to<ElementType>(ep.type);
+    if (j.contains("colours")) {
+        std::vector<std::string> hexStrings{};
+        j.at("colours").get_to<std::vector<std::string>>(hexStrings);
+        for (std::string &str : hexStrings) {
+            sf::Uint32 hex {static_cast<sf::Uint32>(std::stoul(str, nullptr, 16))};
+            std::get<ElementProperties::colourIndex>(ep.palette).push_back(hex);
+        }
+    } else if (j.contains("texture")) {
         sf::Image img;
-        img.loadFromFile("./assets/stone-texture.png");
-        palette = img;
+        img.loadFromFile(j.at("texture").get<std::string>());
+        ep.palette = img;
+    } else {
+        // :(
     }
 }
+
 
 sf::Color ElementProperties::colourFromArray() {
     if (std::get<colourIndex>(palette).size() == 0) {
@@ -69,8 +80,29 @@ bool ElementProperties::operator==(const ElementProperties &otherProperty) const
 }
 
 
+PropertiesContainer::PropertiesContainer() {
+    // Add the default element properties.
+    ElementProperties epAir {};
+    epAir.id = 0;
+    epAir.name = "air";
+    epAir.type = ElementType::air;
+    std::get<ElementProperties::colourIndex>(epAir.palette).push_back(0x000000ff);
+    insert(epAir);
+}
+
+void PropertiesContainer::loadFromFile(std::string_view fileName) {
+    std::ifstream f(fileName);
+    json data = json::parse(f);
+
+    std::vector<ElementProperties> eps {};
+    data.at("elements").get_to<std::vector<ElementProperties>>(eps);
+    for (ElementProperties &ep : eps) {
+        insert(ep);
+    }
+}
+
 size_t PropertiesContainer::insert(const ElementProperties &properties) {
-    if (contains(properties)) {
+    if (contains(properties) || properties.id == -1) {
         return -1;
     }
 

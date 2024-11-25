@@ -27,9 +27,6 @@ enum ElementType : uint8_t{
 struct ElementProperties {
     //////// Initialisation functions ////////
 
-    // Populates the properties' values from a file.
-    void loadFromFile(std::string_view fileName);
-
     // Returns a colour, picked at random from the palette.
     sf::Color colourFromArray();
 
@@ -53,26 +50,23 @@ struct ElementProperties {
     std::string name;   // The name of the element that these properties represent. MUST be unique.
 
     // Display.
-    // union Palette
-    // {
-    //     std::vector<sf::Uint32> colours;
-    //     sf::Image texture;
-    // };
     std::variant<std::vector<sf::Uint32>, sf::Image> palette;
-    
-    // Palette palette;
 
     // Simulation.
     float spreadRate;
     float density;
 
-private:
+    // Access constants.
     static const int colourIndex {0};
     static const int textureIndex {1};
 };
 
 class PropertiesContainer {
 public:
+    PropertiesContainer();
+    
+    // Populates the properties' values from a file.
+    void loadFromFile(std::string_view fileName);
 
     // Inserts a property into the container. If a properties class with the same 
     // id already exists in the container, no insertion will occur.

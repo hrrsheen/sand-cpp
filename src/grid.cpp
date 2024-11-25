@@ -5,12 +5,8 @@ Grid::Grid(int width, int height) : width(width), height(height) {
     grid.resize(width * height);
 }
 
-void Grid::initProperties(std::vector<std::string> propertiesStr) {
-    for (std::string &st : propertiesStr) {
-        ElementProperties elProperties{};
-        elProperties.loadFromFile(st);
-        properties.insert(elProperties);
-    }
+void Grid::initProperties(std::string_view propertiesFile) {
+    properties.loadFromFile(propertiesFile);
 }
 
 void Grid::initCells() {

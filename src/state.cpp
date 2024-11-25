@@ -6,8 +6,7 @@
 State::State(int width, int height) : 
     brush{1, 5}, // TODO: make more general.
     grid(width, height) {
-    std::vector<std::string> els {"air", "sand", "stone"}; // TODO: Remove this, it's debugging code. Use a file instead
-    grid.initProperties(els);
+    grid.initProperties("./assets/elements.json");
     grid.initCells();
 }
 
