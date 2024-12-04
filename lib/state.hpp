@@ -2,12 +2,13 @@
 #define STATE_HPP
 
 #include "cell.hpp"
+#include "elements/element_properties.hpp"
 #include "grid.hpp"
 #include "screen.hpp"
 #include <vector>
 
 struct Brush {
-    int element;
+    Element element;
     int size;
 };
 

@@ -4,14 +4,14 @@
 #include <iostream>
 
 State::State(int width, int height) : 
-    brush{1, 5}, // TODO: make more general.
+    brush{Element::air, 5},
     grid(width, height) {
-    grid.initProperties("./assets/elements.json");
+    grid.initProperties();
     grid.initCells();
 }
 
 void State::step(float dt) {
-    for (int y = 0; y < grid.height - 1; y++) {
+    for (int y = 0; y < grid.height; y++) {
         // Alternate processing rows left to right and right to left.
         const int startEnd[2] = {0, grid.width - 1};
         int direction {y % 2 ? -1 : 1};
@@ -39,13 +39,9 @@ void State::draw(Screen &screen) {
 
 
 void State::applyRules(Cell &cell) {
-    ElementProperties &properties {grid.getProperties(cell)};
+    ElementProperties &properties {cell.properties()};
     // Immovable types.
-    if (properties.type == ElementType::null
-        || properties.type == ElementType::air 
-        || properties.type == ElementType::solidImmovable) {
-        return;
-    }
+    if (!properties.isMobile()) return;
     
     if (properties.type == ElementType::solidMovable) {
         applySolidRules(cell, properties);
@@ -57,28 +53,29 @@ void State::applyRules(Cell &cell) {
 }
 
 void State::applySolidRules(Cell &cell, ElementProperties &properties) {
+    if (!cell.active) return;
+
     if (cell.p.y > 0) {
         sf::Vector2i lookAhead {0, -1};
-        Cell *testCell {&grid.getCell(cell.p + lookAhead)};
-        ElementProperties *testProperties {&grid.getProperties(*testCell)};
-        if (properties.canDisplace(*testProperties)) {
-            swap(&cell, testCell);
+        // Build the sequence of directions to check for free space.
+        int randDir {quickRandInt(2)};
+        randDir = 2 * randDir - 1; // Translate to +/- 1.
+        std::vector<int> directions {0, randDir};
 
-            cell.redraw = true;
-            testCell->redraw = true;
-        } else {
-            int randDir {quickRandInt(2)};
-            randDir = 2 * randDir - 1; // Translate to +/- 1.
-            lookAhead.x = randDir;
-            testCell = &grid.getCell(cell.p + lookAhead);
-            testProperties = &grid.getProperties(*testCell);
-            if (properties.canDisplace(*testProperties)) {
+        for (int dir : directions) {
+            lookAhead.x = dir;
+            Cell *testCell {&grid.getCell(cell.p + lookAhead)};
+            ElementProperties &testProperties {testCell->properties()};
+            if (properties.canDisplace(testProperties)) {
                 swap(&cell, testCell);
 
                 cell.redraw = true;
                 testCell->redraw = true;
+                return;
             }
         }
+
+        // cell.active = false;
     }
 }
 

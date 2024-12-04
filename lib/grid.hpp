@@ -1,7 +1,7 @@
 #ifndef GRID_HPP
 #define GRID_HPP
 
-#include "cell.hpp"
+#include "elements/element_properties.hpp"
 #include <vector>
 
 class Grid {
@@ -9,7 +9,7 @@ public:
     Grid(int width, int height);
 
     // Populated the properties container with the properties defined in the given config file.
-    void initProperties(std::string_view propertiesFile);
+    void initProperties();
 
     // Initialises each cell within the grid.
     void initCells();
@@ -24,13 +24,13 @@ public:
     Cell& getCell(sf::Vector2i p);
 
     // Sets the cell at the given index to the given type.
-    void setCell(int index, int elementId);
+    void setCell(int index, Element elementId);
 
     // Sets the cell at the given coordinates to the given type.
-    void setCell(int x, int y, int elementId);
+    void setCell(int x, int y, Element elementId);
 
     // Sets the rectangle at (x, y) with the given width and height to the given element ID.
-    void setArea(int x, int y, int width, int height, int elementId);
+    void setArea(int x, int y, int width, int height, Element elementId);
 
     // Retrieves the properties of a given cell.
     ElementProperties& getProperties(Cell &cell);
@@ -39,7 +39,7 @@ public:
     size_t size() const;
 
     // Returns the index of the given (x, y) coordinate within the grid.
-    int coordsToIndex(int x, int y);
+    int coordsToIndex(int x, int y) const;
 
     // The width of the grid.
     const int width;
@@ -50,8 +50,6 @@ public:
     friend Cell;
 
 private:
-    void moveCell(Cell &cell, float dt);
-
     // The grid that actually contains the cells.
     std::vector<Cell> grid;
 

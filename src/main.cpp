@@ -42,7 +42,7 @@ void getElementSelect(Brush &brush, sf::Event &event) {
     if (event.type == sf::Event::KeyPressed) {
         int number = event.key.code - 26;
         if (number >= 0 && number <= 2) {
-            brush.element = number;
+            brush.element = static_cast<Element>(number);
         }
     }
 }
