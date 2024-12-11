@@ -22,7 +22,7 @@ public:
 
     // Constants
     const float spreadRate() const { return 1.f; }
-    const float density() const { return 1.f; }
+    const float density() const { return 2.f; }
 };
 
 #endif

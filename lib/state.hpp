@@ -2,6 +2,7 @@
 #define STATE_HPP
 
 #include "cell.hpp"
+#include "chunks.hpp"
 #include "elements/element_properties.hpp"
 #include "grid.hpp"
 #include "screen.hpp"
@@ -33,6 +34,8 @@ private:
     void applyLiquidRules(Cell &cell, ElementProperties &properties);
 
     void applyGasRules(Cell &cell, ElementProperties &properties);
+
+    Chunks chunks;
 };
 
 #endif

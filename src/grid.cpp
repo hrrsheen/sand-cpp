@@ -1,5 +1,5 @@
 #include "cell.hpp"
-#include "elements/solid_movable.hpp"
+#include "elements.hpp"
 #include "grid.hpp"
 #include <algorithm>
 
@@ -9,6 +9,7 @@ Grid::Grid(int width, int height) : width(width), height(height) {
 
 void Grid::initProperties() {
     properties.insert(std::move(std::make_unique<Sand>()));
+    properties.insert(std::move(std::make_unique<Stone>()));
 }
 
 void Grid::initCells() {
