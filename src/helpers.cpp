@@ -1,4 +1,4 @@
-#include "helpers.hpp"
+#include "Helpers.hpp"
 #include <random>
 #include <SFML/System/Vector2.hpp>
 
@@ -19,7 +19,7 @@ int diagonalDistance(sf::Vector2i p0, sf::Vector2i p1) {
 
 // Linearly interpolate between two numbers.
 float lerp(float start, float end, float t) {
-    return start * (1 - t) + t * end;
+    return start * (1 - t) + t * end; // start + t * (end - start), just rearranged.
 }
 
 // Linearly interpolate between two points.
@@ -53,6 +53,19 @@ LerpIterator LerpIterator::operator++(int) {
     return tmp;
 }
 
+// Pre-decrement: --it.
+LerpIterator& LerpIterator::operator--() {
+    --step;
+    return *this;
+}
+
+// Post-increment: it--.
+LerpIterator LerpIterator::operator--(int) {
+    LerpIterator tmp = *this;
+    --step;
+    return tmp;
+}
+
 // Equality: it == end().
 bool LerpIterator::operator==(const LerpIterator &rhs) {
     return step == rhs.step && N == rhs.N;
@@ -80,23 +93,25 @@ Lerp::iterator Lerp::end() const {
 
 std::mt19937 rng(std::random_device{}());
 
-void initRng() {
+void InitRng() {
     std::srand(std::random_device{}());
     rng.discard(10000);
 }
 
-int quickRandInt(int upper) {
+int QuickRandInt(int upper) {
+    if (upper == 0) return 0;
+    
     return std::rand() % upper;
 }
 
-int quickRandRange(int a, int b) {
+int QuickRandRange(int a, int b) {
     return (std::rand() / static_cast<float>(RAND_MAX)) * (b - a) + a;
 }
 
-int randInt(int upper) {
+int RandInt(int upper) {
     return std::rand() % upper;
 }
 
-int randRange(int a, int b) {
+int RandRange(int a, int b) {
     return (std::rand() / static_cast<float>(RAND_MAX)) * (b - a) + a;
 }

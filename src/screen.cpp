@@ -1,5 +1,5 @@
-#include "cell.hpp"
-#include "grid.hpp"
+#include "Cell.hpp"
+#include "SandWorld.hpp"
 #include "screen.hpp"
 #include <SFML/Graphics.hpp>
 #include <iostream>
@@ -13,10 +13,11 @@ Screen::Screen(int width, int height, std::string name) :
     gridTexture.setSmooth(false);
 }
 
-void Screen::initGridImage(Grid &grid) {
-    for (int i = 0; i < grid.size(); i++) {
-        Cell &cell {grid.getCell(i)};
-        gridImage.setPixel(cell.p.x, cell.p.y, cell.colour);
+void Screen::initGridImage(int width, int height) {
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            gridImage.setPixel(x, y, sf::Color::Black);
+        }
     }
 }
 
@@ -26,8 +27,8 @@ void Screen::draw() {
     sf::RenderWindow::draw(gridSprite, renderStates);
 }
 
-void Screen::updateCell(Cell &cell, int index) {
-    gridImage.setPixel(cell.p.x, cell.p.y, cell.colour);
+void Screen::updateCell(int x, int y, sf::Color colour) {
+    gridImage.setPixel(x, y, colour);
 }
 
 sf::Vector2f Screen::mapPixelToCoords(const sf::Vector2i &point) const {

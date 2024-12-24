@@ -1,28 +1,17 @@
 #ifndef LIQUID_HPP
 #define LIQUID_HPP
 
-#include "elements/element_properties.hpp"
+#include "Elements/ElementProperties.hpp"
 
 class Liquid : public ElementProperties {
 public:
     Liquid();
-    Liquid(Element thisId, std::string_view thisName);
-
-    // Simulation constants.
-    virtual const float spreadRate() const { return 1.f; }
-    const bool isMobile() const { return true; }
-
-    // Simulation functions.
-    bool canDisplace(ElementProperties &other);
+    Liquid(Element thisId, std::string_view thisName, MoveType move, uint8_t spread);
 };
 
 class Water : public Liquid {
 public:
     Water();
-
-    // Simulation constants.
-    const float spreadRate() const { return 5.f; }
-    const float density() const { return 1.f; }
 };
 
 #endif

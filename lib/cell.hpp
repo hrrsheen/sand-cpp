@@ -1,20 +1,13 @@
 #ifndef CELL_HPP
 #define CELL_HPP
 
-#include "elements/element_properties.hpp"
+#include "Elements/ElementProperties.hpp"
+#include "Elements/PropertiesContainer.hpp"
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/System/Vector2.hpp>
 
 class Cell {
 public:
-    Cell();
-    Cell(int x, int y, PropertiesContainer *properties);
-
-    void assign(Element elementId);
-    ElementProperties& properties() const;
-
-    friend void swap(Cell *, Cell *);
-
     Element elementId;  // The ID used for accessing properties from the container.
     sf::Vector2i p;     // The (x, y) coordinate of this cell within its grid.
     sf::Color colour;   // The colour of this cell.
@@ -24,6 +17,15 @@ public:
 
 private:
     PropertiesContainer *allProperties;
+
+public:
+    Cell();
+    Cell(int x, int y, PropertiesContainer *properties);
+
+    void Assign(Element elementId);
+    ElementProperties& Properties() const;
+
+    friend void swap(Cell *, Cell *);
 };
 
 // Swaps the cell types of cellA and cellB.

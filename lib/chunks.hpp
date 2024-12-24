@@ -1,9 +1,10 @@
 #ifndef CHUNKS_HPP
 #define CHUNKS_HPP
 
+#include <SFML/System/Vector2.hpp>
 #include <vector>
 
-struct Bounds {
+struct ChunkBounds {
     int x;
     int y;
     int size;
@@ -11,42 +12,44 @@ struct Bounds {
 
 class Chunks {
 public:
-    Chunks(int width, int height, int chunkSize);
-
-    // Sets the chunk that contains the given cell coordinates (x, y) to active.
-    void setFromCell(int x, int y);
-
-    // Sets the chunk that contains the given cell coordinates (x, y) to inactive.
-    void clearFromCell(int x, int y);
-
-    // Sets the given chunk to active.
-    void set(int x, int y);
-
-    // Sets the given chunk to inactive.
-    void clear(int x, int y);
-
-    // Returns whether the chunk at the given index is active.
-    bool active(int index) const;
-
-    // Returns whether the given chunk is active.
-    bool active(int x, int y) const;
-
-    // Returns the number of chunks.
-    size_t size() const;
-
-    // Returns the rectangle of points contained by the chunk at the given index.
-    Bounds invHash(int index) const;
-
     const int width;
     const int height;
 
 private:
-    // Converts an (x, y) coordinate to a chunk number.
-    int hash(int x, int y) const;
-
     const int chunkSize;
-
     std::vector<bool> chunks;
+
+public:
+    Chunks(int width, int height, int chunkSize);
+
+    // Setting functions.
+    void Set(int index, bool state);
+    void Set(int x, int y, bool state);
+    // Cets the state of the chunk containing coordinates (x, y).
+    void SetContaining(int x, int y, bool state);
+
+    // Query functions.
+    bool IsActive(int index) const;
+    bool IsActive(int x, int y) const;
+    bool IsContainingActive(int x, int y) const;
+
+    // Returns the coordinate of the chunk that contains the given (x, y) point.
+    sf::Vector2i ContainingChunk(int x, int y) const;
+
+    // Returns the number of chunks.
+    size_t Size() const;
+
+    // Retrieving chunk boundaries.
+    ChunkBounds GetBounds(int index) const;
+    // Returns the boundaries of the chunk that contains the given (x, y) point.
+    ChunkBounds GetContainingBounds(int x, int y) const;
+
+private:
+    // Converts an (x, y) coordinate to a chunk index.
+    int Hash(int x, int y) const;
+
+    int ToIndex(int x, int y) const;
+    sf::Vector2i ToCoords(int index) const;
 };
 
 #endif

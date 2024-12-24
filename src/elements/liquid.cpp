@@ -1,22 +1,10 @@
-#include "elements/element_properties.hpp"
-#include "elements/liquid.hpp"
+#include "Elements/ElementProperties.hpp"
+#include "Elements/Liquid.hpp"
 
-Liquid::Liquid() : ElementProperties(ElementType::liquid) {}
-Liquid::Liquid(Element thisId, std::string_view thisName) : 
-    ElementProperties(thisId, ElementType::liquid, thisName) {}
+Liquid::Liquid() : ElementProperties(ElementType::LIQUID) {}
+Liquid::Liquid(Element thisId, std::string_view thisName, MoveType move, uint8_t spread) : 
+    ElementProperties(thisId, ElementType::LIQUID, thisName, move, spread) {}
 
-bool Liquid::canDisplace(ElementProperties &other) {
-    if (other.type == ElementType::solidImmovable) {
-        return false;
-    }
-
-    if (other.type == ElementType::air || other.type == ElementType::gas) {
-        return true;
-    }
-
-    return density() > other.density();
-}
-
-Water::Water() : Liquid(Element::water, "water") {
+Water::Water() : Liquid(Element::water, "water", MoveType::FLOAT_DOWN, SpreadType::DOWN_SIDE & SpreadType::SIDE) {
     std::get<ElementProperties::colourIndex>(palette).push_back(0x347debff);
 }

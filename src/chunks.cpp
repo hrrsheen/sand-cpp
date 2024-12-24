@@ -1,44 +1,57 @@
-#include "chunks.hpp"
+#include "Chunks.hpp"
 
 Chunks::Chunks(int width, int height, int chunkSize) : 
     width(width), height(height), chunkSize(chunkSize), chunks(width * height, false) {
 }
 
-void Chunks::setFromCell(int x, int y) {
-    chunks.at(hash(x, y)) = true;
+void Chunks::Set(int index, bool state) {
+    chunks.at(index) = state;
 }
 
-void Chunks::clearFromCell(int x, int y) {
-    chunks.at(hash(x, y)) = false;
+void Chunks::Set(int x, int y, bool state) {
+    Set(ToIndex(x, y), state);
 }
 
-void Chunks::set(int x, int y) {
-    chunks.at(y * width + x) = true;
+void Chunks::SetContaining(int x, int y, bool state) {
+    Set(Hash(x, y), state);
 }
 
-void Chunks::clear(int x, int y) {
-    chunks.at(y * width + x) = false;
-}
-
-bool Chunks::active(int index) const {
+bool Chunks::IsActive(int index) const {
     return chunks.at(index);
 }
 
-bool Chunks::active(int x, int y) const {
-    return chunks.at(y * width + x);
+bool Chunks::IsActive(int x, int y) const {
+    return IsActive(ToIndex(x, y));
 }
 
-size_t Chunks::size() const {
+bool Chunks::IsContainingActive(int x, int y) const {
+    return IsActive(Hash(x, y));
+}
+
+sf::Vector2i Chunks::ContainingChunk(int x, int y) const {
+    return sf::Vector2i(x / chunkSize, y / chunkSize);
+}
+
+size_t Chunks::Size() const {
     return width * height;
 }
 
-Bounds Chunks::invHash(int index) const {
+ChunkBounds Chunks::GetBounds(int index) const {
     int yChunk {index / width};
     int xChunk {index % width};
 
-    return Bounds{xChunk * chunkSize, yChunk * chunkSize, chunkSize};
+    return ChunkBounds{xChunk * chunkSize, yChunk * chunkSize, chunkSize};
 }
 
-int Chunks::hash(int x, int y) const {
+ChunkBounds Chunks::GetContainingBounds(int x, int y) const {
+    sf::Vector2i chunk {ContainingChunk(x, y)};
+    return GetBounds(ToIndex(chunk.x, chunk.y));
+}
+
+int Chunks::Hash(int x, int y) const {
     return (y / chunkSize) * width + (x / chunkSize);
+}
+
+int Chunks::ToIndex(int x, int y) const {
+    return x + y * width;
 }

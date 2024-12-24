@@ -1,6 +1,6 @@
-#include "helpers.hpp"
+#include "Helpers.hpp"
 #include "screen.hpp"
-#include "state.hpp"
+#include "WorldState.hpp"
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <time.h>
@@ -47,11 +47,11 @@ void getElementSelect(Brush &brush, sf::Event &event) {
     }
 }
 
-void paint(sf::Vector2i position, State &state) {
+void paint(sf::Vector2i position, WorldState &state) {
     if (state.brush.size == 1) {
-        state.grid.setCell(position.x, position.y, state.brush.element);
+        state.world.SetCell(position.x, position.y, state.brush.element);
     } else {
-        state.grid.setArea(
+        state.world.SetArea(
             position.x - state.brush.size - 1,
             position.y - state.brush.size - 1,
             2 * state.brush.size - 1,
@@ -62,10 +62,10 @@ void paint(sf::Vector2i position, State &state) {
 }
 
 int main() {
-    initRng();
+    InitRng();
     const int width {500}, height {500};
     sf::Clock clock;
-    State state {width, height};
+    WorldState state {width, height};
     Screen screen {width, height, "Falling Sand"};
     screen.setTransform([height]{
         sf::Transformable transformation;
@@ -73,7 +73,7 @@ int main() {
         transformation.setScale(1.f, -1.f);  // 2nd transform - flip so that +y is up.
         return transformation.getTransform();
     }());
-    screen.initGridImage(state.grid);
+    screen.initGridImage(width, height);
 
     MouseState mState {idle};
     int elapsed {0};
@@ -97,8 +97,22 @@ int main() {
             sf::Vector2i mousePos {screen.mapPixelToCoords(sf::Mouse::getPosition(screen))};
             paint(mousePos, state);
         }
-        state.step(dt.asSeconds());
+        state.Step(dt.asSeconds());
         state.draw(screen);
+        // DEBUG ONLY - Draw the active chunks.
+        for (int i = 0; i < state.world.chunks.Size(); i++) {
+            if (state.world.chunks.IsActive(i)) {
+                ChunkBounds bounds {state.world.chunks.GetBounds(i)};
+                sf::RectangleShape rectangle;
+                rectangle.setSize(sf::Vector2f(bounds.size, bounds.size));
+                rectangle.setOutlineColor(sf::Color::Blue);
+                rectangle.setOutlineThickness(1);
+                rectangle.setFillColor(sf::Color::Transparent);
+                rectangle.setPosition(bounds.x, bounds.y);
+                screen.draw(rectangle, screen.renderStates);
+            }
+        }
+        screen.display();
 
         if (elapsed >= 1000) {
             std::cout << "FPS: " << 1.f / dt.asSeconds() << "\n";

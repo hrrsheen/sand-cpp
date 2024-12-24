@@ -5,23 +5,27 @@
 #include <SFML/System/Vector2.hpp>
 
 namespace impl {
-    
+
 class LerpIterator {
 public:
     using value_type        = sf::Vector2i;
     using difference_type   = int;
     using pointer           = sf::Vector2i*;
     using reference         = sf::Vector2i&;
-    using iterator_category = std::input_iterator_tag;
+    using iterator_category = std::bidirectional_iterator_tag;
 
     explicit LerpIterator(sf::Vector2f start, sf::Vector2f end, int step, int N);
 
     // Dereference operator.
     value_type operator*() const;
 
-    // Pre and post-increment operators.
+    // Pre- and post-incrementable operators.
     LerpIterator& operator++();
     LerpIterator operator++(int);
+
+    // Pre- and post-decrementable operators.
+    LerpIterator& operator--();
+    LerpIterator operator--(int);
 
     // Equality / inequality operators.
     bool operator==(const LerpIterator &rhs);
@@ -51,22 +55,22 @@ private:
 };
 
 // Seeds the random number generator.
-void initRng();
+void InitRng();
 
 // Returns a random integer from the interval [a, b).
 // Uses std::rand(), which is messy but fast.
-int quickRandInt(int upper);
+int QuickRandInt(int upper);
 
 // Returns a random integer between a and b.
 // Uses std::rand(), which is messy but fast.
-int quickRandRange(int a, int b);
+int QuickRandRange(int a, int b);
 
 // Returns a random integer from the interval [a, b).
 // Uses a Mersenne Twister, which is slow but provides better randomness.
-int randInt(int upper);
+int RandInt(int upper);
 
 // Returns a random integer between a and b.
 // Uses a Mersenne Twister, which is slow but provides better randomness.
-int randRange(int a, int b);
+int RandRange(int a, int b);
 
 #endif
