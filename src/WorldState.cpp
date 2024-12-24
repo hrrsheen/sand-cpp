@@ -6,12 +6,14 @@
 
 WorldState::WorldState(int width, int height) : 
     brush{Element::air, 5},
-    world(width, height) {
+    world(width, height),
+    dt(0.f) {
     world.InitProperties();
     world.InitCells();
 }
 
 void WorldState::Step(float dt) {
+    WorldState::dt = dt;
     for (int i = 0; i < world.chunks.Size(); i++) {
         ChunkBounds area {world.chunks.GetBounds(i)};
         if (!world.chunks.IsActive(i)) continue;
@@ -30,9 +32,11 @@ void WorldState::Step(float dt) {
                 Cell &cell {world.GetCell(x, y)};
 
                 // Apply the simulation.
-                ApplyRules(cell, sf::Vector2i(x, y));
+                chunkActive |= ApplyRules(cell, sf::Vector2i(x, y));
             }
         }
+
+        world.chunks.Set(i, chunkActive);
     }
 
     world.ConsolidateActions();
@@ -51,31 +55,20 @@ void WorldState::draw(Screen &screen) {
     screen.draw();
 }
 
-
-void WorldState::wakeAdjacentChunks(Cell &cell) {
-    ChunkBounds area {world.chunks.GetContainingBounds(cell.p.x, cell.p.y)};
-    sf::Vector2i chunk {world.chunks.ContainingChunk(cell.p.x, cell.p.y)};
-    // Wake the left-hand chunk.
-    if (chunk.x > 0 && cell.p.x == area.x) {
-        world.chunks.Set(chunk.x - 1, chunk.y, true);
-    }
-    // Wake the right-hand chunk.
-    if (chunk.x < world.chunks.width - 1 && cell.p.x == area.x + area.size - 1) {
-        world.chunks.Set(chunk.x + 1, chunk.y, true);
-    }
-}
-
-void WorldState::ApplyRules(Cell &cell, sf::Vector2i p) {
+bool WorldState::ApplyRules(Cell &cell, sf::Vector2i p) {
     ElementProperties &properties {cell.Properties()};
     
-    if (MoveCell(cell, properties, p)) {}          // Apply movement behaviours (falling, floating, etc).
-    else if (SpreadCell(cell, properties, p)) {}   // Apply spreading behaviour.
-    else if (ActionCell(cell, properties, p)) {}   // Act on other cells.
+    if (MoveCell(cell, properties, p)) { return true; }          // Apply movement behaviours (falling, floating, etc).
+    else if (SpreadCell(cell, properties, p)) { return true; }   // Apply spreading behaviour.
+    else if (ActionCell(cell, properties, p)) { return true; }   // Act on other cells.
+
+    return false;
 }
 
 
 bool WorldState::MoveCell(Cell &cell, ElementProperties &properties, sf::Vector2i p) {
-    if (properties.moveBehaviour == MoveType::NONE) return true;
+    if (world.IsEmpty(p.x, p.y)) return false;
+    if (properties.moveBehaviour == MoveType::NONE) return false;
 
     if (properties.moveBehaviour == MoveType::FLOAT_DOWN) {
         return FloatDown(p);
@@ -87,7 +80,8 @@ bool WorldState::MoveCell(Cell &cell, ElementProperties &properties, sf::Vector2
 }
 
 bool WorldState::SpreadCell(Cell &cell, ElementProperties &properties, sf::Vector2i p) {
-    if (properties.spreadBehaviour == SpreadType::NONE) return true;
+    if (world.IsEmpty(p.x, p.y)) return false;
+    if (properties.spreadBehaviour == SpreadType::NONE) return false;
 
     if (properties.spreadBehaviour & SpreadType::DOWN_SIDE) {
         return SpreadDownSide(p);
@@ -101,7 +95,8 @@ bool WorldState::SpreadCell(Cell &cell, ElementProperties &properties, sf::Vecto
 }
 
 bool WorldState::ActionCell(Cell &cell, ElementProperties &properties, sf::Vector2i p) {
-    return true;
+    if (world.IsEmpty(p.x, p.y)) return false;
+    return false;
 }
 
 bool WorldState::FloatDown(sf::Vector2i p) {

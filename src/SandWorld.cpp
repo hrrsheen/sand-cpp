@@ -8,7 +8,7 @@
 //  Initialisation.
 //
 
-SandWorld::SandWorld(int width, int height) : width(width), height(height), queuedMoves(), chunks(1, 1, width) { // TODO: Don't hardcode chunk dimensions.
+SandWorld::SandWorld(int width, int height) : width(width), height(height), queuedMoves(), chunks(10, 10, 50) { // TODO: Don't hardcode chunk dimensions.
     grid.resize(width * height);
 }
 
@@ -106,6 +106,7 @@ void SandWorld::ConsolidateActions() {
     for (int i = 0; i < queuedMoves.size() - 1; ++i) {
         std::pair<int, int> &move       {queuedMoves.at(i)};
         std::pair<int, int> &nextMove   {queuedMoves.at(i + 1)};
+
         if (move.second != nextMove.second) {
             int iRand {iStart + QuickRandInt(i - iStart)};
             
@@ -113,6 +114,10 @@ void SandWorld::ConsolidateActions() {
             int dst {queuedMoves[iRand].second};
             // Perform the randomly-selected move from the competing moves group.
             Swap(src, dst);
+            sf::Vector2i srcCoords {ToCoords(src)};
+            sf::Vector2i dstCoords {ToCoords(dst)};
+            chunks.SetContaining(dstCoords.x, dstCoords.y, true);
+            chunks.KeepNeighbourAlive(srcCoords.x, srcCoords.y);
 
             iStart = i + 1;
         }

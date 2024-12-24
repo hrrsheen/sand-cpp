@@ -20,7 +20,7 @@ public:
     Brush brush;
 
 private:
-    
+    float dt;
 
 public:
     WorldState(int width, int height);
@@ -34,7 +34,8 @@ public:
 private:
     void wakeAdjacentChunks(Cell &cell);
 
-    void ApplyRules(Cell &cell, sf::Vector2i p);
+    // Returns true if the cell has performed some action.
+    bool ApplyRules(Cell &cell, sf::Vector2i p);
 
     bool MoveCell(Cell &cell, ElementProperties &properties, sf::Vector2i p);
     bool SpreadCell(Cell &cell, ElementProperties &properties, sf::Vector2i p);

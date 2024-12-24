@@ -10,6 +10,12 @@ struct ChunkBounds {
     int size;
 };
 
+enum ChunkState {
+    ASLEEP,
+    STANDBY,
+    AWAKE
+};
+
 class Chunks {
 public:
     const int width;
@@ -17,16 +23,18 @@ public:
 
 private:
     const int chunkSize;
-    std::vector<bool> chunks;
+    std::vector<ChunkState> chunks;
 
 public:
     Chunks(int width, int height, int chunkSize);
 
     // Setting functions.
-    void Set(int index, bool state);
-    void Set(int x, int y, bool state);
+    void Set(int index, bool signal);
+    void Set(int x, int y, bool signal);
     // Cets the state of the chunk containing coordinates (x, y).
     void SetContaining(int x, int y, bool state);
+    // Sets the state of the neighboring chunk alive if (x, y) is on the border.
+    void KeepNeighbourAlive(int x, int y);
 
     // Query functions.
     bool IsActive(int index) const;

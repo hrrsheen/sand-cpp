@@ -14,6 +14,8 @@ public:
 
     bool redraw;        // Tracks whether this cell has changes since the previous frame.
     bool active;        // Tracks whether the cell is currently being simulated, or is at rest.
+    
+    sf::Vector2f velocity;
 
 private:
     PropertiesContainer *allProperties;

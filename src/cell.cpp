@@ -5,14 +5,15 @@
 #include <SFML/System/Vector2.hpp>
 
 
-Cell::Cell() : elementId(Element::air), p(0, 0), redraw(false), active(false) {
+Cell::Cell() : elementId(Element::air), p(0, 0), redraw(false), active(false), velocity(0.f, 0.f) {
 }
 
 Cell::Cell(int x, int y, PropertiesContainer *properties) : 
     allProperties(properties), elementId(Element::air), 
     p(x, y), 
     redraw(false),
-    active(false) {
+    active(false),
+    velocity(0.f, 0.f) {
     Assign(elementId);
 }
 
