@@ -5,14 +5,15 @@
 #include <SFML/System/Vector2.hpp>
 
 
-Cell::Cell() : elementId(Element::air), p(0, 0), redraw(false), active(false), velocity(0.f, 0.f) {
+Cell::Cell() : elementId(Element::air), p(0, 0), redraw(false), active(false), health(100.f), velocity(0.f, 0.f) {
 }
 
 Cell::Cell(int x, int y, PropertiesContainer *properties) : 
     allProperties(properties), elementId(Element::air), 
-    p(x, y), 
+    p(x, y), // TODO: Remove dependance on position.
     redraw(false),
     active(false),
+    health(100.f),
     velocity(0.f, 0.f) {
     Assign(elementId);
 }

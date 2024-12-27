@@ -21,6 +21,7 @@ void SandWorld::InitProperties() {
     properties.Insert(std::move(std::make_unique<Sand>()));
     properties.Insert(std::move(std::make_unique<Stone>()));
     properties.Insert(std::move(std::make_unique<Water>()));
+    properties.Insert(std::move(std::make_unique<Fire>()));
 }
 
 void SandWorld::InitCells() {

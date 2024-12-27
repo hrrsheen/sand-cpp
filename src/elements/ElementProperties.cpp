@@ -94,8 +94,8 @@ bool ElementProperties::SpreadDownSide(sf::Vector2i p, Cell &cell, SandWorld &wo
     sf::Vector2i leftPos    {p + sf::Vector2i( 1, -1)};
     sf::Vector2i rightPos   {p + sf::Vector2i(-1, -1)};
 
-    bool downLeft   {world.IsEmpty( leftPos.x,  leftPos.y)};
-    bool downRight  {world.IsEmpty(rightPos.x, rightPos.y)};
+    bool downLeft   {world.IsEmpty( leftPos.x,  leftPos.y) || CanDisplace( leftPos, world)};
+    bool downRight  {world.IsEmpty(rightPos.x, rightPos.y) || CanDisplace(rightPos, world)};
 
     if (downLeft && downRight) {
         downLeft    = QuickRandInt(100) > 49;

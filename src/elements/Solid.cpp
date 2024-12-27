@@ -16,24 +16,8 @@ Sand::Sand() : Solid(Element::sand, "sand", MoveType::ACCELERATE_DOWN, SpreadTyp
 }
 
 bool Sand::ActUponNeighbours(sf::Vector2i p, SandWorld &world) {
-    sf::Vector2i leftPos    {p + sf::Vector2i( 1, -1)};
-    sf::Vector2i rightPos   {p + sf::Vector2i(-1, -1)};
-
-    bool downLeft   {ElementProperties::CanDisplace( leftPos, world)};
-    bool downRight  {ElementProperties::CanDisplace(rightPos, world)};;
-
-    if (downLeft && downRight) {
-        downLeft    = QuickRandInt(100) > 49;
-        downRight   = !downLeft;
-    }
-
-    if (downLeft) { 
-        world.MoveCell(world.ToIndex(p.x, p.y), world.ToIndex( leftPos.x,  leftPos.y));
-    } else if (downRight) {
-        world.MoveCell(world.ToIndex(p.x, p.y), world.ToIndex(rightPos.x, rightPos.y));
-    }
-
-    return downLeft || downRight;
+    // Put out fires?
+    return false;
 }
 
 bool Sand::ActUpon(sf::Vector2i p, sf::Vector2i target, Cell &cell, Liquid &properties, SandWorld &world) {

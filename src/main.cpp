@@ -41,7 +41,7 @@ MouseState getMouseState(sf::Event &event, MouseState currentState) {
 void getElementSelect(Brush &brush, sf::Event &event) {
     if (event.type == sf::Event::KeyPressed) {
         int number = event.key.code - 26;
-        if (number >= 0 && number <= 3) {
+        if (number >= 0 && number <= 4) {
             brush.element = static_cast<Element>(number);
         }
     }

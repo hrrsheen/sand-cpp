@@ -10,10 +10,11 @@ class Cell {
 public:
     Element elementId;  // The ID used for accessing properties from the container.
     sf::Vector2i p;     // The (x, y) coordinate of this cell within its grid.
-
+    
     bool redraw;        // Tracks whether this cell has changes since the previous frame.
     bool active;        // Tracks whether the cell is currently being simulated, or is at rest.
     
+    float health;
     sf::Vector2f velocity;
 
 private:
