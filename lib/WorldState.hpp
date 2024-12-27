@@ -22,8 +22,6 @@ public:
 private:
     float dt;
 
-    // Constants
-    static constexpr float ACCELERATION = 2000.f;
 public:
     WorldState(int width, int height);
 
@@ -43,13 +41,6 @@ private:
     bool SpreadCell(Cell &cell, ElementProperties &properties, sf::Vector2i p);
     bool ActionCell(Cell &cell, ElementProperties &properties, sf::Vector2i p);
 
-    bool FloatDown(sf::Vector2i p);
-    bool FloatUp(sf::Vector2i p);
-    bool AccelerateDown(sf::Vector2i p, Cell &cell);
-
-    bool SpreadDownSide(sf::Vector2i p);
-    bool SpreadUpSide(sf::Vector2i p);
-    bool SpreadSide(sf::Vector2i p, ElementProperties &properties);
 };
 
 #endif

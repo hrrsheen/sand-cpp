@@ -13,6 +13,10 @@
 class Cell;
 class PropertiesContainer;
 class SandWorld;
+// Forward declarations of elements.
+class Solid;
+class Liquid;
+class Gas;
 
 // The element is used for accessing a cell's corresponding properties.
 // Used for array indexing! Don't change numbers. count must always be the last entry.
@@ -65,6 +69,8 @@ protected:
     // Access constants.
     static const int COLOUR_INDEX  = 0;
     static const int TEXTURE_INDEX = 1;
+    // Simulation constants.
+    static constexpr float ACCELERATION = 2000.f;
 public:
     //////// Initialisation functions ////////
     ElementProperties();
@@ -72,22 +78,34 @@ public:
     ElementProperties(Element thisId, ElementType thisType, std::string_view thisName);
     ElementProperties(Element thisId, ElementType thisType, std::string_view thisName, MoveType movement, uint8_t spread);
 
-    // Returns a colour, picked at random from the palette.
-    sf::Color ColourFromArray();
+    //////// Display functions ////////
+    sf::Color ColourFromArray();                    // Returns a colour, picked at random from the palette.
+    sf::Color ColourFromTexture(sf::Vector2i p);    // Returns a colour from a texture that corresponds to the supplied position.
+    bool HasTexture();                              // Returns true if a texture is available for cells with these properties.
+    // Flag for whether this element should have a new colour selected each frame.
+    // This MAY ONLY be set to true for elements that have a colour palette and NOT a texture.
+    virtual const bool RecolourEachFrame() const { return false; }
 
-    // Returns a colour from a texture that corresponds to the supplied position.
-    sf::Color ColourFromTexture(sf::Vector2i p);
+    //////// Movement functions ////////
+    bool FloatDown      (sf::Vector2i p, Cell &cell, SandWorld &world);
+    bool FloatUp        (sf::Vector2i p, Cell &cell, SandWorld &world);
+    bool AccelerateDown (sf::Vector2i p, Cell &cell, SandWorld &world, float dt);
 
-    // Returns true if a texture is available for cells with these properties.
-    bool HasTexture();
+    bool SpreadDownSide (sf::Vector2i p, Cell &cell, SandWorld &world);
+    bool SpreadUpSide   (sf::Vector2i p, Cell &cell, SandWorld &world);
+    bool SpreadSide     (sf::Vector2i p, Cell &cell, SandWorld &world);
 
     //////// Simulation functions ////////
     virtual bool ActUponNeighbours(sf::Vector2i p, SandWorld &world);
     bool ActUpon(sf::Vector2i p, sf::Vector2i target, Cell &cell, ElementProperties &properties, SandWorld &world);
+    virtual bool ActUpon(sf::Vector2i p, sf::Vector2i target, Cell &cell, Solid  &properties, SandWorld &world) { return false; }
+    virtual bool ActUpon(sf::Vector2i p, sf::Vector2i target, Cell &cell, Liquid &properties, SandWorld &world) { return false; }
+    virtual bool ActUpon(sf::Vector2i p, sf::Vector2i target, Cell &cell, Gas    &properties, SandWorld &world) { return false; }
 
     // Returns true if the element represented by these properties can displace the element
     // represented by the other properties. False otherwise.
     virtual bool CanDisplace(ElementProperties &other) const;
+            bool CanDisplace(sf::Vector2i p, SandWorld &world) const;
 
     //////// Operators ////////
     bool operator==(const ElementProperties &otherProperty) const;

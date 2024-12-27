@@ -17,6 +17,10 @@ Cell::Cell(int x, int y, PropertiesContainer *properties) :
     Assign(elementId);
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////
+//  Assignment / Manipulation functions.
+//////////////////////////////////////////////////////////////////////////////////////////
+
 void Cell::Assign(Element elementId) {
     Cell::elementId = elementId;
     ElementProperties &properties {allProperties->Get(elementId)};
@@ -27,14 +31,28 @@ void Cell::Assign(Element elementId) {
     }
     redraw = true;
     active = properties.moveBehaviour != MoveType::NONE;
-}
-
-ElementProperties& Cell::Properties() const {
-    return allProperties->Get(elementId);
+    redrawEachFrame = properties.RecolourEachFrame();
 }
 
 void Cell::ApplyAcceleration(sf::Vector2f a, float dt) {
     velocity += a * dt;
     if (std::abs(velocity.x) > Cell::MAX_VELOCITY) velocity.x = Cell::MAX_VELOCITY;
     if (std::abs(velocity.y) > Cell::MAX_VELOCITY) velocity.y = Cell::MAX_VELOCITY;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//  Get / Query functions.
+//////////////////////////////////////////////////////////////////////////////////////////
+
+ElementProperties& Cell::Properties() const {
+    return allProperties->Get(elementId);
+}
+
+sf::Color Cell::Colour() {
+    if (redrawEachFrame) {
+        ElementProperties &properties {allProperties->Get(elementId)};
+        colour = properties.ColourFromArray();
+    }
+
+    return colour;
 }
