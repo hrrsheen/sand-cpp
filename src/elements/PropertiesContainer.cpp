@@ -7,7 +7,7 @@ PropertiesContainer::PropertiesContainer() {
     // Add the default element properties.
     // Might need to make a class for air?
     std::unique_ptr<ElementProperties> air {std::make_unique<ElementProperties>(Element::air, ElementType::AIR, "air")};
-    std::get<ElementProperties::colourIndex>(air->palette).push_back(0x000000ff);
+    std::get<ElementProperties::COLOUR_INDEX>(air->palette).push_back(0x000000ff);
     Insert(std::move(air));
 }
 

@@ -20,6 +20,8 @@ public:
 private:
     PropertiesContainer *allProperties;
 
+    static constexpr float MAX_VELOCITY = 9000.f;
+
 public:
     Cell();
     Cell(int x, int y, PropertiesContainer *properties);
@@ -27,10 +29,7 @@ public:
     void Assign(Element elementId);
     ElementProperties& Properties() const;
 
-    friend void swap(Cell *, Cell *);
+    void ApplyAcceleration(sf::Vector2f a, float dt);
 };
-
-// Swaps the cell types of cellA and cellB.
-void swap(Cell *cellA, Cell *cellB);
 
 #endif

@@ -12,6 +12,8 @@ public:
 class Sand : public Solid {
 public:
     Sand();
+
+    bool CanDisplace(ElementProperties &other) const;
 };
 
 class Stone : public Solid {

@@ -5,7 +5,17 @@
 #include "Chunks.hpp"
 #include "Elements/ElementProperties.hpp"
 #include "Elements/PropertiesContainer.hpp"
+#include "Helpers.hpp"
 #include <vector>
+
+struct Action {
+    int src;
+    int dst;
+    Element srcTransform;
+    Element dstTransform;
+
+    Action();
+};
 
 class SandWorld {
 public:
@@ -18,13 +28,12 @@ public:
     // The height of the grid.
     const int height;
 
-    friend Cell;
-
 private:
     // The grid that actually contains the cells.
     std::vector<Cell> grid;
 
-    std::vector<std::pair<int, int>> queuedMoves;
+    std::vector<std::pair<int, int>>    queuedMoves;
+    std::vector<Action>                 queuedActions;
 
     // The properties of the elements contained within the grid.
     PropertiesContainer properties; // TODO: Surely there's a better way to access by id than id i = index i.
@@ -43,6 +52,9 @@ public:
     Cell& GetCell(sf::Vector2i p);
     // Retrieves the properties of a given cell.
     ElementProperties& GetProperties(Cell &cell);
+    ElementProperties& GetProperties(int index);
+    ElementProperties& GetProperties(int x, int y);
+    ElementProperties& GetProperties(sf::Vector2i p);
 
     // Setting functions.
     void SetCell(int index, Element elementId);
@@ -57,7 +69,9 @@ public:
 
     // Querying the grid.
     bool IsEmpty(int x, int y);
+    bool IsEmpty(sf::Vector2i p);
     bool InBounds(int x, int y) const;
+    sf::Vector2i PathEmpty(sf::Vector2i start, sf::Vector2i end);
 
     // Helper functions.
     size_t Size() const;

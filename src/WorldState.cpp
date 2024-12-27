@@ -58,9 +58,9 @@ void WorldState::draw(Screen &screen) {
 bool WorldState::ApplyRules(Cell &cell, sf::Vector2i p) {
     ElementProperties &properties {cell.Properties()};
     
-    if (MoveCell(cell, properties, p)) { return true; }          // Apply movement behaviours (falling, floating, etc).
-    else if (SpreadCell(cell, properties, p)) { return true; }   // Apply spreading behaviour.
-    else if (ActionCell(cell, properties, p)) { return true; }   // Act on other cells.
+    if      (  MoveCell(cell, properties, p)) { return true; }  // Apply movement behaviours (falling, floating, etc).
+    else if (SpreadCell(cell, properties, p)) { return true; }  // Apply spreading behaviour.
+    else if (ActionCell(cell, properties, p)) { return true; }  // Act on other cells.
 
     return false;
 }
@@ -74,6 +74,8 @@ bool WorldState::MoveCell(Cell &cell, ElementProperties &properties, sf::Vector2
         return FloatDown(p);
     } else if (properties.moveBehaviour == MoveType::FLOAT_UP) {
         return FloatUp(p);
+    } else if (properties.moveBehaviour == MoveType::ACCELERATE_DOWN) {
+        return AccelerateDown(p, cell);
     }
 
     return false;
@@ -83,13 +85,9 @@ bool WorldState::SpreadCell(Cell &cell, ElementProperties &properties, sf::Vecto
     if (world.IsEmpty(p.x, p.y)) return false;
     if (properties.spreadBehaviour == SpreadType::NONE) return false;
 
-    if (properties.spreadBehaviour & SpreadType::DOWN_SIDE) {
-        return SpreadDownSide(p);
-    } else if (properties.spreadBehaviour & SpreadType::UP_SIDE) {
-        return SpreadUpSide(p);
-    } else if (properties.spreadBehaviour & SpreadType::SIDE) {
-        return SpreadSide(p);
-    }
+    if      (properties.spreadBehaviour & SpreadType::DOWN_SIDE && SpreadDownSide(p)) { return true; } 
+    else if (properties.spreadBehaviour & SpreadType::UP_SIDE   && SpreadUpSide(p)) { return true; } 
+    else if (properties.spreadBehaviour & SpreadType::SIDE      && SpreadSide(p, properties)) { return true; }
 
     return false;
 }
@@ -110,9 +108,25 @@ bool WorldState::FloatDown(sf::Vector2i p) {
 }
 
 bool WorldState::FloatUp(sf::Vector2i p) {
-    sf::Vector2i queryPos(p.x, p.y - 1);
-    if (world.IsEmpty(queryPos.x, queryPos.y)) {
-        world.MoveCell(world.ToIndex(p.x, p.y), world.ToIndex(queryPos.x, queryPos.y));
+    return SpreadUpSide(p);
+}
+
+bool WorldState::AccelerateDown(sf::Vector2i p, Cell &cell) {
+    cell.ApplyAcceleration(sf::Vector2f(0.f, -ACCELERATION), dt);
+    sf::Vector2i dp {0, static_cast<int>(cell.velocity.y * dt)};
+    
+    sf::Vector2i dst {p};
+    Lerp lerp(p + sf::Vector2i(0, -1), p + dp);
+    for (sf::Vector2i check : lerp) {
+        if (world.IsEmpty(check.x, check.y)) {
+            dst = check;
+        } else {
+            break;
+        }
+    }
+
+    if (dst != p) {
+        world.MoveCell(world.ToIndex(p.x, p.y), world.ToIndex(dst.x, dst.y));
         return true;
     }
 
@@ -161,22 +175,23 @@ bool WorldState::SpreadUpSide(sf::Vector2i p) {
     return upLeft || upRight;
 }
 
-bool WorldState::SpreadSide(sf::Vector2i p) {
-    sf::Vector2i leftPos    {p + sf::Vector2i( 1, 0)};
-    sf::Vector2i rightPos   {p + sf::Vector2i(-1, 0)};
+bool WorldState::SpreadSide(sf::Vector2i p, ElementProperties &properties) {
+    sf::Vector2i lookAhead  {1, 0};
 
-    bool left   {world.IsEmpty( leftPos.x,  leftPos.y)};
-    bool right  {world.IsEmpty(rightPos.x, rightPos.y)};
+    bool left   {world.IsEmpty(p - lookAhead)};
+    bool right  {world.IsEmpty(p + lookAhead)};
 
     if (left && right) {
         left    = QuickRandInt(100) > 49;
         right   = !left;
     }
 
-    if (left) { 
-        world.MoveCell(world.ToIndex(p.x, p.y), world.ToIndex( leftPos.x,  leftPos.y));
+    if (left) {
+        sf::Vector2i dst {world.PathEmpty(p - lookAhead, p - properties.SpreadRate() * lookAhead)};
+        world.MoveCell(world.ToIndex(p.x, p.y), world.ToIndex( dst.x,  dst.y));
     } else if (right) {
-        world.MoveCell(world.ToIndex(p.x, p.y), world.ToIndex(rightPos.x, rightPos.y));
+        sf::Vector2i dst {world.PathEmpty(p + lookAhead, p + properties.SpreadRate() * lookAhead)};
+        world.MoveCell(world.ToIndex(p.x, p.y), world.ToIndex( dst.x,  dst.y));
     }
 
     return left || right;

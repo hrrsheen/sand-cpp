@@ -8,13 +8,19 @@
 //  Initialisation.
 //
 
-SandWorld::SandWorld(int width, int height) : width(width), height(height), queuedMoves(), chunks(10, 10, 50) { // TODO: Don't hardcode chunk dimensions.
+Action::Action() : src(-1), dst(-1), srcTransform(Element::null), dstTransform(Element::null) {}
+
+SandWorld::SandWorld(int width, int height) : 
+    width(width), height(height), 
+    queuedMoves(), queuedActions(), 
+    chunks(10, 10, 50) { // TODO: Don't hardcode chunk dimensions.
     grid.resize(width * height);
 }
 
 void SandWorld::InitProperties() {
     properties.Insert(std::move(std::make_unique<Sand>()));
     properties.Insert(std::move(std::make_unique<Stone>()));
+    properties.Insert(std::move(std::make_unique<Water>()));
 }
 
 void SandWorld::InitCells() {
@@ -43,6 +49,18 @@ Cell& SandWorld::GetCell(sf::Vector2i p) {
 
 ElementProperties& SandWorld::GetProperties(Cell &cell) {
     return properties.Get(cell.elementId);
+}
+
+ElementProperties& SandWorld::GetProperties(int index) {
+    return properties.Get(GetCell(index).elementId);
+}
+
+ElementProperties& SandWorld::GetProperties(int x, int y) {
+    return properties.Get(GetCell(ToIndex(x, y)).elementId);
+}
+
+ElementProperties& SandWorld::GetProperties(sf::Vector2i p) {
+    return properties.Get(GetCell(ToIndex(p.y, p.y)).elementId);
 }
 
 //
@@ -147,8 +165,26 @@ bool SandWorld::IsEmpty(int x, int y) {
     return false;
 }
 
+bool SandWorld::IsEmpty(sf::Vector2i p) {
+    return IsEmpty(p.x, p.y);
+}
+
 bool SandWorld::InBounds(int x, int y) const {
     return x >= 0 && x < width && y >= 0 && y < height;
+}
+
+sf::Vector2i SandWorld::PathEmpty(sf::Vector2i start, sf::Vector2i end) {
+    sf::Vector2i dst {start};
+    Lerp lerp(start, end);
+    for (sf::Vector2i check : lerp) {
+        if (IsEmpty(check)) {
+            dst = check;
+        } else {
+            break;
+        }
+    }
+
+    return dst;
 }
 
 //

@@ -29,28 +29,40 @@ ElementProperties::ElementProperties(Element thisId, ElementType thisType, std::
     id(thisId), type(thisType), name(thisName), moveBehaviour(movement), spreadBehaviour(spread) {}
 
 sf::Color ElementProperties::ColourFromArray() {
-    if (std::get<colourIndex>(palette).size() == 0) {
+    if (std::get<COLOUR_INDEX>(palette).size() == 0) {
         return sf::Color(0x00000000);
     }
-    if (std::get<colourIndex>(palette).size() == 1) {
-        return sf::Color(std::get<colourIndex>(palette).at(0)); // Trivial case where elements are a single colour.
+    if (std::get<COLOUR_INDEX>(palette).size() == 1) {
+        return sf::Color(std::get<COLOUR_INDEX>(palette).at(0)); // Trivial case where elements are a single colour.
     }
-    int position {QuickRandInt(std::get<colourIndex>(palette).size())};
-    return sf::Color(std::get<colourIndex>(palette).at(position));
+    int position {QuickRandInt(std::get<COLOUR_INDEX>(palette).size())};
+    return sf::Color(std::get<COLOUR_INDEX>(palette).at(position));
 }
 
 sf::Color ElementProperties::ColourFromTexture(sf::Vector2i p) {
-    sf::Vector2u size {std::get<textureIndex>(palette).getSize()};
+    sf::Vector2u size {std::get<TEXTURE_INDEX>(palette).getSize()};
     int x {p.x % static_cast<int>(size.x)};
     int y {p.y % static_cast<int>(size.y)};
-    return std::get<textureIndex>(palette).getPixel(std::abs(x), std::abs(y));
+    return std::get<TEXTURE_INDEX>(palette).getPixel(std::abs(x), std::abs(y));
 }
 
 bool ElementProperties::HasTexture() {
-    return palette.index() == textureIndex;
+    return palette.index() == TEXTURE_INDEX;
 }
 
-bool ElementProperties::canDisplace(ElementProperties &other) const {
+//
+//  Simulation.
+//
+
+bool ElementProperties::ActUponNeighbours(sf::Vector2i p, SandWorld &world) {
+    return false;
+}
+
+bool ElementProperties::ActUpon(sf::Vector2i p, sf::Vector2i target, Cell &cell, ElementProperties &properties, SandWorld &world) {
+    return false;
+}
+
+bool ElementProperties::CanDisplace(ElementProperties &other) const {
     return false;
 }
 

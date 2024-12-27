@@ -33,16 +33,8 @@ ElementProperties& Cell::Properties() const {
     return allProperties->Get(elementId);
 }
 
-
-void swap(Cell *cellA, Cell *cellB) {
-    Cell tmpCell = *cellA;
-    cellA->elementId = cellB->elementId;
-    cellA->colour = cellB->colour;
-    cellA->p = cellB->p;
-    cellA->active = cellB->active;
-    
-    cellB->elementId = tmpCell.elementId;
-    cellB->colour = tmpCell.colour;
-    // cellB->p = tmpCell.p;
-    cellB->active = tmpCell.active;
+void Cell::ApplyAcceleration(sf::Vector2f a, float dt) {
+    velocity += a * dt;
+    if (std::abs(velocity.x) > Cell::MAX_VELOCITY) velocity.x = Cell::MAX_VELOCITY;
+    if (std::abs(velocity.y) > Cell::MAX_VELOCITY) velocity.y = Cell::MAX_VELOCITY;
 }

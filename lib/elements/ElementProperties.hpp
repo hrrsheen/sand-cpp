@@ -9,6 +9,11 @@
 #include <vector>
 #include <unordered_map>
 
+// Forward declarations.
+class Cell;
+class PropertiesContainer;
+class SandWorld;
+
 // The element is used for accessing a cell's corresponding properties.
 // Used for array indexing! Don't change numbers. count must always be the last entry.
 enum class Element {
@@ -19,6 +24,7 @@ enum class Element {
     water,
     fire,
 
+    // MUST REMAIN AS LAST ELEMENT.
     count
 };
 
@@ -47,7 +53,7 @@ enum SpreadType : uint8_t {
 struct ElementProperties {
 public:
     const Element id;         // Identifier of the elment that these properties represent. MUST be unique.
-    const ElementType type;   // Detemines the movement behaviour of the element that these properties represent.
+    const ElementType type;   // Detemines the displacement behaviour of the element that these properties represent.
     const std::string name;   // The name of the element that these properties represent. MUST be unique.
     const MoveType moveBehaviour;
     const uint8_t spreadBehaviour;
@@ -55,10 +61,11 @@ public:
     // Display.
     std::variant<std::vector<sf::Uint32>, sf::Image> palette;
 
+protected:
     // Access constants.
-    static const int colourIndex {0};
-    static const int textureIndex {1};
-
+    static const int COLOUR_INDEX  = 0;
+    static const int TEXTURE_INDEX = 1;
+public:
     //////// Initialisation functions ////////
     ElementProperties();
     ElementProperties(ElementType thisType);
@@ -75,15 +82,21 @@ public:
     bool HasTexture();
 
     //////// Simulation functions ////////
+    virtual bool ActUponNeighbours(sf::Vector2i p, SandWorld &world);
+    bool ActUpon(sf::Vector2i p, sf::Vector2i target, Cell &cell, ElementProperties &properties, SandWorld &world);
 
     // Returns true if the element represented by these properties can displace the element
     // represented by the other properties. False otherwise.
-    virtual bool canDisplace(ElementProperties &other) const;
+    virtual bool CanDisplace(ElementProperties &other) const;
 
     //////// Operators ////////
     bool operator==(const ElementProperties &otherProperty) const;
 
+    // Virtual constants to be overwritten by specific elements.
+    virtual const int SpreadRate() const { return 1; }
+
     friend class Cell;
+    friend class PropertiesContainer;
 };
 
 #endif
