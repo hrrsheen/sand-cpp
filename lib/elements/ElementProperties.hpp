@@ -45,7 +45,7 @@ enum class MoveType {
     NONE,
     FLOAT_DOWN,
     FLOAT_UP,
-    ACCELERATE_DOWN
+    FALL_DOWN
 };
 
 enum SpreadType : uint8_t {
@@ -90,7 +90,7 @@ public:
     //////// Movement functions ////////
     bool FloatDown      (sf::Vector2i p, Cell &cell, SandWorld &world);
     bool FloatUp        (sf::Vector2i p, Cell &cell, SandWorld &world);
-    bool AccelerateDown (sf::Vector2i p, Cell &cell, SandWorld &world, float dt);
+    bool FallDown       (sf::Vector2i p, Cell &cell, SandWorld &world, float dt);
 
     bool SpreadDownSide (sf::Vector2i p, Cell &cell, SandWorld &world);
     bool SpreadUpSide   (sf::Vector2i p, Cell &cell, SandWorld &world);
@@ -99,10 +99,6 @@ public:
     //////// Simulation functions ////////
     virtual bool ActUponSelf(sf::Vector2i p, Cell &self, SandWorld &world, float dt);
     virtual bool ActUponNeighbours(sf::Vector2i p, SandWorld &world);
-    bool ActUpon(sf::Vector2i p, sf::Vector2i target, Cell &cell, ElementProperties &properties, SandWorld &world);
-    virtual bool ActUpon(sf::Vector2i p, sf::Vector2i target, Cell &cell, Solid  &properties, SandWorld &world) { return false; }
-    virtual bool ActUpon(sf::Vector2i p, sf::Vector2i target, Cell &cell, Liquid &properties, SandWorld &world) { return false; }
-    virtual bool ActUpon(sf::Vector2i p, sf::Vector2i target, Cell &cell, Gas    &properties, SandWorld &world) { return false; }
 
     // Returns true if the element represented by these properties can displace the element
     // represented by the other properties. False otherwise.

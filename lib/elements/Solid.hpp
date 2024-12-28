@@ -15,7 +15,6 @@ public:
 
     //////// Simulation functions. ////////
     bool ActUponNeighbours(sf::Vector2i p, SandWorld &world);
-    bool ActUpon(sf::Vector2i p, sf::Vector2i target, Cell &cell, Liquid &properties, SandWorld &world);
 
     bool CanDisplace(ElementProperties &other) const;
 };

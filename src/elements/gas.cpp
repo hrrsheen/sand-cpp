@@ -38,14 +38,6 @@ bool Fire::ActUponNeighbours(sf::Vector2i p, SandWorld &world) {
     return false;
 }
 
-bool Fire::ActUpon(sf::Vector2i p, sf::Vector2i target, Cell &cell, Solid &properties, SandWorld &world) {
-    return false;
-}
-
-bool Fire::ActUpon(sf::Vector2i p, sf::Vector2i target, Cell &cell, Gas   &properties, SandWorld &world) {
-    return false;
-}
-
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Smoke
 //////////////////////////////////////////////////////////////////////////////////////////

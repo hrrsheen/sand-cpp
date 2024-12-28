@@ -68,7 +68,7 @@ bool ElementProperties::FloatUp(sf::Vector2i p, Cell &cell, SandWorld &world) {
     return SpreadUpSide(p, cell, world);
 }
 
-bool ElementProperties::AccelerateDown(sf::Vector2i p, Cell &cell, SandWorld &world, float dt) {
+bool ElementProperties::FallDown(sf::Vector2i p, Cell &cell, SandWorld &world, float dt) {
     cell.ApplyAcceleration(sf::Vector2f(0.f, -ACCELERATION), dt);
     sf::Vector2i dp {0, static_cast<int>(cell.velocity.y * dt)};
     
@@ -163,23 +163,6 @@ bool ElementProperties::ActUponSelf(sf::Vector2i p, Cell &self, SandWorld &world
 }
 
 bool ElementProperties::ActUponNeighbours(sf::Vector2i p, SandWorld &world) {
-    return false;
-}
-
-bool ElementProperties::ActUpon(sf::Vector2i p, sf::Vector2i target, Cell &cell, ElementProperties &properties, SandWorld &world) {
-    switch (properties.type) {
-        case ElementType::SOLID:
-            return ActUpon(p, target, cell, static_cast<Solid&>(properties), world);
-            break;
-        case ElementType::LIQUID:
-            return ActUpon(p, target, cell, static_cast<Liquid&>(properties), world);
-            break;
-        case ElementType::GAS:
-            return ActUpon(p, target, cell, static_cast<Gas&>(properties), world);
-            break;
-        default:
-            return false;
-    }
     return false;
 }
 

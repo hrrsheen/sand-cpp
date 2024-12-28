@@ -248,6 +248,10 @@ bool SandWorld::InBounds(int x, int y) const {
     return x >= 0 && x < width && y >= 0 && y < height;
 }
 
+bool SandWorld::InBounds(sf::Vector2i p) const {
+    return InBounds(p.x, p.y);
+}
+
 sf::Vector2i SandWorld::PathEmpty(sf::Vector2i start, sf::Vector2i end) {
     sf::Vector2i dst {start};
     Lerp lerp(start, end);

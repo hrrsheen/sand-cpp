@@ -10,18 +10,21 @@ Solid::Solid(Element thisId, std::string_view thisName, MoveType move, uint8_t s
 //  Sand
 //////////////////////////////////////////////////////////////////////////////////////////
 
-Sand::Sand() : Solid(Element::sand, "sand", MoveType::ACCELERATE_DOWN, SpreadType::DOWN_SIDE) {
+Sand::Sand() : Solid(Element::sand, "sand", MoveType::FALL_DOWN, SpreadType::DOWN_SIDE) {
     std::get<COLOUR_INDEX>(palette).push_back(0xfabf73ff);
     std::get<COLOUR_INDEX>(palette).push_back(0xebae60ff);
 }
 
 bool Sand::ActUponNeighbours(sf::Vector2i p, SandWorld &world) {
-    // Put out fires?
-    return false;
-}
+    sf::Vector2i lookAhead{p.x, p.y - 1};
+    if (!world.InBounds(lookAhead)) {
+        return false;
+    }
 
-bool Sand::ActUpon(sf::Vector2i p, sf::Vector2i target, Cell &cell, Liquid &properties, SandWorld &world) {
-    return false;
+    if (world.GetCell(lookAhead).elementId == Element::fire) {
+        world.Act(world.ToIndex(p.x, p.y), world.ToIndex(lookAhead.x, lookAhead.y), Element::air, Element::sand);
+        return true;
+    }
 }
 
 bool Sand::CanDisplace(ElementProperties &other) const {

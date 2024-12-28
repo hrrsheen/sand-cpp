@@ -1,5 +1,6 @@
 #include "Elements/ElementProperties.hpp"
 #include "Elements/Liquid.hpp"
+#include "SandWorld.hpp"
 
 Liquid::Liquid() : ElementProperties(ElementType::LIQUID) {}
 Liquid::Liquid(Element thisId, std::string_view thisName, MoveType move, uint8_t spread) : 
@@ -13,6 +14,22 @@ bool Liquid::CanDisplace(ElementProperties &other) const {
     return false;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////
+//  Water
+//////////////////////////////////////////////////////////////////////////////////////////
+
 Water::Water() : Liquid(Element::water, "water", MoveType::FLOAT_DOWN, SpreadType::DOWN_SIDE | SpreadType::SIDE) {
     std::get<COLOUR_INDEX>(palette).push_back(0x347debff);
+}
+
+bool Water::ActUponNeighbours(sf::Vector2i p, SandWorld &world) {
+    sf::Vector2i lookAhead{p.x, p.y - 1};
+    if (!world.InBounds(lookAhead)) {
+        return false;
+    }
+
+    if (world.GetCell(lookAhead).elementId == Element::fire) {
+        world.Act(world.ToIndex(p.x, p.y), world.ToIndex(lookAhead.x, lookAhead.y), Element::smoke, Element::water);
+        return true;
+    }
 }

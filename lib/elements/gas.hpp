@@ -19,8 +19,6 @@ public:
     //////// Simulation functions. ////////
     bool ActUponSelf(sf::Vector2i p, Cell &self, SandWorld &world, float dt);
     bool ActUponNeighbours(sf::Vector2i p, SandWorld &world);
-    bool ActUpon(sf::Vector2i p, sf::Vector2i target, Cell &cell, Solid &properties, SandWorld &world);
-    bool ActUpon(sf::Vector2i p, sf::Vector2i target, Cell &cell, Gas   &properties, SandWorld &world);
 
     //////// Virtual constants. ////////
     

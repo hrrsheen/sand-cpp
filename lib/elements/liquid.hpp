@@ -15,6 +15,9 @@ class Water : public Liquid {
 public:
     Water();
 
+    //////// Simulation functions. ////////
+    bool ActUponNeighbours(sf::Vector2i p, SandWorld &world);
+
     // Virtual constants.
     const int SpreadRate() const { return 7; }
 };

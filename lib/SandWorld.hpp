@@ -80,6 +80,7 @@ public:
     bool IsEmpty(int x, int y);
     bool IsEmpty(sf::Vector2i p);
     bool InBounds(int x, int y) const;
+    bool InBounds(sf::Vector2i p) const;
     sf::Vector2i PathEmpty(sf::Vector2i start, sf::Vector2i end);
 
     // Helper functions.

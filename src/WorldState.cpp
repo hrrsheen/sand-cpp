@@ -71,9 +71,9 @@ bool WorldState::MoveCell(Cell &cell, ElementProperties &properties, sf::Vector2
     if (world.IsEmpty(p.x, p.y)) return false;
     if (properties.moveBehaviour == MoveType::NONE) return false;
 
-    if      (properties.moveBehaviour == MoveType::FLOAT_DOWN)      { return properties.FloatDown       (p, cell, world);     }
-    else if (properties.moveBehaviour == MoveType::FLOAT_UP)        { return properties.FloatUp         (p, cell, world);     }
-    else if (properties.moveBehaviour == MoveType::ACCELERATE_DOWN) { return properties.AccelerateDown  (p, cell, world, dt); }
+    if      (properties.moveBehaviour == MoveType::FLOAT_DOWN)  { return properties.FloatDown   (p, cell, world);     }
+    else if (properties.moveBehaviour == MoveType::FLOAT_UP)    { return properties.FloatUp     (p, cell, world);     }
+    else if (properties.moveBehaviour == MoveType::FALL_DOWN)   { return properties.FallDown    (p, cell, world, dt); }
 
     return false;
 }
