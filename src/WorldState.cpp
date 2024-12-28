@@ -40,6 +40,7 @@ void WorldState::Step(float dt) {
     }
 
     world.ConsolidateActions();
+    world.ConsolidateMoves();
 }
 
 void WorldState::draw(Screen &screen) {
@@ -58,9 +59,9 @@ void WorldState::draw(Screen &screen) {
 bool WorldState::ApplyRules(Cell &cell, sf::Vector2i p) {
     ElementProperties &properties {cell.Properties()};
     
-    if      (  MoveCell(cell, properties, p)) { return true; }  // Apply movement behaviours (falling, floating, etc).
+    if      (ActionCell(cell, properties, p)) { return true; }  // Act on other cells.
+    else if (  MoveCell(cell, properties, p)) { return true; }  // Apply movement behaviours (falling, floating, etc).
     else if (SpreadCell(cell, properties, p)) { return true; }  // Apply spreading behaviour.
-    else if (ActionCell(cell, properties, p)) { return true; }  // Act on other cells.
 
     return false;
 }
@@ -91,5 +92,10 @@ bool WorldState::SpreadCell(Cell &cell, ElementProperties &properties, sf::Vecto
 bool WorldState::ActionCell(Cell &cell, ElementProperties &properties, sf::Vector2i p) {
     if (world.IsEmpty(p.x, p.y)) return false;
 
-    return properties.ActUponNeighbours(p, world);
+    // bool self   {properties.ActUponSelf(p, cell, world, dt)};
+    // bool other  {properties.ActUponNeighbours(p, world)};
+    if      (properties.ActUponSelf(p, cell, world, dt))    { return true; }
+    else if (properties.ActUponNeighbours(p, world))        { return true; }
+
+    // return self || other;
 }

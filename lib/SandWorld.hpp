@@ -15,6 +15,10 @@ struct Action {
     Element dstTransform;
 
     Action();
+    Action(int src, int dst, Element srcTransform, Element dstTransform);
+    bool SrcValid() const;
+    bool DstValid() const;
+    bool IsValid() const;
 };
 
 class SandWorld {
@@ -34,6 +38,7 @@ private:
 
     std::vector<std::pair<int, int>>    queuedMoves;
     std::vector<Action>                 queuedActions;
+    int maxDst;
 
     // The properties of the elements contained within the grid.
     PropertiesContainer properties; // TODO: Surely there's a better way to access by id than id i = index i.
@@ -64,8 +69,12 @@ public:
 
     // Moving cells around.
     void MoveCell(int pFrom, int pTo);
-    void ConsolidateActions();
+    void ConsolidateMoves();
     void Swap(int i1, int i2);
+
+    // Transforming (applying actions) cells.
+    void Act(int src, int dst, Element srcTransform, Element dstTransform);
+    void ConsolidateActions();
 
     // Querying the grid.
     bool IsEmpty(int x, int y);

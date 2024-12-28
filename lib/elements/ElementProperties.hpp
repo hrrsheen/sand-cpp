@@ -27,6 +27,7 @@ enum class Element {
     stone,
     water,
     fire,
+    smoke,
 
     // MUST REMAIN AS LAST ELEMENT.
     count
@@ -80,7 +81,7 @@ public:
 
     //////// Display functions ////////
     sf::Color ColourFromArray();                    // Returns a colour, picked at random from the palette.
-    sf::Color ColourFromTexture(sf::Vector2i p);    // Returns a colour from a texture that corresponds to the supplied position.
+    sf::Color ColourFromTexture(int x, int y);      // Returns a colour from a texture that corresponds to the supplied position.
     bool HasTexture();                              // Returns true if a texture is available for cells with these properties.
     // Flag for whether this element should have a new colour selected each frame.
     // This MAY ONLY be set to true for elements that have a colour palette and NOT a texture.
@@ -96,6 +97,7 @@ public:
     bool SpreadSide     (sf::Vector2i p, Cell &cell, SandWorld &world);
 
     //////// Simulation functions ////////
+    virtual bool ActUponSelf(sf::Vector2i p, Cell &self, SandWorld &world, float dt);
     virtual bool ActUponNeighbours(sf::Vector2i p, SandWorld &world);
     bool ActUpon(sf::Vector2i p, sf::Vector2i target, Cell &cell, ElementProperties &properties, SandWorld &world);
     virtual bool ActUpon(sf::Vector2i p, sf::Vector2i target, Cell &cell, Solid  &properties, SandWorld &world) { return false; }

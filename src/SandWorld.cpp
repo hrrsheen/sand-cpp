@@ -9,10 +9,27 @@
 //////////////////////////////////////////////////////////////////////////////////////////
 
 Action::Action() : src(-1), dst(-1), srcTransform(Element::null), dstTransform(Element::null) {}
+Action::Action(int src, int dst, Element srcTransform, Element dstTransform) : 
+    src(src), dst(dst),
+    srcTransform(srcTransform), dstTransform(dstTransform) {
+}
+
+bool Action::SrcValid() const {
+    return src > -1 && srcTransform != Element::null;
+}
+
+bool Action::DstValid() const {
+    return dst > -1 && dstTransform != Element::null;
+}
+
+bool Action::IsValid() const {
+    return SrcValid() && DstValid();
+}
 
 SandWorld::SandWorld(int width, int height) : 
     width(width), height(height), 
-    queuedMoves(), queuedActions(), 
+    queuedMoves(), queuedActions(),
+    maxDst(-1),
     chunks(10, 10, 50) { // TODO: Don't hardcode chunk dimensions.
     grid.resize(width * height);
 }
@@ -22,6 +39,7 @@ void SandWorld::InitProperties() {
     properties.Insert(std::move(std::make_unique<Stone>()));
     properties.Insert(std::move(std::make_unique<Water>()));
     properties.Insert(std::move(std::make_unique<Fire>()));
+    properties.Insert(std::move(std::make_unique<Smoke>()));
 }
 
 void SandWorld::InitCells() {
@@ -104,10 +122,10 @@ void SandWorld::SetArea(int x, int y, int w, int h, Element elementId) {
 //////////////////////////////////////////////////////////////////////////////////////////
 
 void SandWorld::MoveCell(int pFrom, int pTo) {
-    queuedMoves.push_back(std::pair<int, int>(pFrom, pTo));
+    queuedMoves.emplace_back(pFrom, pTo);
 }
 
-void SandWorld::ConsolidateActions() {
+void SandWorld::ConsolidateMoves() {
     if (queuedMoves.size() == 0) return;
 
     // Remove moves that have had their destination filled between frames.
@@ -151,6 +169,61 @@ void SandWorld::Swap(int i1, int i2) {
 
     grid[i1].redraw = true;
     grid[i2].redraw = true;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//  Applying actions.
+//////////////////////////////////////////////////////////////////////////////////////////
+
+void SandWorld::Act(int src, int dst, Element srcTransform, Element dstTransform) {
+    // Ensures that an "invalid" dst still can be sorted when consolidated.
+    if (dst == -1) {
+        dst = maxDst + 1;
+        maxDst = dst;
+    }
+    queuedActions.emplace_back(src, dst, srcTransform, dstTransform);
+}
+
+void SandWorld::ConsolidateActions() {
+    if (queuedActions.size() == 0) return;
+
+    // Sort the queued actions by destination.
+    std::sort(queuedActions.begin(), queuedActions.end(), 
+        [](const Action &a, const Action &b) { return a.dst < b.dst; }
+    );
+
+    // Used to catch the final action. 
+    Action firstActon {queuedActions[0]};
+    queuedActions.emplace_back(firstActon.src - 1, firstActon.dst - 1,  firstActon.srcTransform, firstActon.dstTransform);
+
+    int iStart {0};
+
+    for (int i = 0; i < queuedActions.size() - 1; ++i) {
+        Action *move       {&queuedActions.at(i)};
+        Action *nextMove   {&queuedActions.at(i + 1)};
+
+        if (move->dst != nextMove->dst) {
+            int iRand {iStart + QuickRandInt(i - iStart)};
+            
+            *move = queuedActions[iRand];
+            // Perform the randomly-selected action from the competing actions group.
+            if (move->SrcValid()) {
+                SetCell(move->src, move->srcTransform);
+                sf::Vector2i srcCoords {ToCoords(move->src)};
+                chunks.KeepNeighbourAlive(srcCoords.x, srcCoords.y);
+            }
+            if (move->DstValid()) {
+                SetCell(move->dst, move->dstTransform);
+                sf::Vector2i dstCoords {ToCoords(move->dst)};
+                chunks.SetContaining(dstCoords.x, dstCoords.y, true);
+            }
+        
+            iStart = i + 1;
+        }
+    }
+
+    maxDst = -1;
+    queuedActions.clear();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

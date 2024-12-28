@@ -39,10 +39,10 @@ sf::Color ElementProperties::ColourFromArray() {
     return sf::Color(std::get<COLOUR_INDEX>(palette).at(position));
 }
 
-sf::Color ElementProperties::ColourFromTexture(sf::Vector2i p) {
+sf::Color ElementProperties::ColourFromTexture(int x, int y) {
     sf::Vector2u size {std::get<TEXTURE_INDEX>(palette).getSize()};
-    int x {p.x % static_cast<int>(size.x)};
-    int y {p.y % static_cast<int>(size.y)};
+    x = x % static_cast<int>(size.x);
+    y = y % static_cast<int>(size.y);
     return std::get<TEXTURE_INDEX>(palette).getPixel(std::abs(x), std::abs(y));
 }
 
@@ -157,6 +157,10 @@ bool ElementProperties::SpreadSide(sf::Vector2i p, Cell &cell, SandWorld &world)
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Simulation.
 //////////////////////////////////////////////////////////////////////////////////////////
+
+bool ElementProperties::ActUponSelf(sf::Vector2i p, Cell &self, SandWorld &world, float dt) {
+    return false;
+}
 
 bool ElementProperties::ActUponNeighbours(sf::Vector2i p, SandWorld &world) {
     return false;

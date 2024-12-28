@@ -5,33 +5,34 @@
 #include <SFML/System/Vector2.hpp>
 
 
-Cell::Cell() : elementId(Element::air), p(0, 0), redraw(false), active(false), health(100.f), velocity(0.f, 0.f) {
+Cell::Cell() : elementId(Element::air), redraw(false), active(false), health(100.f), velocity(0.f, 0.f) {
 }
 
 Cell::Cell(int x, int y, PropertiesContainer *properties) : 
     allProperties(properties), elementId(Element::air), 
-    p(x, y), // TODO: Remove dependance on position.
     redraw(false),
     active(false),
     health(100.f),
     velocity(0.f, 0.f) {
-    Assign(elementId);
+    Assign(elementId, x, y);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Assignment / Manipulation functions.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-void Cell::Assign(Element elementId) {
+void Cell::Assign(Element elementId, int x, int y) {
     Cell::elementId = elementId;
     ElementProperties &properties {allProperties->Get(elementId)};
     if (properties.HasTexture()) {
-        colour = properties.ColourFromTexture(p);
+        colour = properties.ColourFromTexture(x, y);
     } else {
         colour = properties.ColourFromArray();
     }
-    redraw = true;
-    active = properties.moveBehaviour != MoveType::NONE;
+    health          = 100.f;
+    velocity        = sf::Vector2f(0.f, 0.f);
+    active          = properties.moveBehaviour != MoveType::NONE;
+    redraw          = true;
     redrawEachFrame = properties.RecolourEachFrame();
 }
 
