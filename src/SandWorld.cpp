@@ -39,6 +39,7 @@ void SandWorld::InitProperties() {
     properties.Insert(std::move(std::make_unique<Stone>()));
     properties.Insert(std::move(std::make_unique<Water>()));
     properties.Insert(std::move(std::make_unique<Fire>()));
+    properties.Insert(std::move(std::make_unique<Wood>()));
     properties.Insert(std::move(std::make_unique<Smoke>()));
 }
 
@@ -87,11 +88,13 @@ ElementProperties& SandWorld::GetProperties(sf::Vector2i p) {
 //////////////////////////////////////////////////////////////////////////////////////////
 
 void SandWorld::SetCell(int index, Element elementId) {
-    grid.at(index).Assign(elementId);
+    sf::Vector2i coords {ToCoords(index)};
+    GetCell(index).Assign(elementId, coords.x, coords.y);
+    chunks.SetContaining(coords.x, coords.y, true);
 }
 
 void SandWorld::SetCell(int x, int y, Element elementId) {
-    SetCell(ToIndex(x, y), elementId);
+    GetCell(x, y).Assign(elementId, x, y);
     chunks.SetContaining(x, y, true);
 }
 
@@ -211,11 +214,13 @@ void SandWorld::ConsolidateActions() {
                 SetCell(move->src, move->srcTransform);
                 sf::Vector2i srcCoords {ToCoords(move->src)};
                 chunks.KeepNeighbourAlive(srcCoords.x, srcCoords.y);
+                GetCell(move->src).redraw = true;
             }
             if (move->DstValid()) {
                 SetCell(move->dst, move->dstTransform);
                 sf::Vector2i dstCoords {ToCoords(move->dst)};
                 chunks.SetContaining(dstCoords.x, dstCoords.y, true);
+                GetCell(move->dst).redraw = true;
             }
         
             iStart = i + 1;
@@ -274,8 +279,16 @@ size_t SandWorld::Size() const {
     return grid.size();
 }
 
+size_t SandWorld::PropertiesSize() const {
+    return properties.Size();
+}
+
 int SandWorld::ToIndex(int x, int y) const {
     return x + y * width;
+}
+
+int SandWorld::ToIndex(sf::Vector2i p) const {
+    return ToIndex(p.x, p.y);
 }
 
 sf::Vector2i SandWorld::ToCoords(int index) const {

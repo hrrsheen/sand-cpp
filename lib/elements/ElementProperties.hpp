@@ -27,6 +27,7 @@ enum class Element {
     stone,
     water,
     fire,
+    wood,
     smoke,
 
     // MUST REMAIN AS LAST ELEMENT.
@@ -97,8 +98,8 @@ public:
     bool SpreadSide     (sf::Vector2i p, Cell &cell, SandWorld &world);
 
     //////// Simulation functions ////////
-    virtual bool ActUponSelf(sf::Vector2i p, Cell &self, SandWorld &world, float dt);
-    virtual bool ActUponNeighbours(sf::Vector2i p, SandWorld &world);
+    virtual bool ActUponSelf        (sf::Vector2i p, Cell &self, SandWorld &world, float dt);
+    virtual bool ActUponNeighbours  (sf::Vector2i p, Cell &self, SandWorld &world, float dt);
 
     // Returns true if the element represented by these properties can displace the element
     // represented by the other properties. False otherwise.
@@ -109,7 +110,8 @@ public:
     bool operator==(const ElementProperties &otherProperty) const;
 
     // Virtual constants to be overwritten by specific elements.
-    virtual const int SpreadRate() const { return 1; }
+    virtual const int   SpreadRate() const { return 1; }
+    virtual const float Flammability() const { return 0.f; }
 
     friend class Cell;
     friend class PropertiesContainer;

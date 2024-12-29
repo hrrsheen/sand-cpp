@@ -15,7 +15,7 @@ Sand::Sand() : Solid(Element::sand, "sand", MoveType::FALL_DOWN, SpreadType::DOW
     std::get<COLOUR_INDEX>(palette).push_back(0xebae60ff);
 }
 
-bool Sand::ActUponNeighbours(sf::Vector2i p, SandWorld &world) {
+bool Sand::ActUponNeighbours(sf::Vector2i p, Cell &self, SandWorld &world, float dt) {
     sf::Vector2i lookAhead{p.x, p.y - 1};
     if (!world.InBounds(lookAhead)) {
         return false;
@@ -41,6 +41,16 @@ bool Sand::CanDisplace(ElementProperties &other) const {
 
 Stone::Stone() : Solid(Element::stone, "stone", MoveType::NONE, SpreadType::NONE) {
     sf::Image img;
-    img.loadFromFile("./assets/stone-texture.png");
+    img.loadFromFile("./assets/stone2-texture.png");
+    palette = img;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//  Wood
+//////////////////////////////////////////////////////////////////////////////////////////
+
+Wood::Wood() : Solid(Element::wood, "wood", MoveType::NONE, SpreadType::NONE) {
+    sf::Image img;
+    img.loadFromFile("./assets/wood-texture.png");
     palette = img;
 }

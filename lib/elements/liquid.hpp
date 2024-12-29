@@ -16,7 +16,7 @@ public:
     Water();
 
     //////// Simulation functions. ////////
-    bool ActUponNeighbours(sf::Vector2i p, SandWorld &world);
+    bool ActUponNeighbours(sf::Vector2i p, Cell &self, SandWorld &world, float dt);
 
     // Virtual constants.
     const int SpreadRate() const { return 7; }

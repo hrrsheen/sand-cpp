@@ -14,7 +14,7 @@ public:
     Sand();
 
     //////// Simulation functions. ////////
-    bool ActUponNeighbours(sf::Vector2i p, SandWorld &world);
+    bool ActUponNeighbours(sf::Vector2i p, Cell &self, SandWorld &world, float dt);
 
     bool CanDisplace(ElementProperties &other) const;
 };
@@ -22,6 +22,13 @@ public:
 class Stone : public Solid {
 public:
     Stone();
+};
+
+class Wood : public Solid {
+public:
+    Wood();
+
+    virtual const float Flammability() const { return 100.f; }
 };
 
 #endif

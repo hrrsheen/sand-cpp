@@ -85,7 +85,9 @@ public:
 
     // Helper functions.
     size_t Size() const;
+    size_t PropertiesSize() const;
     int ToIndex(int x, int y) const;
+    int ToIndex(sf::Vector2i p) const;
     sf::Vector2i ToCoords(int index) const;
 };
 

@@ -29,7 +29,7 @@ public:
     void Step(float dt);
 
     // Draws the grid to the screen.
-    void draw(Screen &screen);
+    void Draw(Screen &screen);
 
 private:
     void wakeAdjacentChunks(Cell &cell);

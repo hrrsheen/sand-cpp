@@ -17,8 +17,8 @@ public:
     const bool RecolourEachFrame() const { return true; }
 
     //////// Simulation functions. ////////
-    bool ActUponSelf(sf::Vector2i p, Cell &self, SandWorld &world, float dt);
-    bool ActUponNeighbours(sf::Vector2i p, SandWorld &world);
+    bool ActUponSelf        (sf::Vector2i p, Cell &self, SandWorld &world, float dt);
+    bool ActUponNeighbours  (sf::Vector2i p, Cell &self, SandWorld &world, float dt);
 
     //////// Virtual constants. ////////
     

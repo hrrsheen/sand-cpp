@@ -162,7 +162,7 @@ bool ElementProperties::ActUponSelf(sf::Vector2i p, Cell &self, SandWorld &world
     return false;
 }
 
-bool ElementProperties::ActUponNeighbours(sf::Vector2i p, SandWorld &world) {
+bool ElementProperties::ActUponNeighbours(sf::Vector2i p, Cell &self, SandWorld &world, float dt) {
     return false;
 }
 

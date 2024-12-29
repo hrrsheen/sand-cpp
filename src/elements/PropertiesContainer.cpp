@@ -24,6 +24,10 @@ ElementProperties& PropertiesContainer::Get(Element key) {
     return *elementProperties.at(static_cast<int>(key));
 }
 
+size_t PropertiesContainer::Size() const {
+    return elementProperties.size();
+}
+
 bool PropertiesContainer::Contains(const ElementProperties &properties) {
     for (auto &ep : elementProperties) {
         if (!ep) continue;

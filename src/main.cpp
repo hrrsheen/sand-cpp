@@ -10,7 +10,7 @@ enum MouseState {
     drawing
 };
 
-bool shouldClose(sf::Event &event) {
+bool ShouldClose(sf::Event &event) {
     if (event.type == sf::Event::Closed)
         return true;
     if (event.type == sf::Event::KeyPressed) {
@@ -21,7 +21,7 @@ bool shouldClose(sf::Event &event) {
     return false;
 }
 
-MouseState getMouseState(sf::Event &event, MouseState currentState) {
+MouseState GetMouseState(sf::Event &event, MouseState currentState) {
     if (event.type == sf::Event::MouseButtonPressed) {
         if (event.mouseButton.button == sf::Mouse::Left) {
             return MouseState::drawing;
@@ -38,16 +38,16 @@ MouseState getMouseState(sf::Event &event, MouseState currentState) {
     return currentState;
 }
 
-void getElementSelect(Brush &brush, sf::Event &event) {
+void GetElementSelect(Brush &brush, sf::Event &event, SandWorld &world) {
     if (event.type == sf::Event::KeyPressed) {
         int number = event.key.code - 26;
-        if (number >= 0 && number <= 4) {
+        if (number >= 0 && number <= world.PropertiesSize() - 1) {
             brush.element = static_cast<Element>(number);
         }
     }
 }
 
-void paint(sf::Vector2i position, WorldState &state) {
+void Paint(sf::Vector2i position, WorldState &state) {
     if (state.brush.size == 1) {
         state.world.SetCell(position.x, position.y, state.brush.element);
     } else {
@@ -58,6 +58,21 @@ void paint(sf::Vector2i position, WorldState &state) {
             2 * state.brush.size - 1,
             state.brush.element
         );
+    }
+}
+
+void DrawChunks(SandWorld &world, Screen &screen) {
+    for (int i = 0; i < world.chunks.Size(); i++) {
+        if (world.chunks.IsActive(i)) {
+            ChunkBounds bounds {world.chunks.GetBounds(i)};
+            sf::RectangleShape rectangle;
+            rectangle.setSize(sf::Vector2f(bounds.size, bounds.size));
+            rectangle.setOutlineColor(sf::Color::Blue);
+            rectangle.setOutlineThickness(1);
+            rectangle.setFillColor(sf::Color::Transparent);
+            rectangle.setPosition(bounds.x, bounds.y);
+            screen.draw(rectangle, screen.renderStates);
+        }
     }
 }
 
@@ -77,41 +92,28 @@ int main() {
 
     MouseState mState {idle};
     int elapsed {0};
-    while (screen.isOpen())
-    {
+    while (screen.isOpen()) {
         sf::Time dt {clock.restart()};
         sf::Event event;
 
-        while (screen.pollEvent(event))
-        {
-            if (shouldClose(event)) {
+        while (screen.pollEvent(event)) {
+            if (ShouldClose(event)) {
                 screen.close();
                 break;
             }
 
-            mState = getMouseState(event, mState);
-            getElementSelect(state.brush, event);
+            mState = GetMouseState(event, mState);
+            GetElementSelect(state.brush, event, state.world);
         }
 
         if (mState == MouseState::drawing) {
             sf::Vector2i mousePos {screen.mapPixelToCoords(sf::Mouse::getPosition(screen))};
-            paint(mousePos, state);
+            Paint(mousePos, state);
         }
         state.Step(dt.asSeconds());
-        state.draw(screen);
+        state.Draw(screen);
         // DEBUG ONLY - Draw the active chunks.
-        for (int i = 0; i < state.world.chunks.Size(); i++) {
-            if (state.world.chunks.IsActive(i)) {
-                ChunkBounds bounds {state.world.chunks.GetBounds(i)};
-                sf::RectangleShape rectangle;
-                rectangle.setSize(sf::Vector2f(bounds.size, bounds.size));
-                rectangle.setOutlineColor(sf::Color::Blue);
-                rectangle.setOutlineThickness(1);
-                rectangle.setFillColor(sf::Color::Transparent);
-                rectangle.setPosition(bounds.x, bounds.y);
-                screen.draw(rectangle, screen.renderStates);
-            }
-        }
+        // DrawChunks(state.world, screen);
         screen.display();
 
         if (elapsed >= 1000) {

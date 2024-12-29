@@ -43,7 +43,7 @@ void WorldState::Step(float dt) {
     world.ConsolidateMoves();
 }
 
-void WorldState::draw(Screen &screen) {
+void WorldState::Draw(Screen &screen) {
     screen.clear();
     for (int i = 0; i < world.Size() - 1; i++) {
         Cell &cell {world.GetCell(i)};
@@ -92,10 +92,11 @@ bool WorldState::SpreadCell(Cell &cell, ElementProperties &properties, sf::Vecto
 bool WorldState::ActionCell(Cell &cell, ElementProperties &properties, sf::Vector2i p) {
     if (world.IsEmpty(p.x, p.y)) return false;
 
-    // bool self   {properties.ActUponSelf(p, cell, world, dt)};
-    // bool other  {properties.ActUponNeighbours(p, world)};
-    if      (properties.ActUponSelf(p, cell, world, dt))    { return true; }
-    else if (properties.ActUponNeighbours(p, world))        { return true; }
-
-    // return self || other;
+    if (properties.ActUponSelf(p, cell, world, dt)) { 
+        cell.redraw = true;
+        return true; 
+    } else if (properties.ActUponNeighbours(p, cell, world, dt)) { 
+        cell.redraw = true;
+        return true; 
+    }
 }

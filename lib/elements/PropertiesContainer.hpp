@@ -20,6 +20,8 @@ public:
     // Retrieves the ElementProperties from the given index.
     ElementProperties& Get(Element key);
 
+    size_t Size() const;
+
 private:
     // Returns true if another properties with the same ID already exists in the container.
     bool Contains(const ElementProperties &properties);
