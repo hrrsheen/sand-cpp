@@ -30,7 +30,7 @@ SandWorld::SandWorld(int width, int height) :
     width(width), height(height), 
     queuedMoves(), queuedActions(),
     maxDst(-1),
-    chunks(5, 5, 100) { // TODO: Don't hardcode chunk dimensions.
+    chunks(10, 10, 50) { // TODO: Don't hardcode chunk dimensions.
     grid.resize(width * height);
 }
 
