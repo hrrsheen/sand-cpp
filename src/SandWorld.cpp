@@ -30,7 +30,7 @@ SandWorld::SandWorld(int width, int height) :
     width(width), height(height), 
     queuedMoves(), queuedActions(),
     maxDst(-1),
-    chunks(10, 10, 50) { // TODO: Don't hardcode chunk dimensions.
+    chunks(5, 5, 100) { // TODO: Don't hardcode chunk dimensions.
     grid.resize(width * height);
 }
 
@@ -90,12 +90,12 @@ ElementProperties& SandWorld::GetProperties(sf::Vector2i p) {
 void SandWorld::SetCell(int index, Element elementId) {
     sf::Vector2i coords {ToCoords(index)};
     GetCell(index).Assign(elementId, coords.x, coords.y);
-    chunks.SetContaining(coords.x, coords.y, true);
+    chunks.KeepContainingAlive(coords.x, coords.y);
 }
 
 void SandWorld::SetCell(int x, int y, Element elementId) {
     GetCell(x, y).Assign(elementId, x, y);
-    chunks.SetContaining(x, y, true);
+    chunks.KeepContainingAlive(x, y);
 }
 
 void SandWorld::SetArea(int x, int y, int w, int h, Element elementId) {
@@ -157,8 +157,9 @@ void SandWorld::ConsolidateMoves() {
             Swap(src, dst);
             sf::Vector2i srcCoords {ToCoords(src)};
             sf::Vector2i dstCoords {ToCoords(dst)};
-            chunks.SetContaining(dstCoords.x, dstCoords.y, true);
-            chunks.KeepNeighbourAlive(srcCoords.x, srcCoords.y);
+            chunks.KeepContainingAlive(srcCoords.x, srcCoords.y);
+            chunks.KeepContainingAlive(dstCoords.x, dstCoords.y);
+            // chunks.KeepNeighbourAlive(srcCoords.x, srcCoords.y);
 
             iStart = i + 1;
         }
@@ -213,13 +214,13 @@ void SandWorld::ConsolidateActions() {
             if (move->SrcValid()) {
                 SetCell(move->src, move->srcTransform);
                 sf::Vector2i srcCoords {ToCoords(move->src)};
-                chunks.KeepNeighbourAlive(srcCoords.x, srcCoords.y);
+                chunks.KeepContainingAlive(srcCoords.x, srcCoords.y);
                 GetCell(move->src).redraw = true;
             }
             if (move->DstValid()) {
                 SetCell(move->dst, move->dstTransform);
                 sf::Vector2i dstCoords {ToCoords(move->dst)};
-                chunks.SetContaining(dstCoords.x, dstCoords.y, true);
+                chunks.KeepContainingAlive(dstCoords.x, dstCoords.y);
                 GetCell(move->dst).redraw = true;
             }
         

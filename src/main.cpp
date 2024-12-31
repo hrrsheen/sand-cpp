@@ -63,7 +63,8 @@ void Paint(sf::Vector2i position, WorldState &state) {
 
 void DrawChunks(SandWorld &world, Screen &screen) {
     for (int i = 0; i < world.chunks.Size(); i++) {
-        if (world.chunks.IsActive(i)) {
+        if (world.chunks.IsAwake(i)) {
+            Chunk &chunk {world.chunks.GetChunk(i)};
             ChunkBounds bounds {world.chunks.GetBounds(i)};
             sf::RectangleShape rectangle;
             rectangle.setSize(sf::Vector2f(bounds.size, bounds.size));
@@ -72,11 +73,18 @@ void DrawChunks(SandWorld &world, Screen &screen) {
             rectangle.setFillColor(sf::Color::Transparent);
             rectangle.setPosition(bounds.x, bounds.y);
             screen.draw(rectangle, screen.renderStates);
+            rectangle.setSize(sf::Vector2f(chunk.xMax - chunk.xMin, chunk.yMax - chunk.yMin));
+            rectangle.setOutlineColor(sf::Color::Green);
+            rectangle.setOutlineThickness(1);
+            rectangle.setFillColor(sf::Color::Transparent);
+            rectangle.setPosition(chunk.xMin, chunk.yMin);
+            screen.draw(rectangle, screen.renderStates);
         }
     }
 }
 
 int main() {
+    bool DEBUG {false};
     InitRng();
     const int width {500}, height {500};
     sf::Clock clock;
@@ -102,6 +110,10 @@ int main() {
                 break;
             }
 
+            if (event.type == sf::Event::KeyPressed && event.key.scancode == sf::Keyboard::Scan::D) {
+                DEBUG = !DEBUG;
+            }
+
             mState = GetMouseState(event, mState);
             GetElementSelect(state.brush, event, state.world);
         }
@@ -113,7 +125,9 @@ int main() {
         state.Step(dt.asSeconds());
         state.Draw(screen);
         // DEBUG ONLY - Draw the active chunks.
-        // DrawChunks(state.world, screen);
+        if (DEBUG) {
+            DrawChunks(state.world, screen);
+        }
         screen.display();
 
         if (elapsed >= 1000) {

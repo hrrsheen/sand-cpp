@@ -13,17 +13,20 @@ WorldState::WorldState(int width, int height) :
 }
 
 void WorldState::Step(float dt) {
+    if (dt > 1 / 60.f) dt = 1 / 60.f; // DEBUG: Possibly remove this.
     WorldState::dt = dt;
-    for (int i = 0; i < world.chunks.Size(); i++) {
-        ChunkBounds area {world.chunks.GetBounds(i)};
-        if (!world.chunks.IsActive(i)) continue;
+    for (int ci = 0; ci < world.chunks.Size(); ci++) {
+        Chunk &chunk {world.chunks.GetChunk(ci)};
+        // ChunkBounds area {world.chunks.GetBounds(i)};
+        if (!world.chunks.IsActive(ci)) continue;
+        if (world.chunks.IsAwake(ci))   world.chunks.UpdateChunk(ci);
 
         bool chunkActive {false}; // Tracks whether the chunk still requires simulating.
-        for (int y = area.y; y < area.y + area.size; y++) {
+        for (int y = chunk.yMin; y < chunk.yMax; y++) {
             // Process each row.
             // Alternate processing rows left to right and right to left.
             int dir {y % 2};
-            int endpoints[] {area.x, area.x + area.size - 1};
+            int endpoints[] {chunk.xMin, chunk.xMax - 1};
             int start   {endpoints[1 - dir]};
             int end     {endpoints[dir]};
             dir = 2 * dir - 1;
@@ -32,11 +35,15 @@ void WorldState::Step(float dt) {
                 Cell &cell {world.GetCell(x, y)};
 
                 // Apply the simulation.
-                chunkActive |= ApplyRules(cell, sf::Vector2i(x, y));
+                if (ApplyRules(cell, sf::Vector2i(x, y))) {
+                    world.chunks.KeepContainingAlive(x, y);
+                    world.chunks.KeepNeighbourAlive(x, y);
+                    chunkActive |= true;
+                }
             }
         }
 
-        world.chunks.Set(i, chunkActive);
+        world.chunks.Set(ci, chunkActive);
     }
 
     world.ConsolidateActions();
