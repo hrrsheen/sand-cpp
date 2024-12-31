@@ -55,12 +55,12 @@ void WorldState::Draw(Screen &screen) {
     for (int i = 0; i < world.Size() - 1; i++) {
         Cell &cell {world.GetCell(i)};
         if (cell.redraw) {
-            sf::Vector2i xy {world.ToCoords(i)};
-            screen.updateCell(xy.x, xy.y, cell.Colour());
+            sf::Vector2i coords {world.ToCoords(i)};
+            screen.UpdateCell(coords.x, coords.y, cell.Colour());
             cell.redraw = false;
         }
     }
-    screen.draw();
+    screen.Draw();
 }
 
 bool WorldState::ApplyRules(Cell &cell, sf::Vector2i p) {

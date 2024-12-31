@@ -13,19 +13,19 @@ public:
     Screen(int width, int height, std::string name);
 
     // Initialises the vertex array to reflect the size of the grid.
-    void initGridImage(int width, int height);
+    void InitGridImage(int width, int height);
 
-    void draw();
+    void Draw();
 
-    void addCell(sf::Vector2f anchor, float width, sf::Color colour);
+    void AddCell(sf::Vector2f anchor, float width, sf::Color colour);
 
     // Updates the pixel at the given coordinates with the given colour.
-    void updateCell(int x, int y, sf::Color);
+    void UpdateCell(int x, int y, sf::Color);
 
-    sf::Vector2f mapPixelToCoords(const sf::Vector2i &point) const;
+    sf::Vector2f MapPixelToCoords(const sf::Vector2i &point) const;
 
     // Sets the transform to be used for translating from world space to screen space when drawing.
-    void setTransform(sf::Transform tf);
+    void SetTransform(sf::Transform tf);
 
     sf::RenderStates renderStates; // TODO Move to private. Public for DEBUGGING only.
 private:

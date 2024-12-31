@@ -13,7 +13,7 @@ Screen::Screen(int width, int height, std::string name) :
     gridTexture.setSmooth(false);
 }
 
-void Screen::initGridImage(int width, int height) {
+void Screen::InitGridImage(int width, int height) {
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             gridImage.setPixel(x, y, sf::Color::Black);
@@ -21,21 +21,21 @@ void Screen::initGridImage(int width, int height) {
     }
 }
 
-void Screen::draw() {
+void Screen::Draw() {
     gridTexture.loadFromImage(gridImage);
     gridSprite.setTexture(gridTexture);
     sf::RenderWindow::draw(gridSprite, renderStates);
 }
 
-void Screen::updateCell(int x, int y, sf::Color colour) {
+void Screen::UpdateCell(int x, int y, sf::Color colour) {
     gridImage.setPixel(x, y, colour);
 }
 
-sf::Vector2f Screen::mapPixelToCoords(const sf::Vector2i &point) const {
+sf::Vector2f Screen::MapPixelToCoords(const sf::Vector2i &point) const {
     return tfInv * sf::RenderWindow::mapPixelToCoords(point);
 }
 
-void Screen::setTransform(sf::Transform tf) {
+void Screen::SetTransform(sf::Transform tf) {
     Screen::tf = tf;
     tfInv = tf.getInverse();
     renderStates.transform = tf;

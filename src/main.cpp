@@ -118,13 +118,13 @@ int main() {
     sf::Clock clock;
     WorldState state {width, height};
     Screen screen {width, height, "Falling Sand"};
-    screen.setTransform([height]{
+    screen.SetTransform([height]{
         sf::Transformable transformation;
         transformation.setOrigin(0, height); // 1st transform - scale to world height.
         transformation.setScale(1.f, -1.f);  // 2nd transform - flip so that +y is up.
         return transformation.getTransform();
     }());
-    screen.initGridImage(width, height);
+    screen.InitGridImage(width, height);
 
     Mouse mouse;
     mouse.Reset();
@@ -148,7 +148,7 @@ int main() {
         }
 
         if (mouse.state == MouseState::drawing) {
-            mouse.pos = sf::Vector2i{screen.mapPixelToCoords(sf::Mouse::getPosition(screen))};
+            mouse.pos = sf::Vector2i{screen.MapPixelToCoords(sf::Mouse::getPosition(screen))};
             Paint(mouse, state);
             mouse.prevPos = mouse.pos;
         }
