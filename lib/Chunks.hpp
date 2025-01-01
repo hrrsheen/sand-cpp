@@ -18,7 +18,8 @@ enum ChunkState {
 
 class Chunk {
 public:
-    ChunkState state;
+    bool state;
+    bool nextState;
     int xMin, yMin,
         xMax, yMax;     // Dirty rect.
 private:
@@ -52,8 +53,6 @@ public:
     void ResetContaining(int x, int y);
 
     // Setting functions.
-    // Advances the state of the chunk at the given index.
-    void Set(int index, bool state);
     // Keeps the chunk that contains the point (x, y) alive and updates its dirty-rect.
     void KeepContainingAlive(int x, int y);
     // Sets the state of the neighboring chunk alive if (x, y) is on the border.
@@ -70,7 +69,6 @@ public:
     bool IsActive(int index) const;
     bool IsActive(int x, int y) const;
     bool IsContainingActive(int x, int y) const;
-    bool IsAwake(int index) const;
 
     // Returns the coordinate of the chunk that contains the given (x, y) point.
     sf::Vector2i ContainingChunk(int x, int y) const;

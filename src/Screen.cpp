@@ -1,6 +1,6 @@
 #include "Cell.hpp"
 #include "SandWorld.hpp"
-#include "screen.hpp"
+#include "Screen.hpp"
 #include <SFML/Graphics.hpp>
 #include <iostream>
 

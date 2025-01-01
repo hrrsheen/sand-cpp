@@ -2,14 +2,15 @@
 #include <cmath>
 
 Chunk::Chunk() : 
-    state(ChunkState::ASLEEP), 
+    state       (false),
+    nextState   (false),
     xMin(-1), yMin(-1), xMinW(-1), yMinW(-1),
     xMax(-1), yMax(-1), xMaxW(-1), yMaxW(-1) {
 }
 
 void Chunk::Reset(ChunkBounds bounds) {
-    state = ChunkState::ASLEEP;
-
+    state       = false;
+    nextState   = false;
     // Reset min; max.
     xMin  = bounds.x + bounds.size; xMax  = -1;
     xMinW = bounds.x + bounds.size; xMaxW = -1;
@@ -18,14 +19,16 @@ void Chunk::Reset(ChunkBounds bounds) {
 }
 
 void Chunk::KeepAlive(int x, int y, ChunkBounds bounds) {
-    state = ChunkState::AWAKE;
+    nextState = true;
     xMinW = std::clamp(std::min(x - 2, xMinW), bounds.x, bounds.x + bounds.size);
-    xMaxW = std::clamp(std::max(x + 2, xMaxW), bounds.x, bounds.x + bounds.size);
+    xMaxW = std::clamp(std::max(x + 3, xMaxW), bounds.x, bounds.x + bounds.size);
     yMinW = std::clamp(std::min(y - 2, yMinW), bounds.y, bounds.y + bounds.size);
-    yMaxW = std::clamp(std::max(y + 2, yMaxW), bounds.y, bounds.y + bounds.size);
+    yMaxW = std::clamp(std::max(y + 3, yMaxW), bounds.y, bounds.y + bounds.size);
 }
 
 void Chunk::Update(ChunkBounds bounds) {
+    state       = nextState;
+    nextState   = false;
     // Update current; reset working.
     xMin = xMinW; xMinW = bounds.x + bounds.size;
     yMin = yMinW; yMinW = bounds.y + bounds.size;
@@ -57,23 +60,6 @@ void Chunks::ResetContaining(int x, int y) {
     ResetChunk(Hash(x, y));
 }
 
-void Chunks::Set(int index, bool state) {
-    Chunk &chunk {GetChunk(index)};
-    ChunkBounds bounds {GetBounds(index)};
-    switch (chunk.state) {
-        case ChunkState::ASLEEP:
-            if (state)     chunk.state = ChunkState::AWAKE;
-            break;
-        case ChunkState::STANDBY:
-            if (state)     chunk.state = ChunkState::AWAKE;
-            else           chunk.Reset(bounds);
-            break;
-        case ChunkState::AWAKE:
-            if (!state)    chunk.state = ChunkState::STANDBY;
-            break;
-    }
-}
-
 void Chunks::KeepContainingAlive(int x, int y) {
     ChunkBounds bounds {GetContainingBounds(x, y)};
     GetContainingChunk(x, y).KeepAlive(x, y, bounds);
@@ -101,7 +87,7 @@ void Chunks::UpdateChunk(int index) {
 }
 
 bool Chunks::IsActive(int index) const {
-    return chunks.at(index).state != ChunkState::ASLEEP;
+    return chunks.at(index).state;
 }
 
 bool Chunks::IsActive(int x, int y) const {
@@ -110,10 +96,6 @@ bool Chunks::IsActive(int x, int y) const {
 
 bool Chunks::IsContainingActive(int x, int y) const {
     return IsActive(Hash(x, y));
-}
-
-bool Chunks::IsAwake(int index) const {
-    return chunks.at(index).state == ChunkState::AWAKE;
 }
 
 sf::Vector2i Chunks::ContainingChunk(int x, int y) const {

@@ -32,4 +32,6 @@ bool Water::ActUponNeighbours(sf::Vector2i p, Cell &self, SandWorld &world, floa
         world.Act(world.ToIndex(p), world.ToIndex(lookAhead), Element::smoke, Element::water);
         return true;
     }
+
+    return false;
 }

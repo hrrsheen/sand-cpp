@@ -25,6 +25,8 @@ bool Sand::ActUponNeighbours(sf::Vector2i p, Cell &self, SandWorld &world, float
         world.Act(world.ToIndex(p.x, p.y), world.ToIndex(lookAhead.x, lookAhead.y), Element::air, Element::sand);
         return true;
     }
+
+    return false;
 }
 
 bool Sand::CanDisplace(ElementProperties &other) const {

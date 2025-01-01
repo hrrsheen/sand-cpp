@@ -5,7 +5,7 @@
 #include "Chunks.hpp"
 #include "Elements/ElementProperties.hpp"
 #include "SandWorld.hpp"
-#include "screen.hpp"
+#include "Screen.hpp"
 #include <vector>
 #include <utility>
 
@@ -32,7 +32,7 @@ public:
     void Draw(Screen &screen);
 
 private:
-    void wakeAdjacentChunks(Cell &cell);
+    void SimulateChunk(Chunk &chunk);
 
     // Returns true if the cell has performed some action.
     bool ApplyRules(Cell &cell, sf::Vector2i p);

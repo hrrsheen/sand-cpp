@@ -17,33 +17,11 @@ void WorldState::Step(float dt) {
     WorldState::dt = dt;
     for (int ci = 0; ci < world.chunks.Size(); ci++) {
         Chunk &chunk {world.chunks.GetChunk(ci)};
-        // ChunkBounds area {world.chunks.GetBounds(i)};
-        if (!world.chunks.IsActive(ci)) continue;
-        if (world.chunks.IsAwake(ci))   world.chunks.UpdateChunk(ci);
-
-        bool chunkActive {false}; // Tracks whether the chunk still requires simulating.
-        for (int y = chunk.yMin; y < chunk.yMax; y++) {
-            // Process each row.
-            // Alternate processing rows left to right and right to left.
-            int dir {y % 2};
-            int endpoints[] {chunk.xMin, chunk.xMax - 1};
-            int start   {endpoints[1 - dir]};
-            int end     {endpoints[dir]};
-            dir = 2 * dir - 1;
-            end += dir;
-            for (int x = start; x != end; x += dir) {
-                Cell &cell {world.GetCell(x, y)};
-
-                // Apply the simulation.
-                if (ApplyRules(cell, sf::Vector2i(x, y))) {
-                    world.chunks.KeepContainingAlive(x, y);
-                    world.chunks.KeepNeighbourAlive(x, y);
-                    chunkActive |= true;
-                }
-            }
+        if (world.chunks.IsActive(ci)) {
+            SimulateChunk(chunk);
         }
 
-        world.chunks.Set(ci, chunkActive);
+        world.chunks.UpdateChunk(ci);
     }
 
     world.ConsolidateActions();
@@ -61,6 +39,29 @@ void WorldState::Draw(Screen &screen) {
         }
     }
     screen.Draw();
+}
+
+void WorldState::SimulateChunk(Chunk &chunk) {
+    for (int y = chunk.yMin; y < chunk.yMax; y++) {
+        // Process each row.
+        // Alternate processing rows left to right and right to left.
+        int dir {y % 2};
+        int endpoints[] {chunk.xMin, chunk.xMax - 1};
+        int start   {endpoints[1 - dir]};
+        int end     {endpoints[dir]};
+        dir = 2 * dir - 1;
+        end += dir;
+        for (int x = start; x != end; x += dir) {
+            Cell &cell {world.GetCell(x, y)};
+
+            // Apply the simulation.
+            if (ApplyRules(cell, sf::Vector2i(x, y))) {
+                world.chunks.KeepContainingAlive(x, y);
+                world.chunks.KeepNeighbourAlive(x, y);
+                // chunkActive |= true;
+            }
+        }
+    }
 }
 
 bool WorldState::ApplyRules(Cell &cell, sf::Vector2i p) {
@@ -107,4 +108,6 @@ bool WorldState::ActionCell(Cell &cell, ElementProperties &properties, sf::Vecto
         cell.redraw = true;
         return true; 
     }
+
+    return false;
 }

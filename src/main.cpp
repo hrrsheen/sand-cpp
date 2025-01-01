@@ -1,5 +1,5 @@
 #include "Helpers.hpp"
-#include "screen.hpp"
+#include "Screen.hpp"
 #include "WorldState.hpp"
 #include <SFML/Graphics.hpp>
 #include <iostream>
@@ -91,7 +91,7 @@ void Paint(Mouse &mouse, WorldState &state) {
 
 void DrawChunks(SandWorld &world, Screen &screen) {
     for (int i = 0; i < world.chunks.Size(); i++) {
-        if (world.chunks.IsAwake(i)) {
+        if (world.chunks.IsActive(i)) {
             Chunk &chunk {world.chunks.GetChunk(i)};
             ChunkBounds bounds {world.chunks.GetBounds(i)};
             sf::RectangleShape rectangle;
