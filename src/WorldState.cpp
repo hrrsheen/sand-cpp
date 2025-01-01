@@ -88,6 +88,7 @@ bool WorldState::MoveCell(Cell &cell, ElementProperties &properties, sf::Vector2
 bool WorldState::SpreadCell(Cell &cell, ElementProperties &properties, sf::Vector2i p) {
     if (world.IsEmpty(p.x, p.y)) return false;
     if (properties.spreadBehaviour == SpreadType::NONE) return false;
+    cell.velocity = sf::Vector2f(0.f, 0.f); // Reset velocity. May later change to transferring y velocity to x.
 
     if      (properties.spreadBehaviour & SpreadType::DOWN_SIDE && properties.SpreadDownSide(p, cell, world)) { return true; } 
     else if (properties.spreadBehaviour & SpreadType::UP_SIDE   && properties.SpreadUpSide  (p, cell, world)) { return true; } 

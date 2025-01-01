@@ -70,10 +70,17 @@ bool ElementProperties::FloatUp(sf::Vector2i p, Cell &cell, SandWorld &world) {
 
 bool ElementProperties::FallDown(sf::Vector2i p, Cell &cell, SandWorld &world, float dt) {
     cell.ApplyAcceleration(sf::Vector2f(0.f, -ACCELERATION), dt);
-    sf::Vector2i dp {0, static_cast<int>(cell.velocity.y * dt)};
-    
+    // If the resultant position a fractional part, use the fraction as a probability
+    // to advance an additional cell.
+    float yDst;
+    int yRem {static_cast<int>(
+        100.f * std::modf(cell.velocity.y * dt, &yDst) // The fractional part as a percentage.
+    )};
+    if (QuickRandInt(100) < std::abs(yRem)) yDst -= 1.f; // The probability to advance an additional cell.
+
+    sf::Vector2i deltaP {0, static_cast<int>(yDst)};
     sf::Vector2i dst {p};
-    Lerp lerp(p + sf::Vector2i(0, -1), p + dp);
+    Lerp lerp(p + sf::Vector2i(0, -1), p + deltaP);
     for (sf::Vector2i check : lerp) {
         if (world.IsEmpty(check.x, check.y)) {
             dst = check;
