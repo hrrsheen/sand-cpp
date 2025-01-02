@@ -119,7 +119,6 @@ int main() {
         transformation.setScale(1.f, -1.f);  // 2nd transform - flip so that +y is up.
         return transformation.getTransform();
     }());
-    screen.InitGridImage(width, height);
 
     Mouse mouse;
     mouse.Reset();

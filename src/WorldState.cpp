@@ -10,6 +10,10 @@ WorldState::WorldState(int width, int height) :
     dt(0.f) {
     world.InitProperties();
     world.InitCells();
+    gridImage.create(width, height);
+    gridTexture.create(width, height);
+    gridTexture.setSmooth(false);
+    InitGridImage(width, height);
 }
 
 void WorldState::Step(float dt) {
@@ -34,11 +38,19 @@ void WorldState::Draw(Screen &screen) {
         Cell &cell {world.GetCell(i)};
         if (cell.redraw) {
             sf::Vector2i coords {world.ToCoords(i)};
-            screen.UpdateCell(coords.x, coords.y, cell.Colour());
+            UpdateCell(coords.x, coords.y, cell.Colour());
             cell.redraw = false;
         }
     }
-    screen.DrawWorld();
+    DrawWorld(screen);
+}
+
+void WorldState::InitGridImage(int width, int height) {
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            gridImage.setPixel(x, y, sf::Color::Black);
+        }
+    }
 }
 
 void WorldState::SimulateChunk(Chunk &chunk) {
@@ -110,4 +122,15 @@ bool WorldState::ActionCell(Cell &cell, ElementProperties &properties, sf::Vecto
     }
 
     return false;
+}
+
+
+void WorldState::UpdateCell(int x, int y, sf::Color colour) {
+    gridImage.setPixel(x, y, colour);
+}
+
+void WorldState::DrawWorld(Screen &screen) {
+    gridTexture.loadFromImage(gridImage);
+    gridSprite.setTexture(gridTexture);
+    screen.Draw(gridSprite);
 }

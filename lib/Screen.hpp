@@ -12,22 +12,12 @@ private:
     sf::RenderStates renderStates;
     sf::Transform tf;       // The transform from grid space to screen space.
     sf::Transform tfInv;    // The transform from screen space to grid space.
-    
-    // For drawing the grid.
-    sf::Image   gridImage;
-    sf::Texture gridTexture;
-    sf::Sprite  gridSprite;
 
 public:
     using sf::RenderWindow::draw;
 
     Screen(int width, int height, std::string name);
 
-    // Initialises the colour of the SandWorld grid to Black.
-    void InitGridImage(int width, int height);
-
-    // Draws the SandWorld grid to the screen.
-    void DrawWorld(); 
     void Draw(const sf::Drawable &drawable);
 
     // Updates the pixel at the given coordinates with the given colour.

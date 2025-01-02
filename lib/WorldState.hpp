@@ -6,6 +6,7 @@
 #include "Elements/ElementProperties.hpp"
 #include "SandWorld.hpp"
 #include "Screen.hpp"
+#include <SFML/Graphics.hpp>
 #include <vector>
 #include <utility>
 
@@ -21,6 +22,11 @@ public:
 
 private:
     float dt;
+
+    // For drawing the grid.
+    sf::Image   gridImage;
+    sf::Texture gridTexture;
+    sf::Sprite  gridSprite;
 
 public:
     WorldState(int width, int height);
@@ -40,6 +46,13 @@ private:
     bool MoveCell(Cell &cell, ElementProperties &properties, sf::Vector2i p);
     bool SpreadCell(Cell &cell, ElementProperties &properties, sf::Vector2i p);
     bool ActionCell(Cell &cell, ElementProperties &properties, sf::Vector2i p);
+
+    // Drawing functions.
+    // Initialises the colour of the SandWorld grid to Black.
+    void InitGridImage(int width, int height);
+    // Updates the given cell to the given colour.
+    void UpdateCell(int x, int y, sf::Color colour);
+    void DrawWorld(Screen &screen);
 
 };
 
