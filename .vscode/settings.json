@@ -81,8 +81,8 @@
     },
     "makefile.launchConfigurations": [
         {
-            "cwd": "/Users/harrison/projects/boids-cpp/build",
-            "binaryPath": "/Users/harrison/projects/boids-cpp/bin/sand-cpp",
+            "cwd": "/Users/harrison/projects/sand-cpp/build",
+            "binaryPath": "/Users/harrison/projects/sand-cpp/build/sand-cpp",
             "binaryArgs": []
         }
     ]
