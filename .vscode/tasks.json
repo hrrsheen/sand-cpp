@@ -3,7 +3,7 @@
         {
             "type": "shell",
             "label": "Build OSX",
-            "command": "make build_debug",
+            "command": "make",
             "options": {
                 "cwd": "${workspaceFolder}"
             },

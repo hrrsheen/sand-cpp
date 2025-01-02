@@ -8,7 +8,7 @@
             "name": "clang++ - Build Project",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/build_osx",
+            "program": "${workspaceFolder}/build/sand-cpp",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
