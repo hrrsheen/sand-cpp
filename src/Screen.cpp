@@ -21,10 +21,14 @@ void Screen::InitGridImage(int width, int height) {
     }
 }
 
-void Screen::Draw() {
+void Screen::DrawWorld() {
     gridTexture.loadFromImage(gridImage);
     gridSprite.setTexture(gridTexture);
     sf::RenderWindow::draw(gridSprite, renderStates);
+}
+
+void Screen::Draw(const sf::Drawable &drawable) {
+    sf::RenderWindow::draw(drawable, renderStates);
 }
 
 void Screen::UpdateCell(int x, int y, sf::Color colour) {

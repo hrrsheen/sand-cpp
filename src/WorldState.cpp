@@ -38,7 +38,7 @@ void WorldState::Draw(Screen &screen) {
             cell.redraw = false;
         }
     }
-    screen.Draw();
+    screen.DrawWorld();
 }
 
 void WorldState::SimulateChunk(Chunk &chunk) {

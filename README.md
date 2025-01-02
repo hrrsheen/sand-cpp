@@ -13,7 +13,7 @@ cmake ..
 
 make
 ```
-To play the game, navigate back to the project's root directory and run the executable from there, like so:
+To play the game, navigate back to the project's root directory and run the executable from there:
 ```
 cd ..
 

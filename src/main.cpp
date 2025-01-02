@@ -6,8 +6,9 @@
 #include <time.h>
 
 enum MouseState {
-    idle,
-    drawing
+    IDLE,
+    DRAWING,
+    DRAGGING
 };
 
 struct Mouse {
@@ -16,7 +17,7 @@ struct Mouse {
     sf::Vector2i prevPos;
 
     void Reset() {
-        state   = MouseState::idle;
+        state   = MouseState::IDLE;
         pos     = sf::Vector2i(-1, -1);
         prevPos = sf::Vector2i(-1, -1);
     }
@@ -24,12 +25,12 @@ struct Mouse {
     void SetState(sf::Event &event) {
         if (event.type == sf::Event::MouseButtonPressed) {
             if (event.mouseButton.button == sf::Mouse::Left) {
-                state = MouseState::drawing;
+                state = MouseState::DRAWING;
+            } else if (event.mouseButton.button == sf::Mouse::Middle) {
+                state = MouseState::DRAGGING;
             }
         } else if (event.type == sf::Event::MouseButtonReleased) {
-            if (event.mouseButton.button == sf::Mouse::Left) {
-                Reset();
-            }
+            Reset();
         // We want to stop drawing if the mouse leaves the frame.
         } else if (event.type == sf::Event::MouseLeft) {
             Reset();
@@ -46,12 +47,6 @@ bool ShouldClose(sf::Event &event) {
     }
 
     return false;
-}
-
-MouseState GetMouseState(sf::Event &event, MouseState currentState) {
-    
-
-    return currentState;
 }
 
 void GetElementSelect(Brush &brush, sf::Event &event, SandWorld &world) {
@@ -100,13 +95,13 @@ void DrawChunks(SandWorld &world, Screen &screen) {
             rectangle.setOutlineThickness(1);
             rectangle.setFillColor(sf::Color::Transparent);
             rectangle.setPosition(bounds.x, bounds.y);
-            screen.draw(rectangle, screen.renderStates);
+            screen.Draw(rectangle);
             rectangle.setSize(sf::Vector2f(chunk.xMax - chunk.xMin, chunk.yMax - chunk.yMin));
             rectangle.setOutlineColor(sf::Color::Green);
             rectangle.setOutlineThickness(1);
             rectangle.setFillColor(sf::Color::Transparent);
             rectangle.setPosition(chunk.xMin, chunk.yMin);
-            screen.draw(rectangle, screen.renderStates);
+            screen.Draw(rectangle);
         }
     }
 }
@@ -147,7 +142,7 @@ int main() {
             GetElementSelect(state.brush, event, state.world);
         }
 
-        if (mouse.state == MouseState::drawing) {
+        if (mouse.state == MouseState::DRAWING) {
             mouse.pos = sf::Vector2i{screen.MapPixelToCoords(sf::Mouse::getPosition(screen))};
             Paint(mouse, state);
             mouse.prevPos = mouse.pos;
