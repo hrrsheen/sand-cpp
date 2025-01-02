@@ -45,14 +45,6 @@ void WorldState::Draw(Screen &screen) {
     DrawWorld(screen);
 }
 
-void WorldState::InitGridImage(int width, int height) {
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            gridImage.setPixel(x, y, sf::Color::Black);
-        }
-    }
-}
-
 void WorldState::SimulateChunk(Chunk &chunk) {
     for (int y = chunk.yMin; y < chunk.yMax; y++) {
         // Process each row.
@@ -124,6 +116,17 @@ bool WorldState::ActionCell(Cell &cell, ElementProperties &properties, sf::Vecto
     return false;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////
+//  Draw functions - Private.
+//////////////////////////////////////////////////////////////////////////////////////////
+
+void WorldState::InitGridImage(int width, int height) {
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            gridImage.setPixel(x, y, sf::Color::Black);
+        }
+    }
+}
 
 void WorldState::UpdateCell(int x, int y, sf::Color colour) {
     gridImage.setPixel(x, y, colour);
