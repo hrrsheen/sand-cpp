@@ -23,7 +23,7 @@ public:
     void Draw(const sf::Drawable &drawable);
 
     // Repositions the centre of the current view to the given position in world space.
-    void RepositionView(sf::Vector2f centre);
+    void RepositionView(sf::Vector2f delta);
 
     sf::Vector2f MapPixelToCoords(const sf::Vector2i &point) const;
 

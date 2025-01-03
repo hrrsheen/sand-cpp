@@ -17,6 +17,9 @@ void Screen::Draw(const sf::Drawable &drawable) {
 
 void Screen::RepositionView(sf::Vector2f delta) {
     const sf::Vector2f &centre {view.getCenter()};
+
+    view.setCenter(centre + delta);
+    setView(view);
 }
 
 sf::Vector2f Screen::MapPixelToCoords(const sf::Vector2i &point) const {

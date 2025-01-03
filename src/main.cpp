@@ -8,7 +8,7 @@
 #define KEY_TO_NUMBER(x) (x - sf::Keyboard::Num0)
 
 enum MouseState {
-    IDLE,
+    IDLE = 0,
     DRAWING,
     DRAGGING
 };
@@ -17,6 +17,7 @@ struct Mouse {
     MouseState state;
     sf::Vector2i pos;       // The current position of the mouse, in window pixels.
     sf::Vector2i prevPos;   // The position of the mouse last frame, in window pixels.
+    sf::Vector2f viewCentre;
 
     void Reset() {
         state   = MouseState::IDLE;
@@ -24,13 +25,11 @@ struct Mouse {
         prevPos = sf::Vector2i(-1, -1);
     }
 
-    void SetState(sf::Event &event) {
+    void SetState(sf::Event &event, sf::Vector2i position) {
         if (event.type == sf::Event::MouseButtonPressed) {
-            if (event.mouseButton.button == sf::Mouse::Left) {
-                state = MouseState::DRAWING;
-            } else if (event.mouseButton.button == sf::Mouse::Middle) {
-                state = MouseState::DRAGGING;
-            }
+            if      (event.mouseButton.button == sf::Mouse::Left  ) state = MouseState::DRAWING;
+            else if (event.mouseButton.button == sf::Mouse::Middle) state = MouseState::DRAGGING;
+            prevPos = position;
         } else if (event.type == sf::Event::MouseButtonReleased) {
             Reset();
         // We want to stop drawing if the mouse leaves the frame.
@@ -79,9 +78,6 @@ void Paint(Lerp &stroke, WorldState &state) {
 void Paint(Mouse &mouse, WorldState &state, Screen &screen) {
     sf::Vector2i end    {sf::Vector2i{screen.MapPixelToCoords(mouse.pos    )}};
     sf::Vector2i start  {sf::Vector2i{screen.MapPixelToCoords(mouse.prevPos)}};
-    if (mouse.prevPos == sf::Vector2i(-1, -1)) {
-        start = end;
-    }
 
     Lerp lerp {start, end};
     Paint(lerp, state);
@@ -143,13 +139,19 @@ int main() {
                 DEBUG = !DEBUG;
             }
 
-            mouse.SetState(event);
+            mouse.SetState(event, sf::Mouse::getPosition(screen));
             GetElementSelect(event, state);
         }
 
-        if (mouse.state == MouseState::DRAWING) {
+        if (mouse.state) {
             mouse.pos = sf::Mouse::getPosition(screen);
-            Paint(mouse, state, screen);
+            if (mouse.state == MouseState::DRAWING ) {
+                Paint(mouse, state, screen);
+            } else if (mouse.state == MouseState::DRAGGING) {
+                // TODO: Figure out why mapPixelToCoords works but MapPixelToCoords doesn't.
+                sf::Vector2f delta {screen.mapPixelToCoords(mouse.prevPos) - screen.mapPixelToCoords(mouse.pos)};
+                screen.RepositionView(delta);
+            }
             mouse.prevPos = mouse.pos;
         }
         state.Step(dt.asSeconds());
