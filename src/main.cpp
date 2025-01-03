@@ -5,6 +5,8 @@
 #include <iostream>
 #include <time.h>
 
+#define KEY_TO_NUMBER(x) (x - sf::Keyboard::Num0)
+
 enum MouseState {
     IDLE,
     DRAWING,
@@ -13,8 +15,8 @@ enum MouseState {
 
 struct Mouse {
     MouseState state;
-    sf::Vector2i pos;
-    sf::Vector2i prevPos;
+    sf::Vector2i pos;       // The current position of the mouse, in window pixels.
+    sf::Vector2i prevPos;   // The position of the mouse last frame, in window pixels.
 
     void Reset() {
         state   = MouseState::IDLE;
@@ -49,12 +51,12 @@ bool ShouldClose(sf::Event &event) {
     return false;
 }
 
-void GetElementSelect(Brush &brush, sf::Event &event, SandWorld &world) {
-    if (event.type == sf::Event::KeyPressed) {
-        int number = event.key.code - 26;
-        if (number >= 0 && number <= world.PropertiesSize() - 1) {
-            brush.element = static_cast<Element>(number);
-        }
+void GetElementSelect(sf::Event &event, WorldState &state) {
+    if (event.type != sf::Event::KeyPressed) return;
+
+    int number {KEY_TO_NUMBER(event.key.code)};
+    if (number >= 0 && number <= state.world.PropertiesSize() - 1) {
+        state.brush.element = static_cast<Element>(number);
     }
 }
 
@@ -74,13 +76,14 @@ void Paint(Lerp &stroke, WorldState &state) {
     }
 }
 
-void Paint(Mouse &mouse, WorldState &state) {
-    sf::Vector2i start {mouse.prevPos};
-    if (start == sf::Vector2i(-1, -1)) {
-        start = mouse.pos;
+void Paint(Mouse &mouse, WorldState &state, Screen &screen) {
+    sf::Vector2i end    {sf::Vector2i{screen.MapPixelToCoords(mouse.pos    )}};
+    sf::Vector2i start  {sf::Vector2i{screen.MapPixelToCoords(mouse.prevPos)}};
+    if (mouse.prevPos == sf::Vector2i(-1, -1)) {
+        start = end;
     }
 
-    Lerp lerp {start, mouse.pos};
+    Lerp lerp {start, end};
     Paint(lerp, state);
 }
 
@@ -109,16 +112,19 @@ void DrawChunks(SandWorld &world, Screen &screen) {
 int main() {
     bool DEBUG {false};
     InitRng();
-    const int width {500}, height {500};
+    const int roomWidth {512}, roomHeight {512},
+              viewWidth {512}, viewHeight {256};
     sf::Clock clock;
-    WorldState state {width, height};
-    Screen screen {width, height, "Falling Sand"};
-    screen.SetTransform([height]{
-        sf::Transformable transformation;
-        transformation.setOrigin(0, height); // 1st transform - scale to world height.
-        transformation.setScale(1.f, -1.f);  // 2nd transform - flip so that +y is up.
-        return transformation.getTransform();
-    }());
+    WorldState state {roomWidth, roomHeight};
+    Screen screen {viewWidth, viewHeight, "Falling Sand"};
+    screen.SetTransform(
+        [viewHeight] {
+            sf::Transformable transformation;
+            transformation.setOrigin(0, viewHeight);    // 1st transform - scale to world height.
+            transformation.setScale(1.f, -1.f);         // 2nd transform - flip so that +y is up.
+            return transformation.getTransform();
+        }()
+    );
 
     Mouse mouse;
     mouse.Reset();
@@ -138,12 +144,12 @@ int main() {
             }
 
             mouse.SetState(event);
-            GetElementSelect(state.brush, event, state.world);
+            GetElementSelect(event, state);
         }
 
         if (mouse.state == MouseState::DRAWING) {
-            mouse.pos = sf::Vector2i{screen.MapPixelToCoords(sf::Mouse::getPosition(screen))};
-            Paint(mouse, state);
+            mouse.pos = sf::Mouse::getPosition(screen);
+            Paint(mouse, state, screen);
             mouse.prevPos = mouse.pos;
         }
         state.Step(dt.asSeconds());

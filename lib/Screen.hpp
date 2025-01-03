@@ -10,8 +10,10 @@ class Drawable;
 class Screen : public sf::RenderWindow {
 private:
     sf::RenderStates renderStates;
-    sf::Transform tf;       // The transform from grid space to screen space.
-    sf::Transform tfInv;    // The transform from screen space to grid space.
+    sf::Transform tf;       // The transform from world space to screen space.
+    sf::Transform tfInv;    // The transform from screen space to world space.
+
+    sf::View view;          // The visible area of the screen (viewport).
 
 public:
     using sf::RenderWindow::draw;
@@ -20,8 +22,8 @@ public:
 
     void Draw(const sf::Drawable &drawable);
 
-    // Updates the pixel at the given coordinates with the given colour.
-    void UpdateCell(int x, int y, sf::Color);
+    // Repositions the centre of the current view to the given position in world space.
+    void RepositionView(sf::Vector2f centre);
 
     sf::Vector2f MapPixelToCoords(const sf::Vector2i &point) const;
 
