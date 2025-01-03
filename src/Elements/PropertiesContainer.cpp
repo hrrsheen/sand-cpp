@@ -2,7 +2,7 @@
 #include "Elements/PropertiesContainer.hpp"
 
 PropertiesContainer::PropertiesContainer() {
-    elementProperties.resize(static_cast<int>(Element::count) + 1);
+    elementProperties.resize(Element::count + 1);
 
     // Add the default element properties.
     // Might need to make a class for air?
@@ -16,12 +16,12 @@ bool PropertiesContainer::Insert(std::unique_ptr<ElementProperties> properties) 
         return false;
     }
 
-    elementProperties[static_cast<int>(properties->id)] = std::move(properties);
+    elementProperties[properties->id] = std::move(properties);
     return true;
 }
 
 ElementProperties& PropertiesContainer::Get(Element key) {
-    return *elementProperties.at(static_cast<int>(key));
+    return *elementProperties.at(key);
 }
 
 size_t PropertiesContainer::Size() const {

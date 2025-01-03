@@ -22,7 +22,7 @@ void Screen::RepositionView(sf::Vector2f delta) {
     setView(view);
 }
 
-sf::Vector2f Screen::MapPixelToCoords(const sf::Vector2i &point) const {
+sf::Vector2f Screen::ToWorld(const sf::Vector2i &point) const {
     return tfInv * sf::RenderWindow::mapPixelToCoords(point);
 }
 

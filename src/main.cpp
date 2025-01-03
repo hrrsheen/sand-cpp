@@ -15,9 +15,12 @@ enum MouseState {
 
 struct Mouse {
     MouseState state;
+    int size;               // The size of the brush.
+    Element brush;          // The type of the brush.
     sf::Vector2i pos;       // The current position of the mouse, in window pixels.
     sf::Vector2i prevPos;   // The position of the mouse last frame, in window pixels.
-    sf::Vector2f viewCentre;
+
+    Mouse() : state(MouseState::IDLE), size(1), brush(Element::air), pos(sf::Vector2i(-1, -1)), prevPos(sf::Vector2i(-1, -1)) {}
 
     void Reset() {
         state   = MouseState::IDLE;
@@ -35,6 +38,14 @@ struct Mouse {
         // We want to stop drawing if the mouse leaves the frame.
         } else if (event.type == sf::Event::MouseLeft) {
             Reset();
+        } else if (event.type == sf::Event::MouseWheelMoved) {
+            if      (event.mouseWheel.delta > 0) size = std::clamp(size + 1, 1, 10);
+            else if (event.mouseWheel.delta < 0) size = std::clamp(size - 1, 1, 10);
+        } else if (event.type == sf::Event::KeyPressed) {
+            int number {KEY_TO_NUMBER(event.key.code)};
+            if (number >= 0 && number <= Element::count - 1) {
+                brush = static_cast<Element>(number);
+            }
         }
     }
 };
@@ -50,37 +61,28 @@ bool ShouldClose(sf::Event &event) {
     return false;
 }
 
-void GetElementSelect(sf::Event &event, WorldState &state) {
-    if (event.type != sf::Event::KeyPressed) return;
-
-    int number {KEY_TO_NUMBER(event.key.code)};
-    if (number >= 0 && number <= state.world.PropertiesSize() - 1) {
-        state.brush.element = static_cast<Element>(number);
-    }
-}
-
-void Paint(Lerp &stroke, WorldState &state) {
+void Paint(Lerp &stroke, Element type, int size, WorldState &state) {
     for (sf::Vector2i pos : stroke) {
-        if (state.brush.size == 1) {
-        state.world.SetCell(pos.x, pos.y, state.brush.element);
+        if (size == 1) {
+            state.world.SetCell(pos.x, pos.y, type);
         } else {
             state.world.SetArea(
-                pos.x - state.brush.size - 1,
-                pos.y - state.brush.size - 1,
-                2 * state.brush.size - 1,
-                2 * state.brush.size - 1,
-                state.brush.element
+                pos.x - size - 1,
+                pos.y - size - 1,
+                2 * size - 1,
+                2 * size - 1,
+                type
             );
         }
     }
 }
 
 void Paint(Mouse &mouse, WorldState &state, Screen &screen) {
-    sf::Vector2i end    {sf::Vector2i{screen.MapPixelToCoords(mouse.pos    )}};
-    sf::Vector2i start  {sf::Vector2i{screen.MapPixelToCoords(mouse.prevPos)}};
+    sf::Vector2i end    {sf::Vector2i{screen.ToWorld(mouse.pos    )}};
+    sf::Vector2i start  {sf::Vector2i{screen.ToWorld(mouse.prevPos)}};
 
     Lerp lerp {start, end};
-    Paint(lerp, state);
+    Paint(lerp, mouse.brush, mouse.size, state);
 }
 
 void DrawChunks(SandWorld &world, Screen &screen) {
@@ -123,7 +125,6 @@ int main() {
     );
 
     Mouse mouse;
-    mouse.Reset();
     int elapsed {0};
     while (screen.isOpen()) {
         sf::Time dt {clock.restart()};
@@ -140,7 +141,6 @@ int main() {
             }
 
             mouse.SetState(event, sf::Mouse::getPosition(screen));
-            GetElementSelect(event, state);
         }
 
         if (mouse.state) {

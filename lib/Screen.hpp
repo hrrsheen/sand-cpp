@@ -25,7 +25,7 @@ public:
     // Repositions the centre of the current view to the given position in world space.
     void RepositionView(sf::Vector2f delta);
 
-    sf::Vector2f MapPixelToCoords(const sf::Vector2i &point) const;
+    sf::Vector2f ToWorld(const sf::Vector2i &point) const;
 
     // Sets the transform to be used for translating from world space to screen space when drawing.
     void SetTransform(sf::Transform tf);    
