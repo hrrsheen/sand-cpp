@@ -2,6 +2,7 @@
 #define HELPERS_HPP
 
 #include <iterator>
+#include <optional>
 #include <SFML/System/Vector2.hpp>
 
 namespace impl {
@@ -65,6 +66,9 @@ int QuickRandInt(int upper);
 // Uses std::rand(), which is messy but fast.
 int QuickRandRange(int a, int b);
 
+// Returns true with a probability of the given percent.
+bool Probability(int percent);
+
 // Returns a random integer from the interval [a, b).
 // Uses a Mersenne Twister, which is slow but provides better randomness.
 int RandInt(int upper);
@@ -72,5 +76,11 @@ int RandInt(int upper);
 // Returns a random integer between a and b.
 // Uses a Mersenne Twister, which is slow but provides better randomness.
 int RandRange(int a, int b);
+
+template <typename T, typename... Rest>
+void HashCombine(std::size_t &seed, const T &v, const Rest&... rest) {
+    seed ^= std::hash<T>{}(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    (HashCombine(seed, rest), ...);
+}
 
 #endif

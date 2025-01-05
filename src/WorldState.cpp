@@ -19,7 +19,7 @@ WorldState::WorldState(int width, int height) :
 void WorldState::Step(float dt) {
     if (dt > 1 / 60.f) dt = 1 / 60.f; // DEBUG: Possibly remove this.
     WorldState::dt = dt;
-    for (int ci = 0; ci < world.chunks.Size(); ci++) {
+    for (int ci = 0; ci < world.chunks.Size(); ++ci) {
         Chunk &chunk {world.chunks.GetChunk(ci)};
         if (world.chunks.IsActive(ci)) {
             SimulateChunk(chunk);
@@ -32,21 +32,8 @@ void WorldState::Step(float dt) {
     world.ConsolidateMoves();
 }
 
-void WorldState::Draw(Screen &screen) {
-    screen.clear();
-    for (int i = 0; i < world.Size() - 1; i++) {
-        Cell &cell {world.GetCell(i)};
-        if (cell.redraw) {
-            sf::Vector2i coords {world.ToCoords(i)};
-            UpdateCell(coords.x, coords.y, cell.Colour());
-            cell.redraw = false;
-        }
-    }
-    DrawWorld(screen);
-}
-
 void WorldState::SimulateChunk(Chunk &chunk) {
-    for (int y = chunk.yMin; y < chunk.yMax; y++) {
+    for (int y = chunk.yMin; y < chunk.yMax; ++y) {
         // Process each row.
         // Alternate processing rows left to right and right to left.
         int dir {y % 2};
@@ -62,7 +49,6 @@ void WorldState::SimulateChunk(Chunk &chunk) {
             if (ApplyRules(cell, sf::Vector2i(x, y))) {
                 world.chunks.KeepContainingAlive(x, y);
                 world.chunks.KeepNeighbourAlive(x, y);
-                // chunkActive |= true;
             }
         }
     }
@@ -117,8 +103,35 @@ bool WorldState::ActionCell(Cell &cell, ElementProperties &properties, sf::Vecto
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
-//  Draw functions - Private.
+//  Draw functions.
 //////////////////////////////////////////////////////////////////////////////////////////
+
+void WorldState::Draw(Screen &screen) {
+    screen.clear();
+    for (int ci = 0; ci < world.chunks.Size(); ci++) {
+        Chunk &chunk {world.chunks.GetChunk(ci)};
+        if (world.chunks.IsActive(ci)) {
+            for (int y = chunk.yMin; y < chunk.yMax; ++y) {
+                for (int x = chunk.xMin; x < chunk.xMax; ++x) {
+                    Cell &cell {world.GetCell(x, y)};
+                    if (cell.redraw) {
+                        UpdateCell(x, y, cell.Colour());
+                        cell.redraw = false;
+                    }
+                }
+            }
+        }
+    }
+    // for (int i = 0; i < world.Size() - 1; i++) {
+    //     Cell &cell {world.GetCell(i)};
+    //     if (cell.redraw) {
+    //         sf::Vector2i coords {world.ToCoords(i)};
+    //         UpdateCell(coords.x, coords.y, cell.Colour());
+    //         cell.redraw = false;
+    //     }
+    // }
+    DrawWorld(screen);
+}
 
 void WorldState::InitGridImage(int width, int height) {
     for (int y = 0; y < height; y++) {

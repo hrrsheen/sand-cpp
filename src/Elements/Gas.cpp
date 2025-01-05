@@ -36,6 +36,7 @@ bool Fire::ActUponSelf(sf::Vector2i p, Cell &self, SandWorld &world, float dt) {
 
 bool Fire::ActUponNeighbours(sf::Vector2i p, Cell &self, SandWorld &world, float dt) {
     sf::Vector2i lookAhead;
+    bool affected {false};
     for (int dy = -1; dy <= 1; ++dy) {
         for (int dx = -1; dx <= 1; ++dx) {
             lookAhead.x = p.x + dx;
@@ -47,19 +48,20 @@ bool Fire::ActUponNeighbours(sf::Vector2i p, Cell &self, SandWorld &world, float
             ElementProperties &properties {cell.Properties()};
             float flammability {properties.Flammability()};
             if (flammability > 0.f) {
+                affected = true;
                 if (cell.health <= 0.f) {
                     world.Act(-1, world.ToIndex(lookAhead), Element::null, Element::fire);
                 }
                 else {
                     cell.health -= flammability * dt;
                 }
-                self.health += 600.f * dt;
-                return true;
+                self.health += flammability * dt;
+                
             }
         }
     }
 
-    return false;
+    return affected;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

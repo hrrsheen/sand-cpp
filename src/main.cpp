@@ -148,7 +148,7 @@ int main() {
             if (mouse.state == MouseState::DRAWING ) {
                 Paint(mouse, state, screen);
             } else if (mouse.state == MouseState::DRAGGING) {
-                // TODO: Figure out why mapPixelToCoords works but MapPixelToCoords doesn't.
+                // The view's position DOESN'T use the transformed world coordinates, so we need to use mapPixelToCoords.
                 sf::Vector2f delta {screen.mapPixelToCoords(mouse.prevPos) - screen.mapPixelToCoords(mouse.pos)};
                 screen.RepositionView(delta);
             }

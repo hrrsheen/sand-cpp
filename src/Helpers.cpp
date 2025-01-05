@@ -5,12 +5,12 @@
 namespace impl {
 
 // Rounds a point to the nearest grid cell.
-sf::Vector2i roundPoint(sf::Vector2f p) {
+sf::Vector2i RoundPoint(sf::Vector2f p) {
     return sf::Vector2i(std::roundf(p.x), std::roundf(p.y));
 }
 
 // Returns the distance between two points.
-int diagonalDistance(sf::Vector2i p0, sf::Vector2i p1) {
+int DiagonalDistance(sf::Vector2i p0, sf::Vector2i p1) {
     int dx {p1.x - p0.x};
     int dy {p1.y - p0.y};
 
@@ -37,7 +37,7 @@ LerpIterator::LerpIterator(sf::Vector2f start, sf::Vector2f end, int step, int N
 // Dereference.
 LerpIterator::value_type LerpIterator::operator*() const {
     float t = N == 0 ? 0.f : step / static_cast<float>(N);
-    return roundPoint(lerp(start, end, t));
+    return RoundPoint(lerp(start, end, t));
 }
 
 // Pre-increment: ++it.
@@ -78,7 +78,7 @@ bool LerpIterator::operator!=(const LerpIterator &rhs) {
 }
 
 Lerp::Lerp(sf::Vector2i start, sf::Vector2i finish) : 
-    start(start), finish(finish), N(impl::diagonalDistance(start, finish)) {
+    start(start), finish(finish), N(impl::DiagonalDistance(start, finish)) {
 }
 
 Lerp::iterator Lerp::begin() const {
@@ -106,6 +106,12 @@ int QuickRandInt(int upper) {
 
 int QuickRandRange(int a, int b) {
     return (std::rand() / static_cast<float>(RAND_MAX)) * (b - a) + a;
+}
+
+bool Probability(int percent) {
+    if (percent <= 0) return false;
+    
+    return QuickRandInt(100) < percent - 1;
 }
 
 int RandInt(int upper) {
