@@ -76,7 +76,7 @@ bool ElementProperties::FallDown(sf::Vector2i p, Cell &cell, SandWorld &world, f
     int yRem {static_cast<int>(
         100.f * std::modf(cell.velocity.y * dt, &yDst) // The fractional part as a percentage.
     )};
-    if (QuickRandInt(100) < std::abs(yRem)) yDst -= 1.f; // The probability to advance an additional cell.
+    if (Probability(std::abs(yRem))) yDst -= 1.f; // The probability to advance an additional cell.
 
     sf::Vector2i deltaP {0, static_cast<int>(yDst)};
     sf::Vector2i dst {p};
@@ -105,7 +105,7 @@ bool ElementProperties::SpreadDownSide(sf::Vector2i p, Cell &cell, SandWorld &wo
     bool downRight  {world.IsEmpty(rightPos.x, rightPos.y) || CanDisplace(rightPos, world)};
 
     if (downLeft && downRight) {
-        downLeft    = QuickRandInt(100) > 49;
+        downLeft    = Probability(50);
         downRight   = !downLeft;
     }
 
@@ -126,7 +126,7 @@ bool ElementProperties::SpreadUpSide(sf::Vector2i p, Cell &cell, SandWorld &worl
     bool upRight  {world.IsEmpty(rightPos.x, rightPos.y)};
 
     if (upLeft && upRight) {
-        upLeft    = QuickRandInt(100) > 49;
+        upLeft    = Probability(50);
         upRight   = !upLeft;
     }
 
@@ -146,7 +146,7 @@ bool ElementProperties::SpreadSide(sf::Vector2i p, Cell &cell, SandWorld &world)
     bool right  {world.IsEmpty(p + lookAhead)};
 
     if (left && right) {
-        left    = QuickRandInt(100) > 49;
+        left    = Probability(50);
         right   = !left;
     }
 

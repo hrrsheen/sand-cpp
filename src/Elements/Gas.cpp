@@ -22,7 +22,7 @@ Fire::Fire() : Gas(Element::fire, "fire", MoveType::FLOAT_UP, SpreadType::SIDE |
 bool Fire::ActUponSelf(sf::Vector2i p, Cell &self, SandWorld &world, float dt) {
     // Tick down the fire's own health.
     if (self.health <= 0) {
-        if (QuickRandInt(100) > 89) {
+        if (Probability(20)) {
             world.Act(world.ToIndex(p), -1, Element::smoke, Element::null);
         } else {
             world.Act(world.ToIndex(p), -1, Element::air, Element::null);
