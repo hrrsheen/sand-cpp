@@ -17,11 +17,9 @@ add_executable(sand-cpp
     src/Elements/Gas.cpp)
 
 target_include_directories(sand-cpp
-    PRIVATE ${PROJECT_SOURCE_DIR}/lib
-    PRIVATE ${PROJECT_SOURCE_DIR}/lib/Elements)
+    PRIVATE ${PROJECT_SOURCE_DIR}/inc
+    PRIVATE ${PROJECT_SOURCE_DIR}/inc/Elements)
 target_compile_features(sand-cpp PRIVATE cxx_std_17)
-
-# target_compile_options(sand-cpp PRIVATE -g)
 
 include(FetchContent)
 FetchContent_Declare(SFML

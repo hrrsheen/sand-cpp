@@ -1,87 +1,96 @@
+#include "Elements/Names.hpp"
 #include "Elements/ElementProperties.hpp"
 #include "Elements/Gas.hpp"
 #include "SandWorld.hpp"
-
-Gas::Gas() : ElementProperties(ElementType::GAS) {}
-Gas::Gas(Element thisId, std::string_view thisName, MoveType move, uint8_t spread) : 
-    ElementProperties(thisId, ElementType::GAS, thisName, move, spread) {}
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Fire
 //////////////////////////////////////////////////////////////////////////////////////////
 
-Fire::Fire() : Gas(Element::fire, "fire", MoveType::FLOAT_UP, SpreadType::SIDE | SpreadType::UP_SIDE) {
-    std::get<COLOUR_INDEX>(palette).push_back(0xff3b14ff);
-    std::get<COLOUR_INDEX>(palette).push_back(0xff7429ff);
-    std::get<COLOUR_INDEX>(palette).push_back(0xf59d18ff);
-    std::get<COLOUR_INDEX>(palette).push_back(0xfcaa2dff);
-    std::get<COLOUR_INDEX>(palette).push_back(0xff3d24ff);
-    std::get<COLOUR_INDEX>(palette).push_back(0xff983dff);
+Fire InitFire() {
+    ConstProperties init;
+    init.name               = "fire";
+    init.type               = ElementType::GAS;
+    init.moveBehaviour      = MoveType::FLOAT_UP;
+    init.spreadBehaviour    = SpreadType::SIDE | SpreadType::UP_SIDE;
+    init.actionSet          = FireActionset();
+    init.colourEachFrame    = true;
+    COLOUR(init.palette).push_back(0xff3b14ff);
+    COLOUR(init.palette).push_back(0xff7429ff);
+    COLOUR(init.palette).push_back(0xf59d18ff);
+    COLOUR(init.palette).push_back(0xfcaa2dff);
+    COLOUR(init.palette).push_back(0xff3d24ff);
+    COLOUR(init.palette).push_back(0xff983dff);
+
+    Fire fire(init);
+
+    return fire;
 }
 
-bool Fire::ActUponSelf(sf::Vector2i p, Cell &self, SandWorld &world, float dt) {
+Fire::Fire(ConstProperties &init) : ElementProperties(Element::fire, init) {}
+
+Action Fire::ActUponSelf(sf::Vector2i p, Cell &self, float dt) const {
     // Tick down the fire's own health.
     if (self.health <= 0) {
-        if (Probability(20)) {
-            world.Act(world.ToIndex(p), -1, Element::smoke, Element::null);
-        } else {
-            world.Act(world.ToIndex(p), -1, Element::air, Element::null);
-        }
-        return true;
+        if (Probability(20))    return Action(p, Element::smoke);
+        else                    return Action(p, Element::air);
     }
 
     self.health -= (500.f + static_cast<float>(QuickRandInt(200))) * dt;
-    return false;
+    return Action::Null();
 }
 
-bool Fire::ActUponNeighbours(sf::Vector2i p, Cell &self, SandWorld &world, float dt) {
-    sf::Vector2i lookAhead;
-    bool affected {false};
-    for (int dy = -1; dy <= 1; ++dy) {
-        for (int dx = -1; dx <= 1; ++dx) {
-            lookAhead.x = p.x + dx;
-            lookAhead.y = p.y + dy;
-            if (!world.InBounds(lookAhead)) continue;
-            if (lookAhead == p) continue;
-
-            Cell &cell {world.GetCell(lookAhead)};
-            ElementProperties &properties {cell.Properties()};
-            float flammability {properties.Flammability()};
-            if (flammability > 0.f) {
-                affected = true;
-                if (cell.health <= 0.f) {
-                    world.Act(-1, world.ToIndex(lookAhead), Element::null, Element::fire);
-                }
-                else {
-                    cell.health -= flammability * dt;
-                }
-                self.health += flammability * dt;
-                
-            }
+Action Fire::ActUponOther(Cell &self,  ElementProperties &selfProp,
+                          Cell &other, ElementProperties &otherProp,
+                          sf::Vector2i deltaP, float dt) const {
+    if (otherProp.flammability > 0.f) {
+        self.health += flammability * dt;
+        if (other.health <= 0.f) {
+            return Action(deltaP, Element::fire); // TODO: Will need to change the data passed to allow other p into Action.
+        } else {
+            other.health -= flammability * dt;
         }
     }
 
-    return affected;
+    return Action::Null();
+}
+
+inline const moveset_t FireActionset() {
+    return moveset_t {
+        sf::Vector2i {-1,  1}, sf::Vector2i {0,  1}, sf::Vector2i {1,  1},
+        sf::Vector2i {-1,  0},                       sf::Vector2i {1,  0},
+        sf::Vector2i {-1, -1}, sf::Vector2i {0, -1}, sf::Vector2i {1, -1}
+    };
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Smoke
 //////////////////////////////////////////////////////////////////////////////////////////
 
-Smoke::Smoke() : Gas(Element::smoke, "smoke", MoveType::FLOAT_UP, SpreadType::SIDE | SpreadType::UP_SIDE) {
-    std::get<COLOUR_INDEX>(palette).push_back(0xbdbdbdff);
-    std::get<COLOUR_INDEX>(palette).push_back(0x616161ff);
-    std::get<COLOUR_INDEX>(palette).push_back(0xd1cfcfff);
-    std::get<COLOUR_INDEX>(palette).push_back(0xb3b3b3ff);
+Smoke InitSmoke() {
+    ConstProperties init;
+    init.name               = "smoke";
+    init.type               = ElementType::GAS;
+    init.moveBehaviour      = MoveType::FLOAT_UP;
+    init.spreadBehaviour    = SpreadType::SIDE | SpreadType::UP_SIDE;
+    COLOUR(init.palette).push_back(0xbdbdbdff);
+    COLOUR(init.palette).push_back(0x616161ff);
+    COLOUR(init.palette).push_back(0xd1cfcfff);
+    COLOUR(init.palette).push_back(0xb3b3b3ff);
+
+    Smoke smoke(init);
+
+    return smoke;
 }
 
-bool Smoke::ActUponSelf(sf::Vector2i p, Cell &self, SandWorld &world, float dt) {
+Smoke::Smoke(ConstProperties &init) : ElementProperties(Element::smoke, init) {}
+
+Action Smoke::ActUponSelf(sf::Vector2i p, Cell &self, float dt) {
     // Tick down the smoke's own health.
     if (self.health <= 0) {
-        world.Act(world.ToIndex(p), -1, Element::air, Element::null);
-        return true;
+        return Action(p, Element::air);
     }
 
     self.health -= (100.f + static_cast<float>(QuickRandRange(-50, 50))) * dt;
-    return false;
+    return Action::Null();
 }

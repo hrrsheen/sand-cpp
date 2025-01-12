@@ -18,7 +18,7 @@ private:
 public:
     using sf::RenderWindow::draw;
 
-    Screen(int width, int height, std::string name);
+    Screen(int screenWidth, int screenHeight, int viewWidth, int viewHeight, std::string name);
 
     void Draw(const sf::Drawable &drawable);
 

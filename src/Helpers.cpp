@@ -99,9 +99,11 @@ void InitRng() {
 }
 
 int QuickRandInt(int upper) {
-    if (upper == 0) return 0;
+    if (upper) {
+        return std::rand() % upper;
+    }
     
-    return std::rand() % upper;
+    return 0;
 }
 
 int QuickRandRange(int a, int b) {

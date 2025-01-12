@@ -77,7 +77,15 @@
         "numeric": "cpp",
         "ranges": "cpp",
         "unordered_set": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "queue": "cpp",
+        "filesystem": "cpp"
+    },
+    "files.watcherExclude": {
+        "build/**": true,
+    },
+    "search.exclude": {
+        "build/**": true,
     },
     "makefile.launchConfigurations": [
         {

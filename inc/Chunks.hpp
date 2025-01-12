@@ -7,7 +7,8 @@
 struct ChunkBounds {
     int x;
     int y;
-    int size;
+    int width;
+    int height;
 };
 
 enum ChunkState {
@@ -36,16 +37,14 @@ public:
 };
 
 class Chunks {
-public:
-    const int width;
-    const int height;
-
 private:
-    const int chunkSize;
+    const int width,        height;      // Dimensions of the chunk grid.
+    const int xOffset,      yOffset;     // Offset of the first chunk in world-space.
+    const int chunkWidth,   chunkHeight; // Dimensions of an individual chunk.
     std::vector<Chunk> chunks;
 
 public:
-    Chunks(int width, int height, int chunkSize);
+    Chunks(int width, int height, int chunkWidth, int chunkHeight, int xOffset=0, int yOffset=0);
 
     void Reset();
     void ResetChunk(int index);
@@ -77,7 +76,7 @@ public:
     size_t Size() const;
 
     // Retrieving chunk boundaries.
-    ChunkBounds GetBounds(int x, int y) const;
+    ChunkBounds GetBounds(int cx, int cy) const;
     ChunkBounds GetBounds(int index) const;
     // Returns the boundaries of the chunk that contains the given (x, y) point.
     ChunkBounds GetContainingBounds(int x, int y) const;
@@ -87,8 +86,8 @@ private:
     int Hash(int x, int y) const;
 
     // Converts a chunk (x, y) index to a flat index.
-    int ToIndex(int x, int y) const;
-    sf::Vector2i ToCoords(int index) const;
+    int ToIndex(int cx, int cy) const;
+    // sf::Vector2i ToCoords(int index) const;
 };
 
 #endif

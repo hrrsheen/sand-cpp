@@ -4,10 +4,10 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 
-Screen::Screen(int width, int height, std::string name) : 
-    sf::RenderWindow(sf::VideoMode(1024, 512), name),
+Screen::Screen(int screenWidth, int screenHeight, int viewWidth, int viewHeight, std::string name) : 
+    sf::RenderWindow(sf::VideoMode(screenWidth, screenHeight), name),
     renderStates(sf::RenderStates::Default),
-    tf(), view(sf::FloatRect(0.f, 0.f, width, height)) {
+    tf(), view(sf::FloatRect(0.f, 0.f, viewWidth, viewHeight)) {
     setView(view);
 }
 

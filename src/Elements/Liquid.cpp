@@ -2,36 +2,32 @@
 #include "Elements/Liquid.hpp"
 #include "SandWorld.hpp"
 
-Liquid::Liquid() : ElementProperties(ElementType::LIQUID) {}
-Liquid::Liquid(Element thisId, std::string_view thisName, MoveType move, uint8_t spread) : 
-    ElementProperties(thisId, ElementType::LIQUID, thisName, move, spread) {}
-
-bool Liquid::CanDisplace(ElementProperties &other) const {
-    if (other.type == ElementType::AIR || other.type == ElementType::GAS) {
-        return true;
-    }
-
-    return false;
-}
-
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Water
 //////////////////////////////////////////////////////////////////////////////////////////
 
-Water::Water() : Liquid(Element::water, "water", MoveType::FLOAT_DOWN, SpreadType::DOWN_SIDE | SpreadType::SIDE) {
-    std::get<COLOUR_INDEX>(palette).push_back(0x347debff);
+Water InitWater() {
+    ConstProperties init;
+    init.name               = "water";
+    init.type               = ElementType::LIQUID;
+    init.moveBehaviour      = MoveType::FLOAT_DOWN;
+    init.spreadBehaviour    = SpreadType::DOWN_SIDE | SpreadType::SIDE;
+    init.actionSet          = moveset_t {sf::Vector2i(0, -1)};
+    COLOUR(init.palette).push_back(0x347debff);
+
+    Water water(init);
+
+    return water;
 }
 
-bool Water::ActUponNeighbours(sf::Vector2i p, Cell &self, SandWorld &world, float dt) {
-    sf::Vector2i lookAhead{p.x, p.y - 1};
-    if (!world.InBounds(lookAhead)) {
-        return false;
+Water::Water(ConstProperties &init) : ElementProperties(Element::water, init) {}
+
+Action Water::ActUponOther(Cell &self,  ElementProperties &selfProp,
+                          Cell &other, ElementProperties &otherProp,
+                          sf::Vector2i deltaP, float dt) const {
+    if (other.id == Element::fire) {
+        Action(deltaP, Element::smoke);
     }
 
-    if (world.GetCell(lookAhead).elementId == Element::fire) {
-        world.Act(world.ToIndex(p), world.ToIndex(lookAhead), Element::smoke, Element::water);
-        return true;
-    }
-
-    return false;
+    return Action::Null();
 }

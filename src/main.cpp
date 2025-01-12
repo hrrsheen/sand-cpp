@@ -1,3 +1,4 @@
+#include "Constants.hpp"
 #include "Helpers.hpp"
 #include "Screen.hpp"
 #include "WorldState.hpp"
@@ -15,12 +16,12 @@ enum MouseState {
 
 struct Mouse {
     MouseState state;
-    int size;               // The size of the brush.
+    int radius;             // The size of the brush.
     Element brush;          // The type of the brush.
     sf::Vector2i pos;       // The current position of the mouse, in window pixels.
     sf::Vector2i prevPos;   // The position of the mouse last frame, in window pixels.
 
-    Mouse() : state(MouseState::IDLE), size(1), brush(Element::air), pos(sf::Vector2i(-1, -1)), prevPos(sf::Vector2i(-1, -1)) {}
+    Mouse() : state(MouseState::IDLE), radius(1), brush(Element::air), pos(sf::Vector2i(-1, -1)), prevPos(sf::Vector2i(-1, -1)) {}
 
     void Reset() {
         state   = MouseState::IDLE;
@@ -39,8 +40,8 @@ struct Mouse {
         } else if (event.type == sf::Event::MouseLeft) {
             Reset();
         } else if (event.type == sf::Event::MouseWheelMoved) {
-            if      (event.mouseWheel.delta > 0) size = std::clamp(size + 1, 1, 10);
-            else if (event.mouseWheel.delta < 0) size = std::clamp(size - 1, 1, 10);
+            if      (event.mouseWheel.delta > 0) radius = std::clamp(radius + 1, 1, 10);
+            else if (event.mouseWheel.delta < 0) radius = std::clamp(radius - 1, 1, 10);
         } else if (event.type == sf::Event::KeyPressed) {
             int number {KEY_TO_NUMBER(event.key.code)};
             if (number >= 0 && number <= Element::count - 1) {
@@ -61,16 +62,16 @@ bool ShouldClose(sf::Event &event) {
     return false;
 }
 
-void Paint(Lerp &stroke, Element type, int size, WorldState &state) {
+void Paint(Lerp &stroke, Element type, int radius, WorldState &state) {
     for (sf::Vector2i pos : stroke) {
-        if (size == 1) {
+        if (radius == 1) {
             state.world.SetCell(pos.x, pos.y, type);
         } else {
             state.world.SetArea(
-                pos.x - size - 1,
-                pos.y - size - 1,
-                2 * size - 1,
-                2 * size - 1,
+                pos.x - (radius - 1),
+                pos.y - (radius - 1),
+                2 * radius,
+                2 * radius,
                 type
             );
         }
@@ -82,7 +83,7 @@ void Paint(Mouse &mouse, WorldState &state, Screen &screen) {
     sf::Vector2i start  {sf::Vector2i{screen.ToWorld(mouse.prevPos)}};
 
     Lerp lerp {start, end};
-    Paint(lerp, mouse.brush, mouse.size, state);
+    Paint(lerp, mouse.brush, mouse.radius, state);
 }
 
 void DrawChunks(SandWorld &world, Screen &screen) {
@@ -110,11 +111,12 @@ void DrawChunks(SandWorld &world, Screen &screen) {
 int main() {
     bool DEBUG {false};
     InitRng();
-    const int roomWidth {512}, roomHeight {512},
-              viewWidth {512}, viewHeight {256};
+    const int viewHeight {constants::viewHeight};
     sf::Clock clock;
-    WorldState state {roomWidth, roomHeight};
-    Screen screen {viewWidth, viewHeight, "Falling Sand"};
+    WorldState state {constants::roomWidth, constants::roomHeight};
+    Screen screen {constants::screenWidth, constants::screenWidth, 
+                   constants::viewWidth,   constants::viewHeight, 
+                   "Falling Sand"};
     screen.SetTransform(
         [viewHeight] {
             sf::Transformable transformation;

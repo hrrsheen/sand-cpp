@@ -1,58 +1,95 @@
+#include "Actions.hpp"
+#include "Elements/Names.hpp"
 #include "Elements/ElementProperties.hpp"
 #include "Elements/Solid.hpp"
 #include "SandWorld.hpp"
-
-Solid::Solid() : ElementProperties(ElementType::SOLID) {}
-Solid::Solid(Element thisId, std::string_view thisName, MoveType move, uint8_t spread) : 
-    ElementProperties(thisId, ElementType::SOLID, thisName, move, spread) {}
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Sand
 //////////////////////////////////////////////////////////////////////////////////////////
 
-Sand::Sand() : Solid(Element::sand, "sand", MoveType::FALL_DOWN, SpreadType::DOWN_SIDE) {
-    std::get<COLOUR_INDEX>(palette).push_back(0xfabf73ff);
-    std::get<COLOUR_INDEX>(palette).push_back(0xebae60ff);
+Sand InitSand() {
+    ConstProperties init;
+    init.name               = "sand";
+    init.type               = ElementType::SOLID;
+    init.moveBehaviour      = MoveType::FALL_DOWN;
+    init.spreadBehaviour    = SpreadType::DOWN_SIDE;
+    init.actionSet          = moveset_t {sf::Vector2i(0, -1)};
+    init.colourEachFrame    = false;
+    COLOUR(init.palette).push_back(0xfabf73ff);
+    COLOUR(init.palette).push_back(0xebae60ff);
+
+    Sand sand(init);
+
+    return sand;
 }
 
-bool Sand::ActUponNeighbours(sf::Vector2i p, Cell &self, SandWorld &world, float dt) {
-    sf::Vector2i lookAhead{p.x, p.y - 1};
-    if (!world.InBounds(lookAhead)) {
-        return false;
+
+Sand::Sand(ConstProperties &init) : ElementProperties(Element::sand, init) {}
+
+Action Sand::ActUponOther(Cell &self,  ElementProperties &selfProp,
+                          Cell &other, ElementProperties &otherProp,
+                          sf::Vector2i deltaP, float dt) const {
+    if (other.id == Element::fire) {
+        return Action(deltaP, Element::air);
     }
 
-    if (world.GetCell(lookAhead).elementId == Element::fire) {
-        world.Act(world.ToIndex(p.x, p.y), world.ToIndex(lookAhead.x, lookAhead.y), Element::air, Element::sand);
-        return true;
-    }
-
-    return false;
+    return Action::Null();
 }
 
-bool Sand::CanDisplace(ElementProperties &other) const {
-    if (other.type == ElementType::SOLID) {
+bool Sand::CanDisplace(ElementType other) const {
+    if (other == ElementType::SOLID) {
         return false;
     }
 
     return true;
 }
 
+inline const moveset_t SandActionset() {
+    return moveset_t {sf::Vector2i {0, -1}};
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Stone
 //////////////////////////////////////////////////////////////////////////////////////////
 
-Stone::Stone() : Solid(Element::stone, "stone", MoveType::NONE, SpreadType::NONE) {
+Stone InitStone() {
     sf::Image img;
     img.loadFromFile("./assets/stone2-texture.png");
-    palette = img;
+
+    ConstProperties init;
+    init.name               = "stone";
+    init.type               = ElementType::SOLID;
+    init.colourEachFrame    = false;
+    init.palette            = img;
+
+    Stone stone(init);
+
+    return stone;
+}
+
+Stone::Stone(ConstProperties &init) : ElementProperties(Element::stone, init) {
+    
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Wood
 //////////////////////////////////////////////////////////////////////////////////////////
 
-Wood::Wood() : Solid(Element::wood, "wood", MoveType::NONE, SpreadType::NONE) {
+Wood InitWood() {
     sf::Image img;
     img.loadFromFile("./assets/wood-texture.png");
-    palette = img;
+
+    ConstProperties init;
+    init.name               = "wood";
+    init.type               = ElementType::SOLID;
+    init.colourEachFrame    = false;
+    init.palette            = img;
+    init.flammability       = 100.f;
+
+    Wood wood(init);
+
+    return wood;
 }
+
+Wood::Wood(ConstProperties &init) : ElementProperties(Element::wood, init) {}

@@ -18,7 +18,7 @@ public:
     bool Insert(std::unique_ptr<ElementProperties> properties);
 
     // Retrieves the ElementProperties from the given index.
-    ElementProperties& Get(Element key);
+    ElementProperties& Get(Element id);
 
     size_t Size() const;
 
