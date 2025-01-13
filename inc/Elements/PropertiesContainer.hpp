@@ -19,6 +19,7 @@ public:
 
     // Retrieves the ElementProperties from the given index.
     ElementProperties& Get(Element id);
+    const ElementProperties& Get(Element id) const;
 
     size_t Size() const;
 

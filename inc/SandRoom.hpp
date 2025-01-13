@@ -12,7 +12,10 @@
 #include <vector>
 #include <tuple>
 
+using roomID_t = int;
+
 class SandRoom {
+    using room_ptr = std::unique_ptr<SandRoom>;
 public:
     const int x_m, y_m;
     const int width_m, height_m;
@@ -28,7 +31,7 @@ private:
     std::vector<std::pair<int, Element>> queuedActions;
 
 public:
-    SandRoom(int x, int y, int width, int height, PropertiesContainer *properties);
+    SandRoom(int x, int y, int width, int height, const PropertiesContainer * properties);
 
     // Access functions.
     Cell& GetCell(int index);
@@ -47,7 +50,7 @@ public:
 
     // Moving cells around.
     void QueueMove(roomID_t srcRoomID, int pFrom, int pTo);
-    void ConsolidateMoves(FreeList<SandRoom> *rooms);
+    void ConsolidateMoves(FreeList<room_ptr> *rooms);
 
     // Transforming (applying actions) cells.
     void QueueAction(Action action);
@@ -61,7 +64,7 @@ public:
 
 private:
     // Initialises each cell within the grid.
-    void InitCells(PropertiesContainer *properties);
+    void InitCells(const PropertiesContainer * properties);
 };
 
 #endif

@@ -1,3 +1,4 @@
+#include "Actions.hpp"
 #include "Constants.hpp"
 #include "Helpers.hpp"
 #include "Screen.hpp"
@@ -86,13 +87,13 @@ void Paint(Mouse &mouse, WorldState &state, Screen &screen) {
     Paint(lerp, mouse.brush, mouse.radius, state);
 }
 
-void DrawChunks(SandWorld &world, Screen &screen) {
-    for (int i = 0; i < world.chunks.Size(); i++) {
-        if (world.chunks.IsActive(i)) {
-            Chunk &chunk {world.chunks.GetChunk(i)};
-            ChunkBounds bounds {world.chunks.GetBounds(i)};
+void DrawChunks(SandRoom &room, Screen &screen) {
+    for (int i = 0; i < room.chunks.Size(); i++) {
+        if (room.chunks.IsActive(i)) {
+            Chunk &chunk {room.chunks.GetChunk(i)};
+            ChunkBounds bounds {room.chunks.GetBounds(i)};
             sf::RectangleShape rectangle;
-            rectangle.setSize(sf::Vector2f(bounds.size, bounds.size));
+            rectangle.setSize(sf::Vector2f(bounds.width, bounds.height));
             rectangle.setOutlineColor(sf::Color::Blue);
             rectangle.setOutlineThickness(1);
             rectangle.setFillColor(sf::Color::Transparent);
@@ -114,7 +115,7 @@ int main() {
     const int viewHeight {constants::viewHeight};
     sf::Clock clock;
     WorldState state {constants::roomWidth, constants::roomHeight};
-    Screen screen {constants::screenWidth, constants::screenWidth, 
+    Screen screen {constants::screenWidth, constants::screenHeight, 
                    constants::viewWidth,   constants::viewHeight, 
                    "Falling Sand"};
     screen.SetTransform(
@@ -160,7 +161,7 @@ int main() {
         state.Draw(screen);
         // DEBUG ONLY - Draw the active chunks.
         if (DEBUG) {
-            DrawChunks(state.world, screen);
+            DrawChunks(state.world.GetRoom(0), screen);
         }
         screen.display();
 

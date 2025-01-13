@@ -35,16 +35,16 @@ void SandWorld::InitProperties() {
 
 void SandWorld::SpawnRoom(int x, int y) {
     sf::Vector2i key {ToKey(x, y)};
-    if (key.x > xMin && key.x < xMax && key.y > yMin && key.y < yMax) {
-        SandRoom room {
+    PropertiesContainer* propPtr {&properties};
+    if (key.x >= xMin && key.x < xMax && key.y >= yMin && key.y < yMax) {        
+        room_ptr roomPtr (std::make_unique<SandRoom>(
             constants::roomWidth * x,
             constants::roomHeight * y,
             constants::roomWidth,
             constants::roomHeight,
-            &properties
-        };
-
-        roomID_t id {rooms.Insert(room)};
+            propPtr
+        ));
+        roomID_t id {rooms.Insert(std::move(roomPtr))};
         roomsMap[key] = id;
     }
 }
@@ -64,8 +64,12 @@ Cell& SandWorld::GetCell(int x, int y) {
     return GetContainingRoom(x, y).GetCell(x, y);
 }
 
+SandRoom& SandWorld::GetRoom(roomID_t id) {
+    return *rooms[id].get();
+}
+
 SandRoom& SandWorld::GetRoom(sf::Vector2i key) {
-    return rooms[roomsMap[key]];
+    return GetRoom(roomsMap[key]);
 }
 
 SandRoom& SandWorld::GetContainingRoom(sf::Vector2i p) {
@@ -92,7 +96,7 @@ void SandWorld::SetArea(int x, int y, int w, int h, Element id) {
             sf::Vector2i key {ToKey(xi, yi)};
             sf::Vector2i coords {xi, yi};
             if (!room || !room->InBounds(xi, yi)) 
-                room = &rooms[roomsMap[key]];
+                room = &GetRoom(key);
 
             room->SetCell(xi, yi, id, properties.Get(id));
         }
@@ -111,7 +115,7 @@ bool SandWorld::IsEmpty(int x, int y) {
 bool SandWorld::IsEmpty(sf::Vector2i p) {
     roomID_t id {ContainingRoomID(p)};
     if (VALID_ROOM(id)) {
-        return rooms[id].IsEmpty(p);
+        return GetRoom(id).IsEmpty(p);
     }
 
     return false;
@@ -119,7 +123,7 @@ bool SandWorld::IsEmpty(sf::Vector2i p) {
 
 roomID_t SandWorld::EmptyRoom(sf::Vector2i p) {
     roomID_t id {ContainingRoomID(p)};
-    if (VALID_ROOM(id) && rooms[id].IsEmpty(p)) {
+    if (VALID_ROOM(id) && GetRoom(id).IsEmpty(p)) {
         return id;
     }
 
@@ -149,7 +153,7 @@ size_t SandWorld::PropertiesSize() const {
 
 sf::Vector2i SandWorld::ToKey(int x, int y) {
     return sf::Vector2i {
-        std::floor(x / constants::roomWidth), 
-        std::floor(y / constants::roomHeight)
+        static_cast<int>(std::floor(static_cast<float>(x) / constants::roomWidth)), 
+        static_cast<int>(std::floor(static_cast<float>(y) / constants::roomHeight))
     };
 }

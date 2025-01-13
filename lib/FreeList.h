@@ -1,83 +1,108 @@
+#ifndef FREE_LIST_HPP
+#define FREE_LIST_HPP
+
+#include <variant>
 #include <vector>
 
+#define _ELEMENT(x) std::get<0>(x);
+#define _NEXT(x) std::get<1>(x);
+
 template <class T>
-class FreeList
-{
+class FreeList {
+    static_assert(!std::is_same_v<T, int>);
 public:
     /// Creates a new free list.
     FreeList();
 
     /// Inserts an element to the free list and returns an index to it.
-    size_t Insert(const T& element);
+    int Insert(T& element);
+    int Insert(T element);
 
     // Removes the nth element from the free list.
-    void Erase(size_t n);
+    void Erase(int n);
 
     // Removes all elements from the free list.
     void Clear();
 
     // Returns the range of valid indices.
-    size_t Range() const;
+    int Range() const;
 
     // Returns the nth element.
-    T& operator[](size_t n);
+    T& operator[](int n);
 
     // Returns the nth element.
-    const T& operator[](size_t n) const;
+    const T& operator[](int n) const;
 
 private:
-    union FreeElement
-    {
-        T       element;
-        size_t  next;
-    };
-    std::vector<FreeElement> data;
-    size_t first_free;
+    std::vector<T> data;
+    std::vector<int> next;
+    int firstFree;
 };
 
 template <class T>
-FreeList<T>::FreeList(): first_free(-1) {}
+FreeList<T>::FreeList(): firstFree(-1) {}
 
 template <class T>
-size_t FreeList<T>::Insert(const T& element) {
-    if (first_free != -1) {
-        const size_t index = first_free;
-        first_free = data[first_free].next;
-        data[index].element = element;
+int FreeList<T>::Insert(T& element) {
+    if (firstFree != -1) {
+        const int index = firstFree;
+        firstFree = next[firstFree];
+        data[index] = std::move(element);
+        next[index] = -1;
 
         return index;
     } else {
-        FreeElement fe;
-        fe.element = element;
-        data.push_back(fe);
+        data.push_back(std::move(element));
+        next.push_back(-1);
 
-        return static_cast<size_t>(data.size() - 1);
+        return static_cast<int>(data.size() - 1);
     }
 }
 
 template <class T>
-void FreeList<T>::Erase(size_t n) {
-    data[n].next = first_free;
-    first_free = n;
+int FreeList<T>::Insert(T element) {
+    if (firstFree != -1) {
+        const int index = firstFree;
+        firstFree = next[firstFree];
+        data[index] = std::move(element);
+        next[index] = -1;
+
+        return index;
+    } else {
+        data.push_back(std::move(element));
+        next.push_back(-1);
+
+        return static_cast<int>(data.size() - 1);
+    }
+}
+
+template <class T>
+void FreeList<T>::Erase(int n) {
+    next[n] = firstFree;
+    data.erase(data.begin() + n);
+    firstFree = n;
 }
 
 template <class T>
 void FreeList<T>::Clear() {
+    next.clear();
     data.clear();
-    first_free = -1;
+    firstFree = -1;
 }
 
 template <class T>
-size_t FreeList<T>::Range() const {
-    return static_cast<size_t>(data.size());
+int FreeList<T>::Range() const {
+    return static_cast<int>(data.size());
 }
 
 template <class T>
-T& FreeList<T>::operator[](size_t n) {
-    return data[n].element;
+T& FreeList<T>::operator[](int n) {
+    return data[n];
 }
 
 template <class T>
-const T& FreeList<T>::operator[](size_t n) const {
-    return data[n].element;
+const T& FreeList<T>::operator[](int n) const {
+    return data[n];
 }
+
+#endif

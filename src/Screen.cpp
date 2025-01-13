@@ -15,6 +15,10 @@ void Screen::Draw(const sf::Drawable &drawable) {
     sf::RenderWindow::draw(drawable, renderStates);
 }
 
+const sf::FloatRect Screen::ViewBorders() const {
+    return sf::FloatRect(view.getCenter(), view.getSize());
+}
+
 void Screen::RepositionView(sf::Vector2f delta) {
     const sf::Vector2f &centre {view.getCenter()};
 

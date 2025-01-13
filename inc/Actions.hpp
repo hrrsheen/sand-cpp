@@ -2,8 +2,9 @@
 #define ACTIONS_HPP
 
 #include "Elements/Names.hpp"
-#include "SandWorld.hpp"
 #include <SFML/System/Vector2.hpp>
+
+using roomID_t = int;
 
 struct Move {
     roomID_t srcRoomID;
@@ -18,6 +19,7 @@ struct Action {
     sf::Vector2i p;
     Element transform;
 
+    Action() : p(), transform(Element::null) {}
     Action(sf::Vector2i _p, Element _transform) : p(_p), transform(_transform) {}
     static const Action Null() { return Action(sf::Vector2i{}, Element::null); }
     

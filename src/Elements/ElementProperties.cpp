@@ -1,4 +1,5 @@
-#include "Elements.hpp"
+#include "Actions.hpp"
+#include "Elements/ElementProperties.hpp"
 #include "Helpers.hpp"
 #include "SandRoom.hpp"
 #include "SandWorld.hpp"
@@ -33,7 +34,7 @@ ElementProperties::ElementProperties(Element _id, ConstProperties &inits) :
 //  Colouring.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-sf::Color ElementProperties::ColourFromArray() {
+sf::Color ElementProperties::ColourFromArray() const {
     if (COLOUR(palette).size() == 0) {
         return sf::Color(0x00000000);
     }
@@ -44,14 +45,14 @@ sf::Color ElementProperties::ColourFromArray() {
     return sf::Color(COLOUR(palette).at(position));
 }
 
-sf::Color ElementProperties::ColourFromTexture(int x, int y) {
+sf::Color ElementProperties::ColourFromTexture(int x, int y) const {
     sf::Vector2u size {TEXTURE(palette).getSize()};
     x = x % static_cast<int>(size.x);
     y = y % static_cast<int>(size.y);
     return TEXTURE(palette).getPixel(std::abs(x), std::abs(y));
 }
 
-bool ElementProperties::HasTexture() {
+bool ElementProperties::HasTexture() const {
     return palette.index() == TEXTURE_INDEX;
 }
 
@@ -65,7 +66,8 @@ Action ElementProperties::ActUponSelf(sf::Vector2i p, Cell &self, float dt) cons
 
 Action ElementProperties::ActUponOther(Cell &self,  ElementProperties &selfProp,
                                        Cell &other, ElementProperties &otherProp,
-                                       sf::Vector2i deltaP, float dt) const {
+                                       sf::Vector2i p, sf::Vector2i otherP,
+                                       float dt) const {
     return Action::Null();
 }
 

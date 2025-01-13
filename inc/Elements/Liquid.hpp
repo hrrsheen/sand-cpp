@@ -11,7 +11,8 @@ public:
     //////// Simulation functions. ////////
     Action ActUponOther(Cell &self,  ElementProperties &selfProp,
                         Cell &other, ElementProperties &otherProp,
-                        sf::Vector2i deltaP, float dt) const;
+                        sf::Vector2i p, sf::Vector2i otherP,
+                        float dt) const;
 
     // Virtual constants.
     const int SpreadRate() const { return 7; }

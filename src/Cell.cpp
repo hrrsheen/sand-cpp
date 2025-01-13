@@ -12,7 +12,7 @@ Cell::Cell() : id(Element::air), redraw(false), health(100.f), velocity(0.f, 0.f
 //  Assignment / Manipulation functions.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-void Cell::Assign(Element _id, ElementProperties &properties, int x=0, int y=0) {
+void Cell::Assign(Element _id, const ElementProperties &properties, int x, int y) {
     id = _id;
     if (properties.HasTexture()) {
         colour = properties.ColourFromTexture(x, y);

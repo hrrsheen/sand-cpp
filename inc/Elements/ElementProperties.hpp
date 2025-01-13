@@ -91,15 +91,16 @@ public:
     ElementProperties(Element _id, ConstProperties &inits);
 
     //////// Display functions ////////
-    sf::Color ColourFromArray();                    // Returns a colour, picked at random from the palette.
-    sf::Color ColourFromTexture(int x, int y);      // Returns a colour from a texture that corresponds to the supplied position.
-    bool HasTexture();                              // Returns true if a texture is available for cells with these properties.
+    sf::Color ColourFromArray() const;                    // Returns a colour, picked at random from the palette.
+    sf::Color ColourFromTexture(int x, int y) const;      // Returns a colour from a texture that corresponds to the supplied position.
+    bool HasTexture() const;                              // Returns true if a texture is available for cells with these properties.
 
     //////// Simulation functions ////////
     virtual Action ActUponSelf  (sf::Vector2i p, Cell &self, float dt) const;
     virtual Action ActUponOther (Cell &self,  ElementProperties &selfProp,
                                  Cell &other, ElementProperties &otherProp,
-                                 sf::Vector2i deltaP, float dt) const;
+                                 sf::Vector2i p, sf::Vector2i otherP, 
+                                 float dt) const;
 
     // Returns true if the element represented by these properties can displace the element
     // represented by the other properties. False otherwise.

@@ -29,9 +29,10 @@ Sand::Sand(ConstProperties &init) : ElementProperties(Element::sand, init) {}
 
 Action Sand::ActUponOther(Cell &self,  ElementProperties &selfProp,
                           Cell &other, ElementProperties &otherProp,
-                          sf::Vector2i deltaP, float dt) const {
+                          sf::Vector2i p, sf::Vector2i otherP,
+                          float dt) const {
     if (other.id == Element::fire) {
-        return Action(deltaP, Element::air);
+        return Action(otherP, Element::air);
     }
 
     return Action::Null();

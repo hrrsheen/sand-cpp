@@ -9,14 +9,14 @@
 //  Initialisation Functions.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-SandRoom::SandRoom(int x, int y, int width, int height, PropertiesContainer *properties) : 
+SandRoom::SandRoom(int x, int y, int width, int height, const PropertiesContainer * properties) : 
     x_m(x), y_m(y), width_m(width), height_m(height), 
     chunks(constants::numXChunks, constants::numYChunks, constants::chunkWidth, constants::chunkHeight) {
     grid.resize(width_m * height_m);
     InitCells(properties);
 }
 
-void SandRoom::InitCells(PropertiesContainer *properties) {
+void SandRoom::InitCells(const PropertiesContainer * properties) {
     for (int i = 0; i < grid.size(); ++i) {
         Cell newCell;
         newCell.Assign(Element::air, properties->Get(Element::air), i / width_m);
@@ -86,7 +86,7 @@ void SandRoom::QueueMove(roomID_t srcRoomID, int pFrom, int pTo) {
     queuedMoves.emplace_back(srcRoomID, pFrom, pTo);
 }
 
-void SandRoom::ConsolidateMoves(FreeList<SandRoom> *rooms) {
+void SandRoom::ConsolidateMoves(FreeList<room_ptr> *rooms) {
     if (queuedMoves.size() == 0) return;
 
     // Remove moves that have had their destination filled between frames.
@@ -94,7 +94,7 @@ void SandRoom::ConsolidateMoves(FreeList<SandRoom> *rooms) {
 
     // Sort moves by source rooms then by destination.
     std::sort(queuedMoves.begin(), queuedMoves.end(), 
-        [](const Move &a, const Move &b) { a.dst < b.dst; }
+        [](const Move &a, const Move &b) { return a.dst < b.dst; }
     );
     
     // As the vector is sorted, this end object is guaranteed to be different to any other element.
@@ -103,20 +103,25 @@ void SandRoom::ConsolidateMoves(FreeList<SandRoom> *rooms) {
     int iStart {0};
 
     for (int i = 0; i < queuedMoves.size() - 1; ++i) {
-        Move &move       {queuedMoves.at(i)};
-        Move &nextMove   {queuedMoves.at(i + 1)};
+        Move move       {queuedMoves.at(i)};
+        Move nextMove   {queuedMoves.at(i + 1)};
 
         if (move.dst != nextMove.dst) {
             // Perform the randomly-selected move from the competing moves group.
             int iRand {iStart + QuickRandInt(i - iStart)};
             
-            roomID_t id;
+            roomID_t id {queuedMoves[iRand].srcRoomID};
             int src {queuedMoves[iRand].src};
             int dst {queuedMoves[iRand].dst};
             
-            Cell tmp {(*rooms)[id].GetCell(src)};
-            (*rooms)[id].GetCell(src) = GetCell(dst); // Does this even work? lol.
-            GetCell(dst) = tmp;
+            SandRoom *room {(*rooms)[id].get()};
+            Cell tmp {room->GetCell(src)};
+            Cell &srcCell {GetCell(src)};
+            Cell &dstCell {GetCell(dst)};
+            dstCell.redraw = true;
+            tmp.redraw = true;
+            srcCell = dstCell;
+            dstCell = tmp;
 
             sf::Vector2i srcCoords {ToWorldCoords(src)};
             sf::Vector2i dstCoords {ToWorldCoords(dst)};
@@ -135,6 +140,9 @@ void SandRoom::ConsolidateMoves(FreeList<SandRoom> *rooms) {
 //////////////////////////////////////////////////////////////////////////////////////////
 
 void SandRoom::QueueAction(Action action) {
+    if (ToIndex(action.p) < 0) {
+        
+    }
     queuedActions.emplace_back(ToIndex(action.p), action.transform);
 }
 
@@ -154,8 +162,8 @@ void SandRoom::ConsolidateActions(PropertiesContainer &properties) {
     int iStart {0};
 
     for (int i = 0; i < queuedActions.size() - 1; ++i) {
-        std::pair<int, Element> &move       {queuedActions.at(i)};
-        std::pair<int, Element> &nextMove   {queuedActions.at(i + 1)};
+        std::pair<int, Element> move       {queuedActions.at(i)};
+        std::pair<int, Element> nextMove   {queuedActions.at(i + 1)};
 
         if (move.first != nextMove.first) {
             // Perform the randomly-selected action from the competing actions group.

@@ -6,8 +6,12 @@ PropertiesContainer::PropertiesContainer() {
 
     // Add the default element properties.
     // Might need to make a class for air?
-    std::unique_ptr<ElementProperties> air {std::make_unique<ElementProperties>(Element::air, ElementType::AIR, "air")};
-    COLOUR(air->palette).push_back(0x000000ff);
+    ConstProperties init;
+    init.type = ElementType::AIR;
+    init.name = "air";
+    COLOUR(init.palette).push_back(0x000000ff);
+    std::unique_ptr<ElementProperties> air {std::make_unique<ElementProperties>(Element::air, init)};
+    
     Insert(std::move(air));
 }
 
@@ -21,6 +25,10 @@ bool PropertiesContainer::Insert(std::unique_ptr<ElementProperties> properties) 
 }
 
 ElementProperties& PropertiesContainer::Get(Element id) {
+    return *elementProperties.at(id);
+}
+
+const ElementProperties& PropertiesContainer::Get(Element id) const {
     return *elementProperties.at(id);
 }
 

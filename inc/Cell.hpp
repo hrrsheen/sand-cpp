@@ -21,7 +21,7 @@ public:
     Cell();
 
     //////// Assignment / manipulation functions ////////
-    void Assign(Element id, ElementProperties &properties, int x=0, int y=0);
+    void Assign(Element id, const ElementProperties &properties, int x=0, int y=0);
 
     void ApplyAcceleration(sf::Vector2f a, float dt);
 

@@ -3,8 +3,6 @@
 
 #include <SFML/Graphics.hpp>
 
-class Cell;
-class Grid;
 class Drawable;
 
 class Screen : public sf::RenderWindow {
@@ -22,6 +20,7 @@ public:
 
     void Draw(const sf::Drawable &drawable);
 
+    const sf::FloatRect ViewBorders() const;
     // Repositions the centre of the current view to the given position in world space.
     void RepositionView(sf::Vector2f delta);
 

@@ -42,11 +42,12 @@ Action Fire::ActUponSelf(sf::Vector2i p, Cell &self, float dt) const {
 
 Action Fire::ActUponOther(Cell &self,  ElementProperties &selfProp,
                           Cell &other, ElementProperties &otherProp,
-                          sf::Vector2i deltaP, float dt) const {
+                          sf::Vector2i p, sf::Vector2i otherP,
+                          float dt) const {
     if (otherProp.flammability > 0.f) {
         self.health += flammability * dt;
         if (other.health <= 0.f) {
-            return Action(deltaP, Element::fire); // TODO: Will need to change the data passed to allow other p into Action.
+            return Action(otherP, Element::fire); // TODO: Will need to change the data passed to allow other p into Action.
         } else {
             other.health -= flammability * dt;
         }

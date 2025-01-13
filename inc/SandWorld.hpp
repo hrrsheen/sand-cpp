@@ -15,16 +15,26 @@
 
 using roomID_t = int;
 
+struct Vector2iHash {
+    std::size_t operator()(sf::Vector2i const &p) const {
+        std::size_t h {std::hash<int>{}(p.x)};
+        HashCombine(h, p.y);
+        return h;
+    }
+};
+
 class SandWorld {
+    using room_ptr = std::unique_ptr<SandRoom>;
+
 public:
-    FreeList<SandRoom> rooms;
+    FreeList<room_ptr> rooms;
     // std::vector<SandRoom *> inactiveRooms;
+    
+    // The properties of the elements being simulated in the world.
+    PropertiesContainer properties;
 
 private:
-    std::unordered_map<sf::Vector2i, roomID_t> roomsMap;
-
-    // The properties of the elements contained within the grid.
-    PropertiesContainer properties;
+    std::unordered_map<sf::Vector2i, roomID_t, Vector2iHash> roomsMap;
 
     const int xMin, xMax, // The horizontal limits (number of rooms) of the world.
               yMin, yMax; // The vertical limits of the world.
@@ -33,8 +43,12 @@ public:
     SandWorld();
     SandWorld(int _xMin, int _xMax, int _yMin, int _yMax);
 
+    void SpawnRoom(int x, int y);
+    void RemoveRoom(int x, int y);
+
     // Access functions.
     Cell &GetCell(int x, int y);
+    SandRoom& GetRoom(roomID_t id);
     SandRoom& GetRoom(sf::Vector2i key);
     SandRoom& GetContainingRoom(sf::Vector2i p);
     SandRoom& GetContainingRoom(int x, int y);
@@ -60,21 +74,9 @@ private:
     // Populated the properties container with the properties defined in the given config file.
     void InitProperties();
 
-    void SpawnRoom(int x, int y);
-    void RemoveRoom(int x, int y);
-
     // Returns the key to the room that contains the point (x, y).
     sf::Vector2i ToKey(int x, int y);
 
-};
-
-template <> 
-struct std::hash<sf::Vector2i> {
-    std::size_t operator()(sf::Vector2i const &p) const noexcept {
-        std::size_t h {std::hash<int>{}(p.x)};
-        HashCombine(h, p.y);
-        return h;
-    }
 };
 
 #endif
