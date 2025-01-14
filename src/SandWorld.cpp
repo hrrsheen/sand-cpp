@@ -47,14 +47,13 @@ void SandWorld::SpawnRoom(int x, int y) {
     ElementProperties* propPtr {&properties};
     if (key.x >= xMin && key.x < xMax && key.y >= yMin && key.y < yMax) {        
         room_ptr roomPtr (std::make_unique<SandRoom>(
-            constants::roomWidth * x,
-            constants::roomHeight * y,
+            x, y,
             constants::roomWidth,
             constants::roomHeight,
             propPtr
         ));
         roomID_t id {rooms.Insert(std::move(roomPtr))};
-        display.Insert(WorldDisplay());
+        display.Insert(WorldDisplay(x, y));
         roomsMap[key] = id;
     }
 }

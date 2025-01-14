@@ -29,10 +29,11 @@ struct WorldDisplay {
     sf::Texture gridTexture;
     sf::Sprite  gridSprite;
 
-    WorldDisplay() {
+    WorldDisplay(int x, int y) {
         gridImage.create(constants::roomWidth, constants::roomHeight);
         gridTexture.create(constants::roomWidth, constants::roomHeight);
         gridTexture.setSmooth(false);
+        gridSprite.setPosition(x, y);
     }
 };
 
