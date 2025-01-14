@@ -13,10 +13,7 @@ add_executable(sand-cpp
     src/Chunks.cpp
     src/Helpers.cpp
     src/Elements/ElementProperties.cpp
-    src/Elements/PropertiesContainer.cpp
-    src/Elements/Solid.cpp
-    src/Elements/Liquid.cpp
-    src/Elements/Gas.cpp)
+    src/Elements/Inits.cpp)
 
 target_include_directories(sand-cpp
     PRIVATE ${PROJECT_SOURCE_DIR}/inc

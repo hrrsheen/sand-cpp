@@ -4,7 +4,6 @@
 #include "Cell.hpp"
 #include "Chunks.hpp"
 #include "Elements/ElementProperties.hpp"
-#include "Elements/PropertiesContainer.hpp"
 #include "FreeList.h"
 #include "Helpers.hpp"
 #include "SandRoom.hpp"
@@ -31,7 +30,7 @@ public:
     // std::vector<SandRoom *> inactiveRooms;
     
     // The properties of the elements being simulated in the world.
-    PropertiesContainer properties;
+    ElementProperties properties;
 
 private:
     std::unordered_map<sf::Vector2i, roomID_t, Vector2iHash> roomsMap;
@@ -68,11 +67,10 @@ public:
 
     // Helper functions.
     size_t Size() const; // Returns the number of active rooms.
-    size_t PropertiesSize() const;
 
 private:
-    // Populated the properties container with the properties defined in the given config file.
-    void InitProperties();
+    // Populated the properties container. Returns true if successful, false otherwise.
+    bool InitProperties();
 
     // Returns the key to the room that contains the point (x, y).
     sf::Vector2i ToKey(int x, int y);

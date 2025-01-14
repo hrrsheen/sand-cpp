@@ -23,7 +23,7 @@ Cell& SandWorker::GetCell(sf::Vector2i p) {
 
 void SandWorker::SetCell(int x, int y, Element id) {
     if (room->InBounds(x, y)) {
-        return room->SetCell(x, y, id, properties.Get(id));
+        return room->SetCell(x, y, id);
     }
 
     world.SetCell(x, y, id);
@@ -100,7 +100,7 @@ void SandWorker::Step(float _dt) {
         room->chunks.UpdateChunk(ci);
     }
 
-    room->ConsolidateActions(properties);
+    room->ConsolidateActions();
     room->ConsolidateMoves(&world.rooms);
 }
 
@@ -127,64 +127,65 @@ void SandWorker::SimulateChunk(Chunk &chunk) {
 }
 
 bool SandWorker::ApplyRules(Cell &cell, sf::Vector2i p) {
-    ElementProperties &eleProp {properties.Get(cell.id)};
+    ConstProperties &prop {properties.constants[cell.id]};
     
-    if      (ActionCell(cell, eleProp, p)) { return true; }  // Act on other cells.
-    else if (  MoveCell(cell, eleProp, p)) { return true; }  // Apply movement behaviours (falling, floating, etc).
-    else if (SpreadCell(cell, eleProp, p)) { return true; }  // Apply spreading behaviour.
+    // if      (ActionCell(cell, prop, p)) { return true; }  // Act on other cells.
+    if      (  MoveCell(cell, prop, p)) { return true; }
+    // else if (  MoveCell(cell, prop, p)) { return true; }  // Apply movement behaviours (falling, floating, etc).
+    else if (SpreadCell(cell, prop, p)) { return true; }  // Apply spreading behaviour.
 
     return false;
 }
 
 
-bool SandWorker::MoveCell(Cell &cell, ElementProperties &eleProp, sf::Vector2i p) {
+bool SandWorker::MoveCell(Cell &cell, ConstProperties &prop, sf::Vector2i p) {
     if (VALID_ROOM(IsEmpty(p.x, p.y))) return false;
-    if (eleProp.moveBehaviour == MoveType::NONE) return false;
+    if (prop.moveBehaviour == MoveType::NONE) return false;
 
-    if      (eleProp.moveBehaviour == MoveType::FLOAT_DOWN)  { return FloatDown   (p, cell);     }
-    else if (eleProp.moveBehaviour == MoveType::FLOAT_UP)    { return FloatUp     (p, cell);     }
-    else if (eleProp.moveBehaviour == MoveType::FALL_DOWN)   { return FallDown    (p, cell, dt); }
+    if      (prop.moveBehaviour == MoveType::FLOAT_DOWN)  { return FloatDown   (p, cell);     }
+    else if (prop.moveBehaviour == MoveType::FLOAT_UP)    { return FloatUp     (p, cell);     }
+    else if (prop.moveBehaviour == MoveType::FALL_DOWN)   { return FallDown    (p, cell, dt); }
 
     return false;
 }
 
-bool SandWorker::SpreadCell(Cell &cell, ElementProperties &eleProp, sf::Vector2i p) {
+bool SandWorker::SpreadCell(Cell &cell, ConstProperties &prop, sf::Vector2i p) {
     if (VALID_ROOM(IsEmpty(p.x, p.y))) return false;
-    if (eleProp.spreadBehaviour == SpreadType::NONE) return false;
+    if (prop.spreadBehaviour == SpreadType::NONE) return false;
     cell.velocity = sf::Vector2f(0.f, 0.f); // Reset velocity. May later change to transferring y velocity to x.
 
-    if      (eleProp.spreadBehaviour & SpreadType::DOWN_SIDE && SpreadDownSide(p, cell)) { return true; } // TODO: Would be easier if I passed in eleProp.
-    else if (eleProp.spreadBehaviour & SpreadType::UP_SIDE   && SpreadUpSide  (p, cell)) { return true; } 
-    else if (eleProp.spreadBehaviour & SpreadType::SIDE      && SpreadSide    (p, cell)) { return true; }
+    if      (prop.spreadBehaviour & SpreadType::DOWN_SIDE && SpreadDownSide(p, cell)) { return true; }
+    else if (prop.spreadBehaviour & SpreadType::UP_SIDE   && SpreadUpSide  (p, cell)) { return true; } 
+    else if (prop.spreadBehaviour & SpreadType::SIDE      && SpreadSide    (p, cell)) { return true; }
 
     return false;
 }
 
-bool SandWorker::ActionCell(Cell &cell, ElementProperties &eleProp, sf::Vector2i p) {
-    if (VALID_ROOM(IsEmpty(p.x, p.y))) return false;
+// bool SandWorker::ActionCell(Cell &cell, ConstProperties &prop, sf::Vector2i p) {
+//     if (VALID_ROOM(IsEmpty(p.x, p.y))) return false;
 
-    Action action {eleProp.ActUponSelf(p, cell, dt)};
-    if (action.IsValid()) {
-        room->QueueAction(action);
-        return true;
-    }
+//     Action action {eleProp.ActUponSelf(p, cell, dt)};
+//     if (action.IsValid()) {
+//         room->QueueAction(action);
+//         return true;
+//     }
 
-    bool acted {false};
-    for (const sf::Vector2i &deltaP : eleProp.actionSet) {
-        roomID_t roomID {ContainingRoomID(p + deltaP)};
-        if (VALID_ROOM(roomID)) {
-            Cell &other {GetCell(p + deltaP)};
-            ElementProperties &otherProp {properties.Get(other.id)};
-            action = eleProp.ActUponOther(cell, eleProp, other, otherProp, p, p + deltaP, dt);
-            if (action.IsValid()) {
-                acted = true;
-                GetRoom(roomID)->QueueAction(action);
-            }
-        }
-    }
+//     bool acted {false};
+//     for (const sf::Vector2i &deltaP : eleProp.actionSet) {
+//         roomID_t roomID {ContainingRoomID(p + deltaP)};
+//         if (VALID_ROOM(roomID)) {
+//             Cell &other {GetCell(p + deltaP)};
+//             ElementProperties &otherProp {properties.Get(other.id)};
+//             action = eleProp.ActUponOther(cell, eleProp, other, otherProp, p, p + deltaP, dt);
+//             if (action.IsValid()) {
+//                 acted = true;
+//                 GetRoom(roomID)->QueueAction(action);
+//             }
+//         }
+//     }
 
-    return acted;
-}
+//     return acted;
+// }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -240,8 +241,8 @@ bool SandWorker::FallDown(sf::Vector2i p, Cell &cell, float dt) {
 }
 
 bool SandWorker::SpreadDownSide(sf::Vector2i p, Cell &cell) {
-    sf::Vector2i leftPos    {p + sf::Vector2i( 1, -1)};
-    sf::Vector2i rightPos   {p + sf::Vector2i(-1, -1)};
+    sf::Vector2i leftPos    {p + sf::Vector2i(-1, -1)};
+    sf::Vector2i rightPos   {p + sf::Vector2i( 1, -1)};
 
     // These roomID_t will encode information about both cell openness and room validity. In the cases of either
     // an invalid room or a non-open cell, they will be -1. For an open cell in a valid room the variable will
@@ -250,16 +251,15 @@ bool SandWorker::SpreadDownSide(sf::Vector2i p, Cell &cell) {
     roomID_t right  {ContainingRoomID(rightPos)};
 
     // Determine whether the down-left cell is empty or displaceable.
-    ElementProperties &ep {properties.Get(cell.id)};
     if (VALID_ROOM(left)) {
-        ElementProperties &leftProp {properties.Get(GetCell(leftPos).id)};
-        bool empty {GetRoom(left)->IsEmpty(p) || ep.CanDisplace(leftProp.type)};
+        Cell &leftCell {GetCell(leftPos)};
+        bool empty {GetRoom(left)->IsEmpty(p) || cell.CanDisplace(leftCell.id)};
         left = BoolToID(left, empty);
     }
     // Determine whether the down-right cell is empty or displaceable.
     if (VALID_ROOM(right)) {
-        ElementProperties &rightProp {properties.Get(GetCell(rightPos).id)};
-        bool empty {GetRoom(right)->IsEmpty(p) || ep.CanDisplace(rightProp.type)};
+        Cell &rightCell {GetCell(rightPos)};
+        bool empty {GetRoom(right)->IsEmpty(p) || cell.CanDisplace(rightCell.id)};
         right = BoolToID(right, empty);
     }
 
@@ -320,7 +320,7 @@ bool SandWorker::SpreadSide(sf::Vector2i p, Cell &cell) {
         right   = BoolToID(right, !flip);
     }
 
-    int spreadRate {properties.Get(cell.id).spreadRate};
+    int spreadRate {cell.SpreadRate()};
     
     sf::Vector2i dst;
     if (VALID_ROOM(left)) {

@@ -28,16 +28,17 @@ void WorldState::Step(float dt) {
 void WorldState::Draw(Screen &screen) {
     screen.clear();
     const sf::Rect<int> borders {screen.ViewBorders()};
-    sf::Vector2i size {borders.getSize() - sf::Vector2i(1, 1)};
-    std::vector<roomID_t> rooms {
-        world.ContainingRoomID(borders.getPosition() - sf::Vector2( size.x,  size.y) / 2),
-        world.ContainingRoomID(borders.getPosition() - sf::Vector2(-size.x,  size.y) / 2),
-        world.ContainingRoomID(borders.getPosition() - sf::Vector2( size.x, -size.y) / 2),
-        world.ContainingRoomID(borders.getPosition() - sf::Vector2(-size.x, -size.y) / 2)
-    };
-    std::sort(rooms.begin(), rooms.end());
-    rooms.erase(std::unique(rooms.begin(), rooms.end()), rooms.end());
-    for (roomID_t id : rooms) {
+    // sf::Vector2i size {borders.getSize() - sf::Vector2i(1, 1)};
+    // std::vector<roomID_t> rooms {
+    //     world.ContainingRoomID(borders.getPosition() - sf::Vector2( size.x,  size.y) / 2),
+    //     world.ContainingRoomID(borders.getPosition() - sf::Vector2(-size.x,  size.y) / 2),
+    //     world.ContainingRoomID(borders.getPosition() - sf::Vector2( size.x, -size.y) / 2),
+    //     world.ContainingRoomID(borders.getPosition() - sf::Vector2(-size.x, -size.y) / 2)
+    // };
+    // std::sort(rooms.begin(), rooms.end());
+    // rooms.erase(std::unique(rooms.begin(), rooms.end()), rooms.end());
+    // for (roomID_t id : rooms) {
+    for (roomID_t id = 0; id < world.rooms.Range(); ++id) {
         SandRoom &room {world.GetRoom(id)};
 
     

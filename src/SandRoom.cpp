@@ -9,20 +9,21 @@
 //  Initialisation Functions.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-SandRoom::SandRoom(int x, int y, int width, int height, const PropertiesContainer * properties) : 
+SandRoom::SandRoom(int x, int y, int width, int height, const ElementProperties * properties) : 
     x_m(x), y_m(y), width_m(width), height_m(height), 
     chunks(constants::numXChunks, constants::numYChunks, constants::chunkWidth, constants::chunkHeight) {
-    grid.resize(width_m * height_m);
-    InitCells(properties);
+    Cell defaultCell(properties);
+    grid.resize(width_m * height_m, defaultCell);
+    // InitCells(properties);
 }
 
-void SandRoom::InitCells(const PropertiesContainer * properties) {
-    for (int i = 0; i < grid.size(); ++i) {
-        Cell newCell;
-        newCell.Assign(Element::air, properties->Get(Element::air), i / width_m);
-        grid[i] = newCell;
-    }
-}
+// void SandRoom::InitCells(const ElementProperties const *properties) {
+//     for (int i = 0; i < grid.size(); ++i) {
+//         Cell newCell(properties);
+//         newCell.Assign(Element::air, i / width_m);
+//         grid[i] = newCell;
+//     }
+// }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Access Functions.
@@ -44,14 +45,14 @@ Cell& SandRoom::GetCell(sf::Vector2i p) {
 //  Setting functions.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-void SandRoom::SetCell(int index, Element id, ElementProperties &properties) {
+void SandRoom::SetCell(int index, Element id) {
     sf::Vector2i coords {ToLocalCoords(index)};
-    GetCell(index).Assign(id, properties, coords.x, coords.y);
+    GetCell(index).Assign(id, coords.x, coords.y);
     chunks.KeepContainingAlive(coords.x, coords.y);
 }
 
-void SandRoom::SetCell(int x, int y, Element id, ElementProperties &properties) {
-    GetCell(x, y).Assign(id, properties, x, y);
+void SandRoom::SetCell(int x, int y, Element id) {
+    GetCell(x, y).Assign(id, x, y);
     chunks.KeepContainingAlive(x, y);
 }
 
@@ -141,12 +142,12 @@ void SandRoom::ConsolidateMoves(FreeList<room_ptr> *rooms) {
 
 void SandRoom::QueueAction(Action action) {
     if (ToIndex(action.p) < 0) {
-        
+
     }
     queuedActions.emplace_back(ToIndex(action.p), action.transform);
 }
 
-void SandRoom::ConsolidateActions(PropertiesContainer &properties) {
+void SandRoom::ConsolidateActions() {
     if (queuedActions.size() == 0) return;
 
     // Sort the queued actions by destination.
@@ -171,7 +172,7 @@ void SandRoom::ConsolidateActions(PropertiesContainer &properties) {
             
             int iCell    {queuedActions[iRand].first};
             Element tfID {queuedActions[iRand].second};
-            SetCell(iCell, tfID, properties.Get(tfID));
+            SetCell(iCell, tfID);
 
             sf::Vector2i coords {ToWorldCoords(iCell)};
             chunks.KeepContainingAlive(coords.x, coords.y);

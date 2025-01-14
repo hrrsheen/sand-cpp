@@ -3,7 +3,7 @@
 
 #include "Elements/Names.hpp"
 #include "Elements/ElementProperties.hpp"
-#include "Elements/PropertiesContainer.hpp"
+#include "Elements/Inits.hpp"
 #include "Elements/Gas.hpp"
 #include "Elements/Liquid.hpp"
 #include "Elements/Solid.hpp"

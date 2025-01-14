@@ -12,69 +12,94 @@
 #define TEXTURE_INDEX 1
 
 ConstProperties::ConstProperties() :
-    type(ElementType::AIR), name(), moveBehaviour(MoveType::NONE), spreadBehaviour(SpreadType::NONE), actionSet(), 
-    colourEachFrame(false),
-    palette(),
+    type(ElementType::AIR), name(), moveBehaviour(MoveType::NONE), spreadBehaviour(SpreadType::NONE), actionSet(),
     spreadRate(1),
     flammability(0.f) {}
 
-ElementProperties::ElementProperties(Element _id, ConstProperties &inits) :
-    id(_id),
-    type            (inits.type),
-    name            (inits.name),
-    moveBehaviour   (inits.moveBehaviour),
-    spreadBehaviour (inits.spreadBehaviour),
-    actionSet       (inits.actionSet),
-    colourEachFrame (inits.colourEachFrame),
-    palette         (inits.palette),
-    spreadRate      (inits.spreadRate),
-    flammability    (inits.flammability) {}
+ElementProperties::ElementProperties() : constants(Element::count + 1), colours(Element::count + 1) {
+    ConstProperties constsInit;
+    constsInit.type = ElementType::AIR;
+    constsInit.name = "air";
+    ColourProperties colourInit;
+    COLOUR(colourInit.palette).push_back(0x000000ff);
+    
+    Insert(Element::air, constsInit, colourInit);
+}
+
+bool ElementProperties::Insert(Element id, ConstProperties consts, ColourProperties palette) {
+    if (Contains(id)) return false;
+
+    constants[id] = consts;
+    colours[id] = palette;
+    return true;
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Colouring.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-sf::Color ElementProperties::ColourFromArray() const {
-    if (COLOUR(palette).size() == 0) {
-        return sf::Color(0x00000000);
+sf::Color ElementProperties::Colour(Element id, int x, int y) const {
+    if (HasTexture(id)) {
+        return ColourFromTexture(id, x, y);
+    } else {
+        return ColourFromArray(id);
     }
-    if (COLOUR(palette).size() == 1) {
-        return sf::Color(COLOUR(palette).at(0)); // Trivial case where elements are a single colour.
-    }
-    int position {QuickRandInt(COLOUR(palette).size())};
-    return sf::Color(COLOUR(palette).at(position));
 }
 
-sf::Color ElementProperties::ColourFromTexture(int x, int y) const {
-    sf::Vector2u size {TEXTURE(palette).getSize()};
+sf::Color ElementProperties::ColourFromArray(Element id) const {
+    // No palette defaults to black
+    if (COLOUR(colours[id].palette).size() == 0) return sf::Color(0x00000000);
+
+    // Element is a single colour.
+    if (COLOUR(colours[id].palette).size() == 1) return sf::Color(COLOUR(colours[id].palette).at(0));
+
+    int position {QuickRandInt(COLOUR(colours[id].palette).size())};
+    return sf::Color(COLOUR(colours[id].palette).at(position));
+}
+
+sf::Color ElementProperties::ColourFromTexture(Element id, int x, int y) const {
+    sf::Vector2u size {TEXTURE(colours[id].palette).getSize()};
     x = x % static_cast<int>(size.x);
     y = y % static_cast<int>(size.y);
-    return TEXTURE(palette).getPixel(std::abs(x), std::abs(y));
+    return TEXTURE(colours[id].palette).getPixel(std::abs(x), std::abs(y));
 }
 
-bool ElementProperties::HasTexture() const {
-    return palette.index() == TEXTURE_INDEX;
+bool ElementProperties::HasTexture(Element id) const {
+    return colours[id].palette.index() == TEXTURE_INDEX;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Simulation.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-Action ElementProperties::ActUponSelf(sf::Vector2i p, Cell &self, float dt) const {
-    return Action::Null();
+// Action ElementProperties::ActUponSelf(sf::Vector2i p, Cell &self, float dt) const {
+//     return Action::Null();
+// }
+
+// Action ElementProperties::ActUponOther(Cell &self,  ElementProperties &selfProp,
+//                                        Cell &other, ElementProperties &otherProp,
+//                                        sf::Vector2i p, sf::Vector2i otherP,
+//                                        float dt) const {
+//     return Action::Null();
+// }
+
+bool ElementProperties::CanDisplace(Element self, Element other) const {
+    return CanDisplace(constants[self].type, constants[other].type);
 }
 
-Action ElementProperties::ActUponOther(Cell &self,  ElementProperties &selfProp,
-                                       Cell &other, ElementProperties &otherProp,
-                                       sf::Vector2i p, sf::Vector2i otherP,
-                                       float dt) const {
-    return Action::Null();
+bool ElementProperties::CanDisplace(ElementType self, ElementType other) const {
+    switch (self) {
+        case ElementType::SOLID:
+            return (other != ElementType::SOLID);
+        case ElementType::LIQUID:
+            return (other != ElementType::SOLID && other != ElementType::LIQUID);
+        case ElementType::GAS:
+        case ElementType::AIR:
+        default:
+            return false;
+    }
 }
 
-bool ElementProperties::CanDisplace(ElementType other) const {
-    return false;
-}
-
-bool ElementProperties::operator==(const ElementProperties &otherProperty) const {
-    return id == otherProperty.id || name == otherProperty.name;
+bool ElementProperties::Contains(Element id) const {
+    return !constants[id].name.empty();
 }

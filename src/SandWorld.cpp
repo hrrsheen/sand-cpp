@@ -13,29 +13,38 @@
 
 SandWorld::SandWorld() : 
     xMin(std::numeric_limits<int>::min()), xMax(std::numeric_limits<int>::max()),
-    yMin(std::numeric_limits<int>::min()), yMax(std::numeric_limits<int>::max()) {
-    InitProperties();
+    yMin(std::numeric_limits<int>::min()), yMax(std::numeric_limits<int>::max()),
+    properties() {
+    if (!InitProperties()) {
+        throw std::runtime_error("Failed to initialise ElementProperties.");
+    }
     SpawnRoom(0, 0);
 }
 
 SandWorld::SandWorld(int _xMin, int _xMax, int _yMin, int _yMax) : 
-    xMin(_xMin), xMax(_xMax), yMin(_yMin), yMax(_yMax) {
-    InitProperties();
+    xMin(_xMin), xMax(_xMax), yMin(_yMin), yMax(_yMax),
+    properties() {
+    if (!InitProperties()) {
+        throw std::runtime_error("Failed to initialise ElementProperties.");
+    }
     SpawnRoom(0, 0);
 }
 
-void SandWorld::InitProperties() {
-    properties.Insert(std::move(std::make_unique<Sand>  (InitSand   ())));
-    properties.Insert(std::move(std::make_unique<Stone> (InitStone  ())));
-    properties.Insert(std::move(std::make_unique<Water> (InitWater  ())));
-    properties.Insert(std::move(std::make_unique<Fire>  (InitFire   ())));
-    properties.Insert(std::move(std::make_unique<Wood>  (InitWood   ())));
-    properties.Insert(std::move(std::make_unique<Smoke> (InitSmoke  ())));
+bool SandWorld::InitProperties() {
+    bool success = false;
+    success |= InitSand (properties);
+    success |= InitStone(properties);
+    success |= InitWood (properties);
+    success |= InitWater(properties);
+    success |= InitFire (properties);
+    success |= InitSmoke(properties);
+
+    return success;
 }
 
 void SandWorld::SpawnRoom(int x, int y) {
     sf::Vector2i key {ToKey(x, y)};
-    PropertiesContainer* propPtr {&properties};
+    ElementProperties* propPtr {&properties};
     if (key.x >= xMin && key.x < xMax && key.y >= yMin && key.y < yMax) {        
         room_ptr roomPtr (std::make_unique<SandRoom>(
             constants::roomWidth * x,
@@ -69,7 +78,7 @@ SandRoom& SandWorld::GetRoom(roomID_t id) {
 }
 
 SandRoom& SandWorld::GetRoom(sf::Vector2i key) {
-    return GetRoom(roomsMap[key]);
+    return GetRoom(roomsMap.at(key));
 }
 
 SandRoom& SandWorld::GetContainingRoom(sf::Vector2i p) {
@@ -86,19 +95,23 @@ SandRoom& SandWorld::GetContainingRoom(int x, int y) {
 
 void SandWorld::SetCell(int x, int y, Element id) {
     SandRoom &room {GetContainingRoom(x, y)};
-    room.SetCell(x, y, id, properties.Get(id));
+    room.SetCell(x, y, id);
 }
 
 void SandWorld::SetArea(int x, int y, int w, int h, Element id) {
     SandRoom *room {nullptr};
+    roomID_t roomID {-1}, prevRoomID {-1};
     for (int yi = y; yi < y + h; ++yi) {
         for (int xi = x; xi < x + w; ++xi) {
-            sf::Vector2i key {ToKey(xi, yi)};
             sf::Vector2i coords {xi, yi};
-            if (!room || !room->InBounds(xi, yi)) 
-                room = &GetRoom(key);
-
-            room->SetCell(xi, yi, id, properties.Get(id));
+            roomID_t roomID {ContainingRoomID(coords)};
+            if (VALID_ROOM(roomID)) {
+                if (roomID != prevRoomID) {
+                    room = &GetRoom(roomID);
+                    prevRoomID = roomID;
+                }
+                room->SetCell(xi, yi, id);
+            }
         }
     }
 }
@@ -145,10 +158,6 @@ roomID_t SandWorld::ContainingRoomID(sf::Vector2i p) {
 
 size_t SandWorld::Size() const {
     return rooms.Range();
-}
-
-size_t SandWorld::PropertiesSize() const {
-    return properties.Size();
 }
 
 sf::Vector2i SandWorld::ToKey(int x, int y) {

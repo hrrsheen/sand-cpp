@@ -18,12 +18,23 @@ public:
 
     sf::Color colour;       // The colour of this cell.
 
-    Cell();
+private:
+    ElementProperties const *properties;
+
+public:
+    Cell(const ElementProperties *_properties);
 
     //////// Assignment / manipulation functions ////////
-    void Assign(Element id, const ElementProperties &properties, int x=0, int y=0);
+    void Assign(Element id, int x=0, int y=0);
 
     void ApplyAcceleration(sf::Vector2f a, float dt);
+
+    // Properties queries.
+    bool CanDisplace(Element other) const;
+    int SpreadRate() const;
+    int Flammability() const;
+
+
 
     
 };

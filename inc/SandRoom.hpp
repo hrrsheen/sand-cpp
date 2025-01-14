@@ -6,7 +6,6 @@
 #include "Chunks.hpp"
 #include "Elements/Names.hpp"
 #include "Elements/ElementProperties.hpp"
-#include "Elements/PropertiesContainer.hpp"
 #include "FreeList.h"
 #include "Helpers.hpp"
 #include <vector>
@@ -31,7 +30,7 @@ private:
     std::vector<std::pair<int, Element>> queuedActions;
 
 public:
-    SandRoom(int x, int y, int width, int height, const PropertiesContainer * properties);
+    SandRoom(int x, int y, int width, int height, const ElementProperties * properties);
 
     // Access functions.
     Cell& GetCell(int index);
@@ -39,8 +38,8 @@ public:
     Cell& GetCell(sf::Vector2i p);
 
     // Setting functions.
-    void SetCell(int index, Element id, ElementProperties &properties);
-    void SetCell(int x, int y, Element id, ElementProperties &properties);
+    void SetCell(int index, Element id);
+    void SetCell(int x, int y, Element id);
 
     // Querying the grid.
     bool IsEmpty(int x, int y);
@@ -54,7 +53,7 @@ public:
 
     // Transforming (applying actions) cells.
     void QueueAction(Action action);
-    void ConsolidateActions(PropertiesContainer &properties);
+    void ConsolidateActions();
 
     // Helper functions.
     int ToIndex(int xw, int yw) const; // Converts world coordinates to a local index.
@@ -64,7 +63,7 @@ public:
 
 private:
     // Initialises each cell within the grid.
-    void InitCells(const PropertiesContainer * properties);
+    // void InitCells(const ElementProperties * properties);
 };
 
 #endif

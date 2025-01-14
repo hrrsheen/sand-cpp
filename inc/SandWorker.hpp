@@ -4,7 +4,6 @@
 #include "Cell.hpp"
 #include "Elements/Names.hpp"
 #include "Elements/ElementProperties.hpp"
-#include "Elements/PropertiesContainer.hpp"
 #include "SandRoom.hpp"
 #include "SandWorld.hpp"
 #include <utility>
@@ -15,7 +14,7 @@ private:
     SandWorld   &world;
     SandRoom* const room;
 
-    PropertiesContainer &properties;
+    ElementProperties &properties;
 
     float dt; // The time between frames.
 
@@ -44,9 +43,9 @@ private:
     // Returns true if the cell has performed some action.
     bool ApplyRules(Cell &cell, sf::Vector2i p);
 
-    bool MoveCell(Cell &cell, ElementProperties &properties, sf::Vector2i p);
-    bool SpreadCell(Cell &cell, ElementProperties &properties, sf::Vector2i p);
-    bool ActionCell(Cell &cell, ElementProperties &properties, sf::Vector2i p);
+    bool MoveCell   (Cell &cell, ConstProperties &constProp, sf::Vector2i p);
+    bool SpreadCell (Cell &cell, ConstProperties &constProp, sf::Vector2i p);
+    bool ActionCell (Cell &cell, ConstProperties &constProp, sf::Vector2i p);
 
     //////// Movement functions ////////
     bool FloatDown      (sf::Vector2i p, Cell &cell);
