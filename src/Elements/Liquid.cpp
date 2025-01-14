@@ -27,7 +27,7 @@ Action Water::ActUponOther(Cell &self,  ElementProperties &selfProp,
                           sf::Vector2i p, sf::Vector2i otherP,
                           float dt) const {
     if (other.id == Element::fire) {
-        Action(otherP, Element::smoke);
+        return Action(otherP, Element::smoke);
     }
 
     return Action::Null();

@@ -23,7 +23,7 @@ public:
     Smoke(ConstProperties &init);
 
     //////// Simulation functions. ////////
-    Action ActUponSelf(sf::Vector2i p, Cell &self, float dt);
+    Action ActUponSelf(sf::Vector2i p, Cell &self, float dt) const;
     
 };
 

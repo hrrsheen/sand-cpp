@@ -86,7 +86,7 @@ Smoke InitSmoke() {
 
 Smoke::Smoke(ConstProperties &init) : ElementProperties(Element::smoke, init) {}
 
-Action Smoke::ActUponSelf(sf::Vector2i p, Cell &self, float dt) {
+Action Smoke::ActUponSelf(sf::Vector2i p, Cell &self, float dt) const {
     // Tick down the smoke's own health.
     if (self.health <= 0) {
         return Action(p, Element::air);
