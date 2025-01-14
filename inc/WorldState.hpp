@@ -14,12 +14,6 @@ class WorldState {
 public:
     SandWorld world;
 
-private:
-    // For drawing the grid.
-    sf::Image   gridImage;
-    sf::Texture gridTexture;
-    sf::Sprite  gridSprite;
-
 public:
     WorldState(int width, int height);
 
@@ -29,13 +23,7 @@ public:
     void Draw(Screen &screen);
 
 private:
-
-    // Drawing functions.
-    // Initialises the colour of the SandWorld grid to Black.
-    void InitGridImage(int width, int height);
-    // Updates the given cell to the given colour.
-    void UpdateCell(int x, int y, sf::Color colour);
-    void DrawWorld(Screen &screen);
+    std::vector<roomID_t> VisibleRooms(sf::IntRect);
 
 };
 

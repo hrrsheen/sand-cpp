@@ -9,21 +9,12 @@
 //  Initialisation Functions.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-SandRoom::SandRoom(int x, int y, int width, int height, const ElementProperties * properties) : 
-    x_m(x), y_m(y), width_m(width), height_m(height), 
+SandRoom::SandRoom(int _x, int _y, int _width, int _height, const ElementProperties * properties) : 
+    x(_x), y(_y), width(_width), height(_height), 
     chunks(constants::numXChunks, constants::numYChunks, constants::chunkWidth, constants::chunkHeight) {
     Cell defaultCell(properties);
-    grid.resize(width_m * height_m, defaultCell);
-    // InitCells(properties);
+    grid.resize(width * height, defaultCell);
 }
-
-// void SandRoom::InitCells(const ElementProperties const *properties) {
-//     for (int i = 0; i < grid.size(); ++i) {
-//         Cell newCell(properties);
-//         newCell.Assign(Element::air, i / width_m);
-//         grid[i] = newCell;
-//     }
-// }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Access Functions.
@@ -33,8 +24,8 @@ Cell& SandRoom::GetCell(int index) {
     return grid.at(index);
 }
 
-Cell& SandRoom::GetCell(int x, int y) {
-    return GetCell(ToIndex(x, y));
+Cell& SandRoom::GetCell(int _x, int _y) {
+    return GetCell(ToIndex(_x, _y));
 }
 
 Cell& SandRoom::GetCell(sf::Vector2i p) {
@@ -51,17 +42,17 @@ void SandRoom::SetCell(int index, Element id) {
     chunks.KeepContainingAlive(coords.x, coords.y);
 }
 
-void SandRoom::SetCell(int x, int y, Element id) {
-    GetCell(x, y).Assign(id, x, y);
-    chunks.KeepContainingAlive(x, y);
+void SandRoom::SetCell(int _x, int _y, Element id) {
+    GetCell(_x, _y).Assign(id, _x, _y);
+    chunks.KeepContainingAlive(_x, _y);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Querying the grid.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-bool SandRoom::IsEmpty(int x, int y) {
-    if (InBounds(x, y)) return GetCell(x, y).id == Element::air;
+bool SandRoom::IsEmpty(int _x, int _y) {
+    if (InBounds(_x, _y)) return GetCell(_x, _y).id == Element::air;
 
     return false;
 }
@@ -70,9 +61,9 @@ bool SandRoom::IsEmpty(sf::Vector2i p) {
     return IsEmpty(p.x, p.y);
 }
 
-bool SandRoom::InBounds(int x, int y) const {
-    return x >= x_m && x < x_m + width_m 
-        && y >= y_m && y < y_m + height_m;
+bool SandRoom::InBounds(int _x, int _y) const {
+    return _x >= x && _x < x + width 
+        && _y >= y && _y < y + height;
 }
 
 bool SandRoom::InBounds(sf::Vector2i p) const {
@@ -189,7 +180,7 @@ void SandRoom::ConsolidateActions() {
 //////////////////////////////////////////////////////////////////////////////////////////
 
 int SandRoom::ToIndex(int xw, int yw) const {
-    return (xw - x_m) + (yw - y_m) * width_m;
+    return (xw - x) + (yw - y) * width;
 }
 
 int SandRoom::ToIndex(sf::Vector2i p) const {
@@ -197,16 +188,16 @@ int SandRoom::ToIndex(sf::Vector2i p) const {
 }
 
 sf::Vector2i SandRoom::ToLocalCoords(int index) const {
-    int y {index / width_m};
-    int x {index % width_m};
+    int y {index / width};
+    int x {index % width};
 
     return sf::Vector2i(x, y);
 }
 
 sf::Vector2i SandRoom::ToWorldCoords(int index) const {
     sf::Vector2i coords {ToLocalCoords(index)};
-    coords.x += x_m;
-    coords.y += y_m;
+    coords.x += x;
+    coords.y += y;
 
     return coords;
 }

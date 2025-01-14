@@ -16,8 +16,8 @@ using roomID_t = int;
 class SandRoom {
     using room_ptr = std::unique_ptr<SandRoom>;
 public:
-    const int x_m, y_m;
-    const int width_m, height_m;
+    const int x, y;
+    const int width, height;
 
     // Contains the active chunks.
     Chunks chunks;
@@ -30,7 +30,7 @@ private:
     std::vector<std::pair<int, Element>> queuedActions;
 
 public:
-    SandRoom(int x, int y, int width, int height, const ElementProperties * properties);
+    SandRoom(int _x, int _y, int _width, int _height, const ElementProperties * properties);
 
     // Access functions.
     Cell& GetCell(int index);
@@ -39,12 +39,12 @@ public:
 
     // Setting functions.
     void SetCell(int index, Element id);
-    void SetCell(int x, int y, Element id);
+    void SetCell(int _x, int _y, Element id);
 
     // Querying the grid.
-    bool IsEmpty(int x, int y);
+    bool IsEmpty(int _x, int _y);
     bool IsEmpty(sf::Vector2i p);
-    bool InBounds(int x, int y) const;
+    bool InBounds(int _x, int _y) const;
     bool InBounds(sf::Vector2i p) const;
 
     // Moving cells around.

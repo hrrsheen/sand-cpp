@@ -6,13 +6,7 @@
 #include <iostream>
 #include <vector>
 
-WorldState::WorldState(int width, int height) : 
-    world(-2, 2, 0, 2) {
-    gridImage.create(width, height);
-    gridTexture.create(width, height);
-    gridTexture.setSmooth(false);
-    InitGridImage(width, height);
-}
+WorldState::WorldState(int width, int height) : world(-2, 2, 0, 2) {}
 
 void WorldState::Step(float dt) {
     for (roomID_t id = 0; id < world.rooms.Range(); ++id) {
@@ -27,61 +21,43 @@ void WorldState::Step(float dt) {
 
 void WorldState::Draw(Screen &screen) {
     screen.clear();
-    const sf::Rect<int> borders {screen.ViewBorders()};
-    // sf::Vector2i size {borders.getSize() - sf::Vector2i(1, 1)};
-    // std::vector<roomID_t> rooms {
-    //     world.ContainingRoomID(borders.getPosition() - sf::Vector2( size.x,  size.y) / 2),
-    //     world.ContainingRoomID(borders.getPosition() - sf::Vector2(-size.x,  size.y) / 2),
-    //     world.ContainingRoomID(borders.getPosition() - sf::Vector2( size.x, -size.y) / 2),
-    //     world.ContainingRoomID(borders.getPosition() - sf::Vector2(-size.x, -size.y) / 2)
-    // };
-    // std::sort(rooms.begin(), rooms.end());
-    // rooms.erase(std::unique(rooms.begin(), rooms.end()), rooms.end());
-    // for (roomID_t id : rooms) {
-    for (roomID_t id = 0; id < world.rooms.Range(); ++id) {
+    const sf::IntRect borders {screen.ViewBorders()};
+    std::vector<roomID_t> rooms {VisibleRooms(borders)};
+    for (roomID_t id : rooms) {
         SandRoom &room {world.GetRoom(id)};
-
+        WorldDisplay &display {world.display[id]};
     
         for (int ci = 0; ci < room.chunks.Size(); ci++) {
             Chunk &chunk {room.chunks.GetChunk(ci)};
-            if (room.chunks.IsActive(ci)) {
-                for (int y = chunk.yMin; y < chunk.yMax; ++y) {
-                    for (int x = chunk.xMin; x < chunk.xMax; ++x) {
-                        Cell &cell {room.GetCell(x, y)};
-                        if (cell.redraw) {
-                            UpdateCell(x, y, cell.colour);
-                            cell.redraw = false;
-                        }
+            for (int y = chunk.yMin; y < chunk.yMax; ++y) {
+                for (int x = chunk.xMin; x < chunk.xMax; ++x) {
+                    Cell &cell {room.GetCell(x, y)};
+                    if (cell.redraw) {
+                        display.gridImage.setPixel(x, y, cell.colour);
+                        cell.redraw = false;
                     }
                 }
             }
         }
-    }
-    // for (int i = 0; i < world.Size() - 1; i++) {
-    //     Cell &cell {world.GetCell(i)};
-    //     if (cell.redraw) {
-    //         sf::Vector2i coords {world.ToCoords(i)};
-    //         UpdateCell(coords.x, coords.y, cell.Colour());
-    //         cell.redraw = false;
-    //     }
-    // }
-    DrawWorld(screen);
-}
-
-void WorldState::InitGridImage(int width, int height) {
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            gridImage.setPixel(x, y, sf::Color::Black);
-        }
+        display.gridTexture.loadFromImage(display.gridImage);
+        display.gridSprite.setTexture(display.gridTexture);
+        screen.Draw(display.gridSprite);
     }
 }
 
-void WorldState::UpdateCell(int x, int y, sf::Color colour) {
-    gridImage.setPixel(x, y, colour);
-}
+std::vector<roomID_t> WorldState::VisibleRooms(const sf::IntRect borders) {
+    sf::Vector2i size {borders.getSize() - sf::Vector2i(1, 1)};
+    std::vector<roomID_t> rooms {
+        world.ContainingRoomID(borders.getPosition() - sf::Vector2( size.x,  size.y) / 2),
+        world.ContainingRoomID(borders.getPosition() - sf::Vector2(-size.x,  size.y) / 2),
+        world.ContainingRoomID(borders.getPosition() - sf::Vector2( size.x, -size.y) / 2),
+        world.ContainingRoomID(borders.getPosition() - sf::Vector2(-size.x, -size.y) / 2)
+    };
+    std::sort(rooms.begin(), rooms.end());
+    rooms.erase(std::unique(rooms.begin(), rooms.end()), rooms.end());
+    if (!VALID_ROOM(rooms[0])) {
+        rooms.erase(rooms.begin());
+    }
 
-void WorldState::DrawWorld(Screen &screen) {
-    gridTexture.loadFromImage(gridImage);
-    gridSprite.setTexture(gridTexture);
-    screen.Draw(gridSprite);
+    return rooms;
 }

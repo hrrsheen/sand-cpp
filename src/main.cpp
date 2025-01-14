@@ -66,7 +66,7 @@ bool ShouldClose(sf::Event &event) {
 void Paint(Lerp &stroke, Element type, int radius, WorldState &state) {
     for (sf::Vector2i pos : stroke) {
         if (radius == 1) {
-            state.world.SetCell(pos.x, pos.y, type);
+            state.world.SetCell(pos.x, pos.y, type); // TODO: Cache the room that the mouse is in.
         } else {
             state.world.SetArea(
                 pos.x - (radius - 1),
@@ -87,24 +87,29 @@ void Paint(Mouse &mouse, WorldState &state, Screen &screen) {
     Paint(lerp, mouse.brush, mouse.radius, state);
 }
 
-void DrawChunks(SandRoom &room, Screen &screen) {
-    for (int i = 0; i < room.chunks.Size(); i++) {
-        if (room.chunks.IsActive(i)) {
-            Chunk &chunk {room.chunks.GetChunk(i)};
-            ChunkBounds bounds {room.chunks.GetBounds(i)};
-            sf::RectangleShape rectangle;
-            rectangle.setSize(sf::Vector2f(bounds.width, bounds.height));
-            rectangle.setOutlineColor(sf::Color::Blue);
-            rectangle.setOutlineThickness(1);
-            rectangle.setFillColor(sf::Color::Transparent);
-            rectangle.setPosition(bounds.x, bounds.y);
-            screen.Draw(rectangle);
-            rectangle.setSize(sf::Vector2f(chunk.xMax - chunk.xMin, chunk.yMax - chunk.yMin));
-            rectangle.setOutlineColor(sf::Color::Green);
-            rectangle.setOutlineThickness(1);
-            rectangle.setFillColor(sf::Color::Transparent);
-            rectangle.setPosition(chunk.xMin, chunk.yMin);
-            screen.Draw(rectangle);
+void DrawChunks(FreeList<std::unique_ptr<SandRoom>> &rooms, Screen &screen) {
+    sf::RectangleShape rectangle;
+    rectangle.setOutlineThickness(1);
+    rectangle.setFillColor(sf::Color::Transparent);
+    for (roomID_t id = 0; id < rooms.Range(); ++id) {
+        SandRoom &room {*rooms[id].get()};
+        rectangle.setSize(sf::Vector2f(room.width, room.height));
+        rectangle.setOutlineColor(sf::Color::Red);
+        rectangle.setPosition(room.x, room.y);
+        screen.Draw(rectangle);
+        for (int i = 0; i < room.chunks.Size(); i++) {
+            if (room.chunks.IsActive(i)) {
+                Chunk &chunk {room.chunks.GetChunk(i)};
+                ChunkBounds bounds {room.chunks.GetBounds(i)};
+                rectangle.setSize(sf::Vector2f(bounds.width, bounds.height));
+                rectangle.setOutlineColor(sf::Color::Blue);
+                rectangle.setPosition(bounds.x, bounds.y);
+                screen.Draw(rectangle);
+                rectangle.setSize(sf::Vector2f(chunk.xMax - chunk.xMin, chunk.yMax - chunk.yMin));
+                rectangle.setOutlineColor(sf::Color::Green);
+                rectangle.setPosition(chunk.xMin, chunk.yMin);
+                screen.Draw(rectangle);
+            }
         }
     }
 }
@@ -161,7 +166,7 @@ int main() {
         state.Draw(screen);
         // DEBUG ONLY - Draw the active chunks.
         if (DEBUG) {
-            DrawChunks(state.world.GetRoom(0), screen);
+            DrawChunks(state.world.rooms, screen);
         }
         screen.display();
 

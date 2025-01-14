@@ -6,7 +6,7 @@
 
 
 Cell::Cell(const ElementProperties *_properties) : 
-    id(Element::air), redraw(false), health(100.f), velocity(0.f, 0.f), 
+    id(Element::air), redraw(true), health(100.f), velocity(0.f, 0.f), 
     properties(_properties), colour(_properties->Colour(id, 0, 0)) {}
 
 //////////////////////////////////////////////////////////////////////////////////////////

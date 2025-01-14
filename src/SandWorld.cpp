@@ -54,6 +54,7 @@ void SandWorld::SpawnRoom(int x, int y) {
             propPtr
         ));
         roomID_t id {rooms.Insert(std::move(roomPtr))};
+        display.Insert(WorldDisplay());
         roomsMap[key] = id;
     }
 }
@@ -62,6 +63,7 @@ void SandWorld::RemoveRoom(int x, int y) {
     sf::Vector2i key {x, y};
     roomID_t id {roomsMap.at(key)};
     rooms.Erase(id);
+    display.Erase(id);
     roomsMap.erase(key);
 }
 
@@ -94,8 +96,11 @@ SandRoom& SandWorld::GetContainingRoom(int x, int y) {
 //////////////////////////////////////////////////////////////////////////////////////////
 
 void SandWorld::SetCell(int x, int y, Element id) {
-    SandRoom &room {GetContainingRoom(x, y)};
-    room.SetCell(x, y, id);
+    roomID_t roomID {ContainingRoomID(sf::Vector2i(x, y))};
+    if (VALID_ROOM(roomID)) {
+        SandRoom &room {GetRoom(roomID)};
+        room.SetCell(x, y, id);
+    }
 }
 
 void SandWorld::SetArea(int x, int y, int w, int h, Element id) {

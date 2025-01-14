@@ -3,10 +3,12 @@
 
 #include "Cell.hpp"
 #include "Chunks.hpp"
+#include "Constants.hpp"
 #include "Elements/ElementProperties.hpp"
 #include "FreeList.h"
 #include "Helpers.hpp"
 #include "SandRoom.hpp"
+#include <SFML/Graphics.hpp>
 #include <vector>
 #include <unordered_map>
 
@@ -22,12 +24,24 @@ struct Vector2iHash {
     }
 };
 
+struct WorldDisplay {
+    sf::Image   gridImage;
+    sf::Texture gridTexture;
+    sf::Sprite  gridSprite;
+
+    WorldDisplay() {
+        gridImage.create(constants::roomWidth, constants::roomHeight);
+        gridTexture.create(constants::roomWidth, constants::roomHeight);
+        gridTexture.setSmooth(false);
+    }
+};
+
 class SandWorld {
     using room_ptr = std::unique_ptr<SandRoom>;
 
 public:
-    FreeList<room_ptr> rooms;
-    // std::vector<SandRoom *> inactiveRooms;
+    FreeList<room_ptr>      rooms;
+    FreeList<WorldDisplay>  display; // The render information for each room.
     
     // The properties of the elements being simulated in the world.
     ElementProperties properties;
