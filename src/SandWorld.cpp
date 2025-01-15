@@ -42,7 +42,7 @@ bool SandWorld::InitProperties() {
     return success;
 }
 
-void SandWorld::SpawnRoom(int x, int y) {
+roomID_t SandWorld::SpawnRoom(int x, int y) {
     sf::Vector2i key {ToKey(x, y)};
     ElementProperties* propPtr {&properties};
     if (key.x >= xMin && key.x < xMax && key.y >= yMin && key.y < yMax) {        
@@ -53,17 +53,19 @@ void SandWorld::SpawnRoom(int x, int y) {
             propPtr
         ));
         roomID_t id {rooms.Insert(std::move(roomPtr))};
-        display.Insert(WorldDisplay(x, y));
         roomsMap[key] = id;
+        return id;
     }
+    return -1;
 }
 
-void SandWorld::RemoveRoom(int x, int y) {
+roomID_t SandWorld::RemoveRoom(int x, int y) {
     sf::Vector2i key {x, y};
-    roomID_t id {roomsMap.at(key)};
+    roomID_t id {roomsMap.at(key)}; // TODO: error-checking
     rooms.Erase(id);
-    display.Erase(id);
     roomsMap.erase(key);
+
+    return id;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

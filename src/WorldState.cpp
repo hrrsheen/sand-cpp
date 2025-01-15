@@ -6,7 +6,14 @@
 #include <iostream>
 #include <vector>
 
-WorldState::WorldState(int width, int height) : world(-2, 2, 0, 2) {}
+WorldState::WorldState(int width, int height) : world(-2, 2, 0, 2) {
+    roomID_t newID {0};
+    display.Insert(WorldDisplay(0, 0));
+    newID = world.SpawnRoom(constants::roomWidth, 0);
+    display.Insert(WorldDisplay(constants::roomWidth, 0));
+    newID = world.SpawnRoom(0, constants::roomHeight);
+    display.Insert(WorldDisplay(0, constants::roomHeight));
+}
 
 void WorldState::Step(float dt) {
     for (roomID_t id = 0; id < world.rooms.Range(); ++id) {
@@ -25,7 +32,7 @@ void WorldState::Draw(Screen &screen) {
     std::vector<roomID_t> rooms {VisibleRooms(borders)};
     for (roomID_t id : rooms) {
         SandRoom &room {world.GetRoom(id)};
-        WorldDisplay &display {world.display[id]};
+        WorldDisplay &disp {display[id]};
     
         for (int ci = 0; ci < room.chunks.Size(); ci++) {
             Chunk &chunk {room.chunks.GetChunk(ci)};
@@ -33,15 +40,15 @@ void WorldState::Draw(Screen &screen) {
                 for (int x = chunk.xMin; x < chunk.xMax; ++x) {
                     Cell &cell {room.GetCell(x, y)};
                     if (cell.redraw) {
-                        display.gridImage.setPixel(x, y, cell.colour);
+                        disp.gridImage.setPixel(x - room.x, y - room.y, cell.colour);
                         cell.redraw = false;
                     }
                 }
             }
         }
-        display.gridTexture.loadFromImage(display.gridImage);
-        display.gridSprite.setTexture(display.gridTexture);
-        screen.Draw(display.gridSprite);
+        disp.gridTexture.loadFromImage(disp.gridImage);
+        disp.gridSprite.setTexture(disp.gridTexture);
+        screen.Draw(disp.gridSprite);
     }
 }
 

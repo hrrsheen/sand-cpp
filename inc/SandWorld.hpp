@@ -24,25 +24,11 @@ struct Vector2iHash {
     }
 };
 
-struct WorldDisplay {
-    sf::Image   gridImage;
-    sf::Texture gridTexture;
-    sf::Sprite  gridSprite;
-
-    WorldDisplay(int x, int y) {
-        gridImage.create(constants::roomWidth, constants::roomHeight);
-        gridTexture.create(constants::roomWidth, constants::roomHeight);
-        gridTexture.setSmooth(false);
-        gridSprite.setPosition(x, y);
-    }
-};
-
 class SandWorld {
     using room_ptr = std::unique_ptr<SandRoom>;
 
 public:
-    FreeList<room_ptr>      rooms;
-    FreeList<WorldDisplay>  display; // The render information for each room.
+    FreeList<room_ptr> rooms;
     
     // The properties of the elements being simulated in the world.
     ElementProperties properties;
@@ -57,8 +43,8 @@ public:
     SandWorld();
     SandWorld(int _xMin, int _xMax, int _yMin, int _yMax);
 
-    void SpawnRoom(int x, int y);
-    void RemoveRoom(int x, int y);
+    roomID_t SpawnRoom(int x, int y);
+    roomID_t RemoveRoom(int x, int y);
 
     // Access functions.
     Cell &GetCell(int x, int y);

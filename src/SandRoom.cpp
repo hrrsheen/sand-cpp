@@ -11,7 +11,7 @@
 
 SandRoom::SandRoom(int _x, int _y, int _width, int _height, const ElementProperties * properties) : 
     x(_x), y(_y), width(_width), height(_height), 
-    chunks(constants::numXChunks, constants::numYChunks, constants::chunkWidth, constants::chunkHeight) {
+    chunks(constants::numXChunks, constants::numYChunks, constants::chunkWidth, constants::chunkHeight, x, y) {
     Cell defaultCell(properties);
     grid.resize(width * height, defaultCell);
 }
@@ -101,23 +101,26 @@ void SandRoom::ConsolidateMoves(FreeList<room_ptr> *rooms) {
         if (move.dst != nextMove.dst) {
             // Perform the randomly-selected move from the competing moves group.
             int iRand {iStart + QuickRandInt(i - iStart)};
+            if (iRand > queuedMoves.size() - 20 && x == 0 && y == 0) {
+
+            }
             
             roomID_t id {queuedMoves[iRand].srcRoomID};
-            int src {queuedMoves[iRand].src};
-            int dst {queuedMoves[iRand].dst};
+            int src     {queuedMoves[iRand].src};
+            int dst     {queuedMoves[iRand].dst};
             
             SandRoom *room {(*rooms)[id].get()};
             Cell tmp {room->GetCell(src)};
-            Cell &srcCell {GetCell(src)};
+            Cell &srcCell {room->GetCell(src)};
             Cell &dstCell {GetCell(dst)};
             dstCell.redraw = true;
             tmp.redraw = true;
             srcCell = dstCell;
             dstCell = tmp;
 
-            sf::Vector2i srcCoords {ToWorldCoords(src)};
+            sf::Vector2i srcCoords {room->ToWorldCoords(src)};
             sf::Vector2i dstCoords {ToWorldCoords(dst)};
-            chunks.KeepContainingAlive(srcCoords.x, srcCoords.y);
+            room->chunks.KeepContainingAlive(srcCoords.x, srcCoords.y);
             chunks.KeepContainingAlive(dstCoords.x, dstCoords.y);
 
             iStart = i + 1;
