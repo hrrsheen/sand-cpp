@@ -36,15 +36,16 @@ void WorldState::Draw(Screen &screen) {
     
         for (int ci = 0; ci < room.chunks.Size(); ci++) {
             Chunk &chunk {room.chunks.GetChunk(ci)};
-            for (int y = chunk.yMin; y < chunk.yMax; ++y) {
-                for (int x = chunk.xMin; x < chunk.xMax; ++x) {
-                    Cell &cell {room.GetCell(x, y)};
-                    if (cell.redraw) {
-                        disp.gridImage.setPixel(x - room.x, y - room.y, cell.colour);
-                        cell.redraw = false;
-                    }
+            for (int y = chunk.yMin; y < chunk.yMax; ++y) { 
+            for (int x = chunk.xMin; x < chunk.xMax; ++x) {
+                CellDisplay &cellDisp {room.grid.display[room.ToIndex(x, y)]};
+                if (cellDisp.redraw) {
+                    disp.gridImage.setPixel(
+                        x - room.x, y - room.y, 
+                        cellDisp.colour);
+                    cellDisp.redraw = false;
                 }
-            }
+            }}
         }
         disp.gridTexture.loadFromImage(disp.gridImage);
         disp.gridSprite.setTexture(disp.gridTexture);

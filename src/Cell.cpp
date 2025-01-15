@@ -4,37 +4,57 @@
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/System/Vector2.hpp>
 
+void CellState::ApplyAcceleration(sf::Vector2f acc, float dt) {
+    velocity += acc * dt;
+    std::clamp(velocity.x, -constants::maxVelocity, constants::maxVelocity);
+    std::clamp(velocity.y, -constants::maxVelocity, constants::maxVelocity);
+}
 
-Cell::Cell(const ElementProperties *_properties) : 
-    id(Element::air), redraw(true), health(100.f), velocity(0.f, 0.f), 
-    properties(_properties), colour(_properties->Colour(id, 0, 0)) {}
+
+Cells::Cells(int width, int height, const ElementProperties *_properties) : 
+    properties(_properties),
+    state(width * height, CellState()),
+    display(width * height, CellDisplay{true, _properties->Colour(Element::air, 0, 0)}) {}
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Assignment / Manipulation functions.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-void Cell::Assign(Element _id, int x, int y) {
-    id          = _id;
-    colour      = properties->Colour(_id, x, y);
-    health      = 100.f;
-    velocity    = sf::Vector2f(0.f, 0.f);
-    redraw      = true;
+void Cells::Assign(size_t i, Element _id, int x, int y) {
+    state[i]    = CellState(_id);
+    display[i]  = CellDisplay{true, properties->Colour(_id, x, y)};
 }
 
-void Cell::ApplyAcceleration(sf::Vector2f a, float dt) {
-    velocity += a * dt;
-    if (std::abs(velocity.x) > constants::maxVelocity) velocity.x = constants::maxVelocity;
-    if (std::abs(velocity.y) > constants::maxVelocity) velocity.y = constants::maxVelocity;
+bool Cells::CanDisplace(Element self, Element other) const {
+    return properties->CanDisplace(self, other);
 }
 
-bool Cell::CanDisplace(Element other) const {
-    return properties->CanDisplace(id, other);
+int Cells::SpreadRate(size_t i) const {
+    return properties->constants[state[i].id].spreadRate;
 }
 
-int Cell::SpreadRate() const {
-    return properties->constants[id].spreadRate;
+int Cells::Flammability(size_t i) const {
+    return properties->constants[state[i].id].flammability;
 }
 
-int Cell::Flammability() const {
-    return properties->constants[id].flammability;
-}
+//////////////////////////////////////////////////////////////////////////////////////////
+//  Cell interactions.
+//////////////////////////////////////////////////////////////////////////////////////////
+
+// Action Cells::ActOnSelf(sf::Vector2i p, float dt) {
+//     switch(id) {
+//         case Element::fire:
+//             return FireActOnSelf(p, dt);
+//         default:
+//             return Action::Null();
+//     }
+// }
+
+// Action Cells::ActOnOther(sf::Vector2i p, sf::Vector2i otherP, Cell &other, float dt) {
+//     switch(id) {
+//         case Element::fire:
+//             return FireActOnOther(p, otherP, other, dt);
+//         default:
+//             return Action::Null();
+//     }
+// }

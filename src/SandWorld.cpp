@@ -52,11 +52,13 @@ roomID_t SandWorld::SpawnRoom(int x, int y) {
             constants::roomHeight,
             propPtr
         ));
-        roomID_t id {rooms.Insert(std::move(roomPtr))};
-        roomsMap[key] = id;
-        return id;
+        if (roomPtr) {
+            roomID_t id {rooms.Insert(std::move(roomPtr))};
+            roomsMap[key] = id;
+            return id;
+        }
     }
-    return -1;
+    throw std::runtime_error("Failed to spawn SandRoom.");
 }
 
 roomID_t SandWorld::RemoveRoom(int x, int y) {
@@ -72,8 +74,12 @@ roomID_t SandWorld::RemoveRoom(int x, int y) {
 //  Access Functions.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-Cell& SandWorld::GetCell(int x, int y) {
+CellState& SandWorld::GetCell(int x, int y) {
     return GetContainingRoom(x, y).GetCell(x, y);
+}
+
+size_t SandWorld::CellIndex(sf::Vector2i p) {
+    return GetContainingRoom(p).ToIndex(p);
 }
 
 SandRoom& SandWorld::GetRoom(roomID_t id) {

@@ -1,42 +1,53 @@
 #ifndef CELL_HPP
 #define CELL_HPP
 
+#include "Actions.hpp"
 #include "Elements/Names.hpp"
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <vector>
 
 struct ElementProperties;
 
-class Cell {
-public:
-    Element id;         // The ID used for accessing properties from the container.
-    
-    bool redraw;        // Tracks whether this cell has changes since the previous frame.
-    
+struct CellState {
+    Element id;
     float health;
     sf::Vector2f velocity;
 
-    sf::Color colour;       // The colour of this cell.
+    CellState() : id(Element::air), health(100.f), velocity(0.f, 0.f) {}
+    CellState(Element _id) : id(_id), health(100.f), velocity(0.f, 0.f) {}
+    void ApplyAcceleration(sf::Vector2f acc, float dt);
+};
+
+struct CellDisplay {
+    bool redraw;
+    sf::Color colour;
+};
+
+class Cells {
+public:
+    std::vector<CellState> state;
+    std::vector<CellDisplay> display;
 
 private:
+    std::vector<std::pair<size_t, Element>> queuedTransforms;
+
     ElementProperties const *properties;
 
 public:
-    Cell(const ElementProperties *_properties);
+    Cells(int width, int height, const ElementProperties *_properties);
 
     //////// Assignment / manipulation functions ////////
-    void Assign(Element id, int x=0, int y=0);
-
-    void ApplyAcceleration(sf::Vector2f a, float dt);
+    void Assign(size_t i, Element id, int x=0, int y=0);
 
     // Properties queries.
-    bool CanDisplace(Element other) const;
-    int SpreadRate() const;
-    int Flammability() const;
+    bool CanDisplace(Element self, Element other) const;
+    int SpreadRate(size_t i) const;
+    int Flammability(size_t i) const;
 
-
-
-    
+private:
+    Action ActOnSelf    (sf::Vector2i p, float dt);
+    Action ActOnOther   (sf::Vector2i p, sf::Vector2i otherP, size_t other, float dt);
 };
 
 #endif

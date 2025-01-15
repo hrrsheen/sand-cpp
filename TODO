@@ -1,0 +1,16 @@
+Functionality:
+    [ ] Fix the interaction system
+    [ ] Improve fire behaviour
+    [ ] Fix the cell drawing functionality to allow for recolouring on each frame
+    [ ] Add UI for element selection
+    [ ] Add minimap for debugging
+    [ ] Add explosions
+    [ ] Add a partical system
+    [ ] Room loading / deloading as the view moves
+    [ ] Have chunk coordinates account for negative world coordinates
+    [ ] Add player character
+    [ ] Search "TODO" and fix what comes up
+
+Optimisation:
+    [ ] Add a thread pool
+    [ ] Cache room lookup in PathEmpty

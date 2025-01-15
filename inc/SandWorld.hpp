@@ -47,7 +47,8 @@ public:
     roomID_t RemoveRoom(int x, int y);
 
     // Access functions.
-    Cell &GetCell(int x, int y);
+    CellState &GetCell(int x, int y);
+    size_t CellIndex(sf::Vector2i p);
     SandRoom& GetRoom(roomID_t id);
     SandRoom& GetRoom(sf::Vector2i key);
     SandRoom& GetContainingRoom(sf::Vector2i p);

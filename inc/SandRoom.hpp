@@ -19,13 +19,12 @@ public:
     const int x, y;
     const int width, height;
 
+    // The grid that actually contains the cells.
+    Cells grid;
     // Contains the active chunks.
     Chunks chunks;
 
 private:
-    // The grid that actually contains the cells.
-    std::vector<Cell> grid;
-
     std::vector<Move> queuedMoves;
     std::vector<std::pair<int, Element>> queuedActions;
 
@@ -33,9 +32,9 @@ public:
     SandRoom(int _x, int _y, int _width, int _height, const ElementProperties * properties);
 
     // Access functions.
-    Cell& GetCell(int index);
-    Cell& GetCell(int x, int y);
-    Cell& GetCell(sf::Vector2i p);
+    CellState& GetCell(int index);
+    CellState& GetCell(int x, int y);
+    CellState& GetCell(sf::Vector2i p);
 
     // Setting functions.
     void SetCell(int index, Element id);

@@ -11,24 +11,22 @@
 
 SandRoom::SandRoom(int _x, int _y, int _width, int _height, const ElementProperties * properties) : 
     x(_x), y(_y), width(_width), height(_height), 
-    chunks(constants::numXChunks, constants::numYChunks, constants::chunkWidth, constants::chunkHeight, x, y) {
-    Cell defaultCell(properties);
-    grid.resize(width * height, defaultCell);
-}
+    grid(_width, _height, properties),
+    chunks(constants::numXChunks, constants::numYChunks, constants::chunkWidth, constants::chunkHeight, x, y) {}
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Access Functions.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-Cell& SandRoom::GetCell(int index) {
-    return grid.at(index);
+CellState& SandRoom::GetCell(int index) {
+    return grid.state.at(index);
 }
 
-Cell& SandRoom::GetCell(int _x, int _y) {
+CellState& SandRoom::GetCell(int _x, int _y) {
     return GetCell(ToIndex(_x, _y));
 }
 
-Cell& SandRoom::GetCell(sf::Vector2i p) {
+CellState& SandRoom::GetCell(sf::Vector2i p) {
     return GetCell(ToIndex(p.x, p.y));
 }
 
@@ -38,12 +36,12 @@ Cell& SandRoom::GetCell(sf::Vector2i p) {
 
 void SandRoom::SetCell(int index, Element id) {
     sf::Vector2i coords {ToLocalCoords(index)};
-    GetCell(index).Assign(id, coords.x, coords.y);
+    grid.Assign(index, id, coords.x, coords.y);
     chunks.KeepContainingAlive(coords.x, coords.y);
 }
 
 void SandRoom::SetCell(int _x, int _y, Element id) {
-    GetCell(_x, _y).Assign(id, _x, _y);
+    grid.Assign(ToIndex(_x, _y), id, _x, _y);
     chunks.KeepContainingAlive(_x, _y);
 }
 
@@ -52,7 +50,7 @@ void SandRoom::SetCell(int _x, int _y, Element id) {
 //////////////////////////////////////////////////////////////////////////////////////////
 
 bool SandRoom::IsEmpty(int _x, int _y) {
-    if (InBounds(_x, _y)) return GetCell(_x, _y).id == Element::air;
+    if (InBounds(_x, _y)) return GetCell(ToIndex(_x, _y)).id == Element::air;
 
     return false;
 }
@@ -101,22 +99,16 @@ void SandRoom::ConsolidateMoves(FreeList<room_ptr> *rooms) {
         if (move.dst != nextMove.dst) {
             // Perform the randomly-selected move from the competing moves group.
             int iRand {iStart + QuickRandInt(i - iStart)};
-            if (iRand > queuedMoves.size() - 20 && x == 0 && y == 0) {
-
-            }
             
             roomID_t id {queuedMoves[iRand].srcRoomID};
             int src     {queuedMoves[iRand].src};
             int dst     {queuedMoves[iRand].dst};
             
             SandRoom *room {(*rooms)[id].get()};
-            Cell tmp {room->GetCell(src)};
-            Cell &srcCell {room->GetCell(src)};
-            Cell &dstCell {GetCell(dst)};
-            dstCell.redraw = true;
-            tmp.redraw = true;
-            srcCell = dstCell;
-            dstCell = tmp;
+            room->grid.display[src].redraw = true;
+            grid.display[dst].redraw = true;
+            std::swap(room->grid.state[src], grid.state[dst]);
+            std::swap(room->grid.display[src], grid.display[dst]);
 
             sf::Vector2i srcCoords {room->ToWorldCoords(src)};
             sf::Vector2i dstCoords {ToWorldCoords(dst)};

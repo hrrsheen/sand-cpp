@@ -9,7 +9,7 @@ SandWorker::SandWorker(roomID_t id, SandWorld &_world, SandRoom *_room) :
     thisID(id), world(_world), room(_room), properties(_world.properties), dt(0.f) {}
 
 
-Cell& SandWorker::GetCell(int x, int y) {
+CellState& SandWorker::GetCell(int x, int y) {
     if (room->InBounds(x, y)) {
         return room->GetCell(x, y);
     }
@@ -17,8 +17,16 @@ Cell& SandWorker::GetCell(int x, int y) {
     return world.GetCell(x, y);
 }
 
-Cell& SandWorker::GetCell(sf::Vector2i p) {
+CellState& SandWorker::GetCell(sf::Vector2i p) {
     return GetCell(p.x, p.y);
+}
+
+size_t SandWorker::CellIndex(sf::Vector2i p) {
+    if (room->InBounds(p)) {
+        return room->ToIndex(p);
+    }
+
+    return world.CellIndex(p);
 }
 
 void SandWorker::SetCell(int x, int y, Element id) {
@@ -89,13 +97,11 @@ std::pair<roomID_t, sf::Vector2i> SandWorker::PathEmpty(sf::Vector2i start, sf::
 //////////////////////////////////////////////////////////////////////////////////////////
 
 void SandWorker::Step(float _dt) {
-    if (_dt > 1 / 60.f) _dt = 1 / 60.f; // DEBUG: Possibly remove this.
+    // if (_dt > 1 / 60.f) _dt = 1 / 60.f; // DEBUG: Possibly remove this.
     dt = _dt;
     for (int ci = 0; ci < room->chunks.Size(); ++ci) {
         Chunk &chunk {room->chunks.GetChunk(ci)};
-        if (room->chunks.IsActive(ci)) {
-            SimulateChunk(chunk);
-        }
+        SimulateChunk(chunk);
 
         room->chunks.UpdateChunk(ci);
     }
@@ -105,7 +111,7 @@ void SandWorker::Step(float _dt) {
 }
 
 void SandWorker::SimulateChunk(Chunk &chunk) {
-    for (int y = chunk.yMin; y < chunk.yMax; ++y) {
+    for (int y = chunk.yMin; y < chunk.yMax; ++y) { // Inactive chunks will have yMin > yMax.
         // Process each row.
         // Alternate processing rows left to right and right to left.
         int dir {y % 2};
@@ -115,10 +121,8 @@ void SandWorker::SimulateChunk(Chunk &chunk) {
         dir = 2 * dir - 1;
         end += dir;
         for (int x = start; x != end; x += dir) {
-            Cell &cell {GetCell(x, y)};
-
             // Apply the simulation.
-            if (ApplyRules(cell, sf::Vector2i(x, y))) {
+            if (ApplyRules(sf::Vector2i(x, y))) {
                 room->chunks.KeepContainingAlive(x, y);
                 room->chunks.KeepNeighbourAlive(x, y);
             }
@@ -126,7 +130,8 @@ void SandWorker::SimulateChunk(Chunk &chunk) {
     }
 }
 
-bool SandWorker::ApplyRules(Cell &cell, sf::Vector2i p) {
+bool SandWorker::ApplyRules(sf::Vector2i p) {
+    CellState &cell {GetCell(p)};
     ConstProperties &prop {properties.constants[cell.id]};
     
     // if      (ActionCell(cell, prop, p)) { return true; }  // Act on other cells.
@@ -138,25 +143,25 @@ bool SandWorker::ApplyRules(Cell &cell, sf::Vector2i p) {
 }
 
 
-bool SandWorker::MoveCell(Cell &cell, ConstProperties &prop, sf::Vector2i p) {
+bool SandWorker::MoveCell(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
     if (VALID_ROOM(IsEmpty(p.x, p.y))) return false;
     if (prop.moveBehaviour == MoveType::NONE) return false;
 
-    if      (prop.moveBehaviour == MoveType::FLOAT_DOWN)  { return FloatDown   (p, cell);     }
-    else if (prop.moveBehaviour == MoveType::FLOAT_UP)    { return FloatUp     (p, cell);     }
-    else if (prop.moveBehaviour == MoveType::FALL_DOWN)   { return FallDown    (p, cell, dt); }
+    if      (prop.moveBehaviour == MoveType::FLOAT_DOWN)  { return FloatDown   (p);     }
+    else if (prop.moveBehaviour == MoveType::FLOAT_UP)    { return FloatUp     (p);     }
+    else if (prop.moveBehaviour == MoveType::FALL_DOWN)   { return FallDown    (p, dt); }
 
     return false;
 }
 
-bool SandWorker::SpreadCell(Cell &cell, ConstProperties &prop, sf::Vector2i p) {
+bool SandWorker::SpreadCell(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
     if (VALID_ROOM(IsEmpty(p.x, p.y))) return false;
     if (prop.spreadBehaviour == SpreadType::NONE) return false;
     cell.velocity = sf::Vector2f(0.f, 0.f); // Reset velocity. May later change to transferring y velocity to x.
 
-    if      (prop.spreadBehaviour & SpreadType::DOWN_SIDE && SpreadDownSide(p, cell)) { return true; }
-    else if (prop.spreadBehaviour & SpreadType::UP_SIDE   && SpreadUpSide  (p, cell)) { return true; } 
-    else if (prop.spreadBehaviour & SpreadType::SIDE      && SpreadSide    (p, cell)) { return true; }
+    if      (prop.spreadBehaviour & SpreadType::DOWN_SIDE && SpreadDownSide(p)) { return true; }
+    else if (prop.spreadBehaviour & SpreadType::UP_SIDE   && SpreadUpSide  (p)) { return true; } 
+    else if (prop.spreadBehaviour & SpreadType::SIDE      && SpreadSide    (p)) { return true; }
 
     return false;
 }
@@ -192,7 +197,7 @@ bool SandWorker::SpreadCell(Cell &cell, ConstProperties &prop, sf::Vector2i p) {
 //  Movement.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-bool SandWorker::FloatDown(sf::Vector2i p, Cell &cell) {
+bool SandWorker::FloatDown(sf::Vector2i p) {
     sf::Vector2i queryPos(p.x, p.y - 1);
     // Handle the destination crossing rooms.
     if (room->IsEmpty(queryPos)) {
@@ -211,11 +216,13 @@ bool SandWorker::FloatDown(sf::Vector2i p, Cell &cell) {
     return false;
 }
 
-bool SandWorker::FloatUp(sf::Vector2i p, Cell &cell) {
-    return SpreadUpSide(p, cell);
+bool SandWorker::FloatUp(sf::Vector2i p) {
+    return SpreadUpSide(p);
 }
 
-bool SandWorker::FallDown(sf::Vector2i p, Cell &cell, float dt) {
+bool SandWorker::FallDown(sf::Vector2i p, float dt) {
+    size_t iCell {CellIndex(p)};
+    CellState &cell {room->GetCell(iCell)};
     cell.ApplyAcceleration(sf::Vector2f(0.f, -constants::accelGravity), dt);
     // If the resultant position a fractional part, use the fraction as a probability
     // to advance an additional cell.
@@ -240,7 +247,7 @@ bool SandWorker::FallDown(sf::Vector2i p, Cell &cell, float dt) {
     return false;
 }
 
-bool SandWorker::SpreadDownSide(sf::Vector2i p, Cell &cell) {
+bool SandWorker::SpreadDownSide(sf::Vector2i p) {
     sf::Vector2i leftPos    {p + sf::Vector2i(-1, -1)};
     sf::Vector2i rightPos   {p + sf::Vector2i( 1, -1)};
 
@@ -250,16 +257,17 @@ bool SandWorker::SpreadDownSide(sf::Vector2i p, Cell &cell) {
     roomID_t left   {ContainingRoomID( leftPos)}; 
     roomID_t right  {ContainingRoomID(rightPos)};
 
+    CellState thisCell {GetCell(p)};
     // Determine whether the down-left cell is empty or displaceable.
     if (VALID_ROOM(left)) {
-        Cell &leftCell {GetCell(leftPos)};
-        bool empty {GetRoom(left)->IsEmpty(p) || cell.CanDisplace(leftCell.id)};
+        CellState leftCell {GetCell(leftPos)};
+        bool empty {GetRoom(left)->IsEmpty(p) || room->grid.CanDisplace(thisCell.id, leftCell.id)};
         left = BoolToID(left, empty);
     }
     // Determine whether the down-right cell is empty or displaceable.
     if (VALID_ROOM(right)) {
-        Cell &rightCell {GetCell(rightPos)};
-        bool empty {GetRoom(right)->IsEmpty(p) || cell.CanDisplace(rightCell.id)};
+        CellState rightCell {GetCell(rightPos)};
+        bool empty {GetRoom(right)->IsEmpty(p) || room->grid.CanDisplace(thisCell.id, rightCell.id)};
         right = BoolToID(right, empty);
     }
 
@@ -281,7 +289,7 @@ bool SandWorker::SpreadDownSide(sf::Vector2i p, Cell &cell) {
     return VALID_ROOM(left) || VALID_ROOM(right);
 }
 
-bool SandWorker::SpreadUpSide(sf::Vector2i p, Cell &cell) {
+bool SandWorker::SpreadUpSide(sf::Vector2i p) {
     sf::Vector2i leftPos    {p + sf::Vector2i( 1, 1)};
     sf::Vector2i rightPos   {p + sf::Vector2i(-1, 1)};
 
@@ -307,7 +315,7 @@ bool SandWorker::SpreadUpSide(sf::Vector2i p, Cell &cell) {
     return VALID_ROOM(left) || VALID_ROOM(right);
 }
 
-bool SandWorker::SpreadSide(sf::Vector2i p, Cell &cell) {
+bool SandWorker::SpreadSide(sf::Vector2i p) {
     sf::Vector2i lookAhead  {1, 0};
 
     roomID_t left   {IsEmpty(p - lookAhead)}; 
@@ -320,7 +328,7 @@ bool SandWorker::SpreadSide(sf::Vector2i p, Cell &cell) {
         right   = BoolToID(right, !flip);
     }
 
-    int spreadRate {cell.SpreadRate()};
+    int spreadRate {GetRoom(ContainingRoomID(p))->grid.SpreadRate(room->ToIndex(p))}; // TODO: This is gross. There has to be a better way.
     
     sf::Vector2i dst;
     if (VALID_ROOM(left)) {

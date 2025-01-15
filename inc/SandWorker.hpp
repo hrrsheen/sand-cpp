@@ -25,8 +25,9 @@ public:
     void Step(float dt);
 
 private:
-    Cell &GetCell(int x, int y);
-    Cell &GetCell(sf::Vector2i p);
+    CellState &GetCell(int x, int y);
+    CellState &GetCell(sf::Vector2i p);
+    size_t CellIndex(sf::Vector2i);
     void SetCell(int x, int y, Element id);
 
     roomID_t ContainingRoomID(sf::Vector2i p);
@@ -41,20 +42,20 @@ private:
     void SimulateChunk(Chunk &chunk);
 
     // Returns true if the cell has performed some action.
-    bool ApplyRules(Cell &cell, sf::Vector2i p);
+    bool ApplyRules(sf::Vector2i p);
 
-    bool MoveCell   (Cell &cell, ConstProperties &constProp, sf::Vector2i p);
-    bool SpreadCell (Cell &cell, ConstProperties &constProp, sf::Vector2i p);
-    bool ActionCell (Cell &cell, ConstProperties &constProp, sf::Vector2i p);
+    bool MoveCell   (CellState &cell, ConstProperties &constProp, sf::Vector2i p);
+    bool SpreadCell (CellState &cell, ConstProperties &constProp, sf::Vector2i p);
+    bool ActionCell (CellState &cell, ConstProperties &constProp, sf::Vector2i p);
 
     //////// Movement functions ////////
-    bool FloatDown      (sf::Vector2i p, Cell &cell);
-    bool FloatUp        (sf::Vector2i p, Cell &cell);
-    bool FallDown       (sf::Vector2i p, Cell &cell, float dt);
+    bool FloatDown      (sf::Vector2i p);
+    bool FloatUp        (sf::Vector2i p);
+    bool FallDown       (sf::Vector2i p, float dt);
 
-    bool SpreadDownSide (sf::Vector2i p, Cell &cell);
-    bool SpreadUpSide   (sf::Vector2i p, Cell &cell);
-    bool SpreadSide     (sf::Vector2i p, Cell &cell);
+    bool SpreadDownSide (sf::Vector2i p);
+    bool SpreadUpSide   (sf::Vector2i p);
+    bool SpreadSide     (sf::Vector2i p);
 };
 
 #endif
