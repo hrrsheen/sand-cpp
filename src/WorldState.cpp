@@ -4,15 +4,15 @@
 #include <SFML/Graphics.hpp>
 #include <algorithm>
 #include <iostream>
+#include <utility>
 #include <vector>
 
 WorldState::WorldState(int width, int height) : world(-2, 2, 0, 2) {
-    roomID_t newID {0};
-    display.Insert(WorldDisplay(0, 0));
-    newID = world.SpawnRoom(constants::roomWidth, 0);
-    display.Insert(WorldDisplay(constants::roomWidth, 0));
-    newID = world.SpawnRoom(0, constants::roomHeight);
-    display.Insert(WorldDisplay(0, constants::roomHeight));
+    world.SpawnRoom(constants::roomWidth, 0);
+    world.SpawnRoom(0, constants::roomHeight);
+    gridImage.create(constants::roomWidth, constants::roomHeight);
+    gridTexture.create(constants::roomWidth, constants::roomHeight);
+    gridTexture.setSmooth(false);
 }
 
 void WorldState::Step(float dt) {
@@ -29,43 +29,82 @@ void WorldState::Step(float dt) {
 void WorldState::Draw(Screen &screen) {
     screen.clear();
     const sf::IntRect borders {screen.ViewBorders()};
-    std::vector<roomID_t> rooms {VisibleRooms(borders)};
-    for (roomID_t id : rooms) {
-        SandRoom &room {world.GetRoom(id)};
-        WorldDisplay &disp {display[id]};
+    std::vector<std::pair<sf::Vector2i, roomID_t>> rooms {VisibleRooms(borders)};
+    std::vector<roomID_t> processed;
+    gridSprite.setPosition(rooms[0].first.x, rooms[0].first.y);
+
+    int xMin, xMax,
+        yMin, yMax;
     
-        for (int ci = 0; ci < room.chunks.Size(); ci++) {
-            Chunk &chunk {room.chunks.GetChunk(ci)};
-            for (int y = chunk.yMin; y < chunk.yMax; ++y) { 
-            for (int x = chunk.xMin; x < chunk.xMax; ++x) {
-                CellDisplay &cellDisp {room.grid.display[room.ToIndex(x, y)]};
-                if (cellDisp.redraw) {
-                    disp.gridImage.setPixel(
-                        x - room.x, y - room.y, 
-                        cellDisp.colour);
-                    cellDisp.redraw = false;
-                }
-            }}
+    std::vector<roomID_t> completed;
+    completed.reserve(4);
+    for (int i = 0; i < rooms.size(); ++i) {
+        if (std::find(completed.begin(), completed.end(), rooms[i].second) != completed.end()) {
+            continue; // Room already processes.
         }
-        disp.gridTexture.loadFromImage(disp.gridImage);
-        disp.gridSprite.setTexture(disp.gridTexture);
-        screen.Draw(disp.gridSprite);
+        SandRoom &room {world.GetRoom(rooms[i].second)};
+        sf::Vector2i intersect {rooms[i].first};
+        switch (i) {
+            case 0:
+                xMin = intersect.x; xMax = room.x + room.width;
+                yMin = intersect.y; yMax = room.y + room.height;
+                break;
+            case 1:
+                xMin = room.x;      xMax = intersect.x;
+                yMin = intersect.y; yMax = room.y + room.height;
+                break;
+            case 2:
+                xMin = intersect.x; xMax = room.x + room.width;
+                yMin = room.y;      yMax = intersect.y;
+                break;
+            case 3:
+                xMin = room.x;      xMax = intersect.x;
+                yMin = room.y;      yMax = intersect.y;
+                break;
+        }
+        
+        // Update pixels for the visible portion of the room.
+        for (int y = yMin; y < yMax; ++y) {
+        for (int x = xMin; x < xMax; ++x) {
+            CellDisplay &cellDisp {room.grid.display[room.ToIndex(x, y)]};
+            gridImage.setPixel(x - rooms[0].first.x, y - rooms[0].first.y, cellDisp.colour); // Need to convert world coords to view coords
+        }
+        }
+        completed.push_back(rooms[i].second);
     }
+    gridTexture.loadFromImage(gridImage);
+    gridSprite.setTexture(gridTexture);
+    screen.Draw(gridSprite);
 }
 
-std::vector<roomID_t> WorldState::VisibleRooms(const sf::IntRect borders) {
+void WorldState::DrawArea(Screen &screen, SandRoom &room, int left, int right, int bottom, int top) {
+    
+}
+
+std::vector<std::pair<sf::Vector2i, roomID_t>> WorldState::VisibleRooms(const sf::IntRect borders) {
     sf::Vector2i size {borders.getSize() - sf::Vector2i(1, 1)};
-    std::vector<roomID_t> rooms {
-        world.ContainingRoomID(borders.getPosition() - sf::Vector2( size.x,  size.y) / 2),
-        world.ContainingRoomID(borders.getPosition() - sf::Vector2(-size.x,  size.y) / 2),
-        world.ContainingRoomID(borders.getPosition() - sf::Vector2( size.x, -size.y) / 2),
-        world.ContainingRoomID(borders.getPosition() - sf::Vector2(-size.x, -size.y) / 2)
-    };
-    std::sort(rooms.begin(), rooms.end());
-    rooms.erase(std::unique(rooms.begin(), rooms.end()), rooms.end());
-    if (!VALID_ROOM(rooms[0])) {
-        rooms.erase(rooms.begin());
-    }
+    std::vector<std::pair<sf::Vector2i, roomID_t>> rooms;
+    rooms.reserve(4);
+    sf::Vector2i bl {borders.getPosition() - sf::Vector2( size.x,  size.y) / 2};
+    sf::Vector2i br {borders.getPosition() - sf::Vector2(-size.x,  size.y) / 2};
+    sf::Vector2i tl {borders.getPosition() - sf::Vector2( size.x, -size.y) / 2};
+    sf::Vector2i tr {borders.getPosition() - sf::Vector2(-size.x, -size.y) / 2};
+
+    rooms.push_back(std::make_pair(bl, world.ContainingRoomID(bl)));
+    rooms.push_back(std::make_pair(br, world.ContainingRoomID(br)));
+    rooms.push_back(std::make_pair(tl, world.ContainingRoomID(tl)));
+    rooms.push_back(std::make_pair(tr, world.ContainingRoomID(tr)));
+    
+    rooms.erase(std::remove_if(rooms.begin(), rooms.end(), 
+        [](const std::pair<sf::Vector2i, roomID_t> roomPair) {
+            return roomPair.second == -1;
+        }), rooms.end());
+
+    // std::sort(rooms.begin(), rooms.end());
+    // rooms.erase(std::unique(rooms.begin(), rooms.end()), rooms.end());
+    // if (!VALID_ROOM(rooms[0])) {
+    //     rooms.erase(rooms.begin());
+    // }
 
     return rooms;
 }
