@@ -29,10 +29,6 @@ public:
     void Draw(Screen &screen);
 
 private:
-    // Draws an area of the given room to its texture.
-    void DrawArea(Screen &screen, SandRoom &room, 
-                    int left, int right, int bottom, int top);
-
     // Returns a vector of pairs that contain a view corner and the room the corner intersects with.
     std::vector<std::pair<sf::Vector2i, roomID_t>> VisibleRooms(sf::IntRect);
 

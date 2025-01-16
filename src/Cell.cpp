@@ -14,7 +14,7 @@ void CellState::ApplyAcceleration(sf::Vector2f acc, float dt) {
 Cells::Cells(int width, int height, const ElementProperties *_properties) : 
     properties(_properties),
     state(width * height, CellState()),
-    display(width * height, CellDisplay{true, _properties->Colour(Element::air, 0, 0)}) {}
+    colour(width * height, _properties->Colour(Element::air, 0, 0)) {}
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Assignment / Manipulation functions.
@@ -22,7 +22,7 @@ Cells::Cells(int width, int height, const ElementProperties *_properties) :
 
 void Cells::Assign(size_t i, Element _id, int x, int y) {
     state[i]    = CellState(_id);
-    display[i]  = CellDisplay{true, properties->Colour(_id, x, y)};
+    colour[i]   = properties->Colour(_id, x, y);
 }
 
 bool Cells::CanDisplace(Element self, Element other) const {

@@ -66,8 +66,8 @@ void WorldState::Draw(Screen &screen) {
         // Update pixels for the visible portion of the room.
         for (int y = yMin; y < yMax; ++y) {
         for (int x = xMin; x < xMax; ++x) {
-            CellDisplay &cellDisp {room.grid.display[room.ToIndex(x, y)]};
-            gridImage.setPixel(x - rooms[0].first.x, y - rooms[0].first.y, cellDisp.colour); // Need to convert world coords to view coords
+            gridImage.setPixel(x - rooms[0].first.x, y - rooms[0].first.y, 
+                                room.grid.colour[room.ToIndex(x, y)]); // Need to convert world coords to view coords
         }
         }
         completed.push_back(rooms[i].second);
@@ -75,10 +75,6 @@ void WorldState::Draw(Screen &screen) {
     gridTexture.loadFromImage(gridImage);
     gridSprite.setTexture(gridTexture);
     screen.Draw(gridSprite);
-}
-
-void WorldState::DrawArea(Screen &screen, SandRoom &room, int left, int right, int bottom, int top) {
-    
 }
 
 std::vector<std::pair<sf::Vector2i, roomID_t>> WorldState::VisibleRooms(const sf::IntRect borders) {

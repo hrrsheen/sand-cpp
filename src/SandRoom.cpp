@@ -105,10 +105,8 @@ void SandRoom::ConsolidateMoves(FreeList<room_ptr> *rooms) {
             int dst     {queuedMoves[iRand].dst};
             
             SandRoom *room {(*rooms)[id].get()};
-            room->grid.display[src].redraw = true;
-            grid.display[dst].redraw = true;
             std::swap(room->grid.state[src], grid.state[dst]);
-            std::swap(room->grid.display[src], grid.display[dst]);
+            std::swap(room->grid.colour[src], grid.colour[dst]);
 
             sf::Vector2i srcCoords {room->ToWorldCoords(src)};
             sf::Vector2i dstCoords {ToWorldCoords(dst)};

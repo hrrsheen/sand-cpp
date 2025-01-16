@@ -19,15 +19,10 @@ struct CellState {
     void ApplyAcceleration(sf::Vector2f acc, float dt);
 };
 
-struct CellDisplay {
-    bool redraw;
-    sf::Color colour;
-};
-
 class Cells {
 public:
     std::vector<CellState> state;
-    std::vector<CellDisplay> display;
+    std::vector<sf::Color> colour;
 
 private:
     std::vector<std::pair<size_t, Element>> queuedTransforms;
