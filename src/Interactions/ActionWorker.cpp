@@ -82,6 +82,10 @@ bool ActionWorker::ActOnSelf(size_t self, float dt) {
 
 bool ActionWorker::ActOnOther(size_t self, size_t other, SandRoom *otherRoom, float dt) {
     switch(grid.state[self].id) {
+        case Element::sand:
+            return SandActOnOther(self, other, otherRoom, dt);
+        case Element::water:
+            return WaterActOnOther(self, other, otherRoom, dt);
         case Element::fire:
             return FireActOnOther(self, other, otherRoom, dt);
         default:
@@ -92,6 +96,30 @@ bool ActionWorker::ActOnOther(size_t self, size_t other, SandRoom *otherRoom, fl
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Specific action functions.
 //////////////////////////////////////////////////////////////////////////////////////////
+
+//////////////// Solid interactions ////////////////
+
+bool ActionWorker::SandActOnOther(size_t self, size_t other, SandRoom *otherRoom, float dt) {
+    if (otherRoom->GetCell(other).id == Element::fire) {
+        otherRoom->QueueAction(other, Element::air);
+        return true;
+    }
+
+    return false;
+}
+
+//////////////// Liquid interactions ////////////////
+
+bool ActionWorker::WaterActOnOther(size_t self, size_t other, SandRoom *otherRoom, float dt) {
+    if (otherRoom->GetCell(other).id == Element::fire) {
+        otherRoom->QueueAction(other, Element::smoke);
+        return true;
+    }
+
+    return false;
+}
+
+//////////////// Gas interactions ////////////////
 
 bool ActionWorker::FireActOnSelf(size_t self, float dt) {
     CellState &thisState {grid.state[self]};

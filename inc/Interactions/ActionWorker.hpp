@@ -30,6 +30,11 @@ private:
     bool ActOnOther   (size_t self, size_t other, SandRoom *otherRoom, float dt);
 
     //////// Element-specific functions ////////
+    // Solid
+    bool SandActOnOther(size_t self, size_t other, SandRoom *otherRoom, float dt);
+    // Liquid
+    bool WaterActOnOther(size_t self, size_t other, SandRoom *otherRoom, float dt);
+    // Gas
     bool FireActOnSelf(size_t self, float dt);
     bool FireActOnOther(size_t self, size_t other, SandRoom *otherRoom, float dt);
 
