@@ -101,7 +101,8 @@ bool ActionWorker::ActOnOther(size_t self, size_t other, SandRoom *otherRoom, fl
 
 bool ActionWorker::SandActOnOther(size_t self, size_t other, SandRoom *otherRoom, float dt) {
     if (otherRoom->GetCell(other).id == Element::fire) {
-        otherRoom->QueueAction(other, Element::air);
+        room->QueueAction(self, Element::air);
+        otherRoom->QueueAction(other, Element::sand);
         return true;
     }
 
@@ -112,7 +113,8 @@ bool ActionWorker::SandActOnOther(size_t self, size_t other, SandRoom *otherRoom
 
 bool ActionWorker::WaterActOnOther(size_t self, size_t other, SandRoom *otherRoom, float dt) {
     if (otherRoom->GetCell(other).id == Element::fire) {
-        otherRoom->QueueAction(other, Element::smoke);
+        room->QueueAction(self, Element::smoke);
+        otherRoom->QueueAction(other, Element::water);
         return true;
     }
 
