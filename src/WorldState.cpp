@@ -30,20 +30,22 @@ void WorldState::Draw(Screen &screen) {
     screen.clear();
     const sf::IntRect borders {screen.ViewBorders()};
     std::vector<std::pair<sf::Vector2i, roomID_t>> rooms {VisibleRooms(borders)};
-    std::vector<roomID_t> processed;
     gridSprite.setPosition(rooms[0].first.x, rooms[0].first.y);
 
-    int xMin, xMax,
+    int xMin, xMax, // Determines the potion of a room that's drawn.
         yMin, yMax;
     
     std::vector<roomID_t> completed;
     completed.reserve(4);
     for (int i = 0; i < rooms.size(); ++i) {
-        if (std::find(completed.begin(), completed.end(), rooms[i].second) != completed.end()) {
+        if (std::find(completed.begin(), completed.end(), rooms[i].second) != completed.end())
             continue; // Room already processes.
-        }
+        if (!VALID_ROOM(rooms[i].second))
+            continue;
+
         SandRoom &room {world.GetRoom(rooms[i].second)};
         sf::Vector2i intersect {rooms[i].first};
+        // Figure out which portion of the room to draw based on the view corner that intersects it.
         switch (i) {
             case 0:
                 xMin = intersect.x; xMax = room.x + room.width;
@@ -90,17 +92,6 @@ std::vector<std::pair<sf::Vector2i, roomID_t>> WorldState::VisibleRooms(const sf
     rooms.push_back(std::make_pair(br, world.ContainingRoomID(br)));
     rooms.push_back(std::make_pair(tl, world.ContainingRoomID(tl)));
     rooms.push_back(std::make_pair(tr, world.ContainingRoomID(tr)));
-    
-    rooms.erase(std::remove_if(rooms.begin(), rooms.end(), 
-        [](const std::pair<sf::Vector2i, roomID_t> roomPair) {
-            return roomPair.second == -1;
-        }), rooms.end());
-
-    // std::sort(rooms.begin(), rooms.end());
-    // rooms.erase(std::unique(rooms.begin(), rooms.end()), rooms.end());
-    // if (!VALID_ROOM(rooms[0])) {
-    //     rooms.erase(rooms.begin());
-    // }
 
     return rooms;
 }

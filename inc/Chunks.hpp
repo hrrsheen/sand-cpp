@@ -38,9 +38,9 @@ public:
 
 class Chunks {
 private:
-    const int width,        height;      // Dimensions of the chunk grid.
-    const int xOffset,      yOffset;     // Offset of the first chunk in world-space.
-    const int chunkWidth,   chunkHeight; // Dimensions of an individual chunk.
+    int width,        height;      // Dimensions of the chunk grid.
+    int xOffset,      yOffset;     // Offset of the first chunk in world-space.
+    int chunkWidth,   chunkHeight; // Dimensions of an individual chunk.
     std::vector<Chunk> chunks;
 
 public:

@@ -1,7 +1,6 @@
 #ifndef ELEMENT_PROPERTIES_HPP
 #define ELEMENT_PROPERTIES_HPP
 
-#include "Actions.hpp"
 #include "Elements/Names.hpp"
 #include <cstdint>
 #include <SFML/Graphics/Color.hpp>
@@ -77,7 +76,7 @@ public:
     bool Insert(Element id, ConstProperties consts, ColourProperties palette);
 
     //////// Display functions ////////
-    sf::Color Colour(Element id, int x, int y) const;
+    sf::Color Colour(Element id, int x=0, int y=0) const;
 
     //////// Simulation functions ////////
     // virtual Action ActUponSelf  (sf::Vector2i p, Cell &self, float dt) const;

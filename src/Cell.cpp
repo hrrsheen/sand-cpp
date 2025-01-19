@@ -1,6 +1,7 @@
 #include "Cell.hpp"
 #include "Constants.hpp"
 #include "Elements/ElementProperties.hpp"
+#include "Helpers.hpp"
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/System/Vector2.hpp>
 
@@ -33,28 +34,6 @@ int Cells::SpreadRate(size_t i) const {
     return properties->constants[state[i].id].spreadRate;
 }
 
-int Cells::Flammability(size_t i) const {
+float Cells::Flammability(size_t i) const {
     return properties->constants[state[i].id].flammability;
 }
-
-//////////////////////////////////////////////////////////////////////////////////////////
-//  Cell interactions.
-//////////////////////////////////////////////////////////////////////////////////////////
-
-// Action Cells::ActOnSelf(sf::Vector2i p, float dt) {
-//     switch(id) {
-//         case Element::fire:
-//             return FireActOnSelf(p, dt);
-//         default:
-//             return Action::Null();
-//     }
-// }
-
-// Action Cells::ActOnOther(sf::Vector2i p, sf::Vector2i otherP, Cell &other, float dt) {
-//     switch(id) {
-//         case Element::fire:
-//             return FireActOnOther(p, otherP, other, dt);
-//         default:
-//             return Action::Null();
-//     }
-// }

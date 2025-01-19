@@ -1,13 +1,13 @@
 #ifndef CELL_HPP
 #define CELL_HPP
 
-#include "Actions.hpp"
 #include "Elements/Names.hpp"
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <vector>
 
 struct ElementProperties;
+class ActionWorker;
 
 struct CellState {
     Element id;
@@ -20,13 +20,12 @@ struct CellState {
 };
 
 class Cells {
+    friend ActionWorker;
 public:
     std::vector<CellState> state;
     std::vector<sf::Color> colour;
 
 private:
-    std::vector<std::pair<size_t, Element>> queuedTransforms;
-
     ElementProperties const *properties;
 
 public:
@@ -38,11 +37,7 @@ public:
     // Properties queries.
     bool CanDisplace(Element self, Element other) const;
     int SpreadRate(size_t i) const;
-    int Flammability(size_t i) const;
-
-private:
-    Action ActOnSelf    (sf::Vector2i p, float dt);
-    Action ActOnOther   (sf::Vector2i p, sf::Vector2i otherP, size_t other, float dt);
+    float Flammability(size_t i) const;
 };
 
 #endif

@@ -1,4 +1,3 @@
-#include "Actions.hpp"
 #include "Constants.hpp"
 #include "Helpers.hpp"
 #include "Screen.hpp"
@@ -87,12 +86,12 @@ void Paint(Mouse &mouse, WorldState &state, Screen &screen) {
     Paint(lerp, mouse.brush, mouse.radius, state);
 }
 
-void DrawChunks(FreeList<std::unique_ptr<SandRoom>> &rooms, Screen &screen) {
+void DrawChunks(FreeList<SandRoom> &rooms, Screen &screen) {
     sf::RectangleShape rectangle;
     rectangle.setOutlineThickness(1);
     rectangle.setFillColor(sf::Color::Transparent);
     for (roomID_t id = 0; id < rooms.Range(); ++id) {
-        SandRoom &room {*rooms[id].get()};
+        SandRoom &room {rooms[id]};
         rectangle.setSize(sf::Vector2f(room.width, room.height));
         rectangle.setOutlineColor(sf::Color::Red);
         rectangle.setPosition(room.x, room.y);

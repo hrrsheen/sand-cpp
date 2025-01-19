@@ -46,17 +46,13 @@ roomID_t SandWorld::SpawnRoom(int x, int y) {
     sf::Vector2i key {ToKey(x, y)};
     ElementProperties* propPtr {&properties};
     if (key.x >= xMin && key.x < xMax && key.y >= yMin && key.y < yMax) {        
-        room_ptr roomPtr (std::make_unique<SandRoom>(
-            x, y,
+        SandRoom room {x, y,
             constants::roomWidth,
             constants::roomHeight,
-            propPtr
-        ));
-        if (roomPtr) {
-            roomID_t id {rooms.Insert(std::move(roomPtr))};
-            roomsMap[key] = id;
-            return id;
-        }
+            propPtr};
+        roomID_t id {rooms.Insert(std::move(room))};
+        roomsMap[key] = id;
+        return id;
     }
     throw std::runtime_error("Failed to spawn SandRoom.");
 }
@@ -83,7 +79,7 @@ size_t SandWorld::CellIndex(sf::Vector2i p) {
 }
 
 SandRoom& SandWorld::GetRoom(roomID_t id) {
-    return *rooms[id].get();
+    return rooms[id];
 }
 
 SandRoom& SandWorld::GetRoom(sf::Vector2i key) {

@@ -1,7 +1,6 @@
 #ifndef SAND_ROOM_HPP
 #define SAND_ROOM_HPP
 
-#include "Actions.hpp"
 #include "Cell.hpp"
 #include "Chunks.hpp"
 #include "Elements/Names.hpp"
@@ -13,11 +12,23 @@
 
 using roomID_t = int;
 
+class MovementWorker;
+
+struct Move {
+    roomID_t srcRoomID;
+    int src;
+    int dst;
+
+    Move() : srcRoomID(-1), src(-1), dst(-1) {}
+    Move(roomID_t _srcRoomID, int _src, int _dst) : srcRoomID(_srcRoomID), src(_src), dst(_dst) {}
+};
+
 class SandRoom {
-    using room_ptr = std::unique_ptr<SandRoom>;
+    friend MovementWorker;
+    friend ActionWorker;
 public:
-    const int x, y;
-    const int width, height;
+    int x, y;
+    int width, height;
 
     // The grid that actually contains the cells.
     Cells grid;
@@ -26,10 +37,13 @@ public:
 
 private:
     std::vector<Move> queuedMoves;
-    std::vector<std::pair<int, Element>> queuedActions;
+    std::vector<std::pair<size_t, Element>> queuedActions;
 
 public:
     SandRoom(int _x, int _y, int _width, int _height, const ElementProperties * properties);
+
+    void QueueMovement(roomID_t srcRoomID, int pFrom, int pTo);
+    void QueueAction(size_t i, Element transform);
 
     // Access functions.
     CellState& GetCell(int index);
@@ -46,23 +60,12 @@ public:
     bool InBounds(int _x, int _y) const;
     bool InBounds(sf::Vector2i p) const;
 
-    // Moving cells around.
-    void QueueMove(roomID_t srcRoomID, int pFrom, int pTo);
-    void ConsolidateMoves(FreeList<room_ptr> *rooms);
-
-    // Transforming (applying actions) cells.
-    void QueueAction(Action action);
-    void ConsolidateActions();
-
     // Helper functions.
     int ToIndex(int xw, int yw) const; // Converts world coordinates to a local index.
     int ToIndex(sf::Vector2i p) const;
     sf::Vector2i ToLocalCoords(int index) const;
     sf::Vector2i ToWorldCoords(int index) const;
 
-private:
-    // Initialises each cell within the grid.
-    // void InitCells(const ElementProperties * properties);
 };
 
 #endif

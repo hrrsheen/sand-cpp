@@ -35,7 +35,7 @@ bool InitWood(ElementProperties &properties) {
     ConstProperties constsInit;
     constsInit.name         = "wood";
     constsInit.type         = ElementType::SOLID;
-    constsInit.flammability = 100.f;
+    constsInit.flammability = 200.f;
     ColourProperties colourInit;
     sf::Image img;
     img.loadFromFile("./assets/wood-texture.png");
@@ -55,6 +55,7 @@ bool InitWater(ElementProperties &properties) {
     constsInit.type               = ElementType::LIQUID;
     constsInit.moveBehaviour      = MoveType::FLOAT_DOWN;
     constsInit.spreadBehaviour    = SpreadType::DOWN_SIDE | SpreadType::SIDE;
+    constsInit.spreadRate         = 5;
     constsInit.actionSet          = moveset_t {sf::Vector2i(0, -1)};
     ColourProperties colourInit;
     COLOUR(colourInit.palette).push_back(0x347debff);

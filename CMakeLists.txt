@@ -13,11 +13,15 @@ add_executable(sand-cpp
     src/Chunks.cpp
     src/Helpers.cpp
     src/Elements/ElementProperties.cpp
-    src/Elements/Inits.cpp)
+    src/Elements/Inits.cpp
+    src/Interactions/InteractionWorker.cpp
+    src/Interactions/MovementWorker.cpp
+    src/Interactions/ActionWorker.cpp)
 
 target_include_directories(sand-cpp
     PRIVATE ${PROJECT_SOURCE_DIR}/inc
     PRIVATE ${PROJECT_SOURCE_DIR}/inc/Elements
+    PRIVATE ${PROJECT_SOURCE_DIR}/inc/Interactions
     PRIVATE ${PROJECT_SOURCE_DIR}/lib)
 target_compile_features(sand-cpp PRIVATE cxx_std_17)
 

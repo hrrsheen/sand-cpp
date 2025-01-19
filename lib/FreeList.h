@@ -10,6 +10,11 @@
 template <class T>
 class FreeList {
     static_assert(!std::is_same_v<T, int>);
+private:
+    std::vector<T>      data;
+    std::vector<int>    next;
+    int firstFree;
+
 public:
     /// Creates a new free list.
     FreeList();
@@ -32,11 +37,6 @@ public:
 
     // Returns the nth element.
     const T& operator[](int n) const;
-
-private:
-    std::vector<T> data;
-    std::vector<int> next;
-    int firstFree;
 };
 
 template <class T>
