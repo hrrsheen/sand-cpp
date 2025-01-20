@@ -1,0 +1,265 @@
+#include "Helpers.hpp"
+#include "SandWorker.hpp"
+#include "SandGame.hpp"
+#include <SFML/Graphics.hpp>
+#include <algorithm>
+#include <iostream>
+#include <utility>
+#include <vector>
+
+bool ShouldClose(sf::Event &event) {
+    if (event.type == sf::Event::Closed)
+        return true;
+    if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
+        return true;
+
+    return false;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//  Mouse.
+//////////////////////////////////////////////////////////////////////////////////////////
+
+Mouse::Mouse() : state(MouseState::IDLE), radius(1), brush(Element::air), pos(sf::Vector2i(-1, -1)), prevPos(sf::Vector2i(-1, -1)) {}
+
+void Mouse::Reset() {
+    state   = MouseState::IDLE;
+    pos     = sf::Vector2i(-1, -1);
+    prevPos = sf::Vector2i(-1, -1);
+}
+
+void Mouse::SetState(sf::Event &event, sf::Vector2i position) {
+    switch (event.type) {
+        case sf::Event::MouseButtonPressed:
+            if      (event.mouseButton.button == sf::Mouse::Left  ) { state = MouseState::DRAWING; }
+            else if (event.mouseButton.button == sf::Mouse::Middle) { state = MouseState::DRAGGING; }
+            prevPos = position;
+            break;
+        case sf::Event::MouseButtonReleased:
+            Reset();
+            break;
+        case sf::Event::MouseLeft:
+            Reset();
+            break;
+        case sf::Event::MouseWheelMoved:
+            if      (event.mouseWheel.delta > 0) { radius = std::clamp(radius + 1, 1, 10); }
+            else if (event.mouseWheel.delta < 0) { radius = std::clamp(radius - 1, 1, 10); }
+            break;
+        case sf::Event::KeyPressed: {
+            int number {KEY_TO_NUMBER(event.key.code)};
+            if (number >= 0 && number <= Element::count - 1)
+                brush = static_cast<Element>(number);
+            break; }
+        default:
+            // Nothing
+            break;
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//  Game.
+//////////////////////////////////////////////////////////////////////////////////////////
+
+SandGame::SandGame() : world(-2, 2, 0, 2), 
+    screen{constants::screenWidth, constants::screenHeight, constants::viewWidth, constants::viewHeight, "Falling Sand"} {
+    gridImage.create(constants::roomWidth, constants::roomHeight);
+    gridTexture.create(constants::roomWidth, constants::roomHeight);
+    gridTexture.setSmooth(false);
+
+    const int viewHeight {constants::viewHeight};
+    screen.SetTransform(
+        [viewHeight] {
+            sf::Transformable transformation;
+            transformation.setOrigin(0, viewHeight);    // 1st transform - scale to world height.
+            transformation.setScale(1.f, -1.f);         // 2nd transform - flip so that +y is up.
+            return transformation.getTransform();
+        }()
+    );
+}
+
+void SandGame::Run() {
+    bool DEBUG {false};
+    sf::Clock clock;
+    Mouse mouse;
+    int elapsed {0};
+    while (screen.isOpen()) {
+        sf::Time dt {clock.restart()};
+        sf::Event event;
+
+        // Handle all events for this frame.
+        while (screen.pollEvent(event)) {
+            if (ShouldClose(event)) {
+                Close();
+                break;
+            }
+
+            if (event.type == sf::Event::KeyPressed && event.key.scancode == sf::Keyboard::Scan::D) {
+                DEBUG = !DEBUG;
+            }
+
+            mouse.SetState(event, sf::Mouse::getPosition(screen));
+        }
+
+        if (mouse.state) {
+            mouse.pos = sf::Mouse::getPosition(screen);
+            if (mouse.state == MouseState::DRAWING ) {
+                Paint(mouse);
+            } else if (mouse.state == MouseState::DRAGGING) {
+                // The view's position DOESN'T use the transformed world coordinates, so we need to use mapPixelToCoords.
+                RepositionView(mouse);
+            }
+            mouse.prevPos = mouse.pos;
+        }
+        UpdateVisibleRooms();
+        Step(dt.asSeconds());
+        Draw(screen);
+        // DEBUG ONLY - Draw the active chunks.
+        if (DEBUG) {
+            DrawChunks();
+        }
+        screen.display();
+
+        if (elapsed >= 1000) {
+            std::cout << "FPS: " << 1.f / dt.asSeconds() << "\n";
+            elapsed = 0;
+        } else {
+            elapsed += dt.asMilliseconds();
+        }
+    }
+}
+
+void SandGame::Step(float dt) {
+    for (roomID_t id = 0; id < world.rooms.Range(); ++id) {
+        SandWorker worker {id, world, &world.GetRoom(id)};
+        worker.Step(dt);
+    }
+}
+
+///////////////////////////// Game interaction functions /////////////////////////////
+
+void SandGame::Paint(Mouse &mouse) {
+    sf::Vector2i end    {sf::Vector2i{screen.ToWorld(mouse.pos    )}};
+    sf::Vector2i start  {sf::Vector2i{screen.ToWorld(mouse.prevPos)}};
+
+    Lerp lerp {start, end};
+    Paint(lerp, mouse.brush, mouse.radius);
+}
+
+void SandGame::Paint(Lerp &stroke, Element type, int radius) {
+    for (sf::Vector2i pos : stroke) {
+        if (radius == 1) {
+            world.SetCell(pos.x, pos.y, type); // TODO: Cache the room that the mouse is in.
+        } else {
+            world.SetArea(pos.x - (radius - 1), pos.y - (radius - 1),
+                            2 * radius, 2 * radius, type);
+        }
+    }
+}
+
+void SandGame::RepositionView(Mouse mouse) {
+    sf::Vector2f delta {screen.mapPixelToCoords(mouse.prevPos) - screen.mapPixelToCoords(mouse.pos)};
+    screen.RepositionView(delta);
+}
+
+///////////////////////////// Draw functions /////////////////////////////
+
+void SandGame::Draw(Screen &screen) {
+    screen.clear();
+    const sf::IntRect borders {screen.ViewBorders()};
+    gridSprite.setPosition(visibleRooms[0].first.x, visibleRooms[0].first.y);
+
+    int xMin, xMax, // Determines the potion of a room that's drawn.
+        yMin, yMax;
+    
+    std::vector<roomID_t> completed;
+    completed.reserve(4);
+    for (int i = 0; i < visibleRooms.size(); ++i) {
+        if (std::find(completed.begin(), completed.end(), visibleRooms[i].second) != completed.end())
+            continue; // Room already processes.
+        if (!VALID_ROOM(visibleRooms[i].second))
+            continue;
+
+        SandRoom &room {world.GetRoom(visibleRooms[i].second)};
+        sf::Vector2i intersect {visibleRooms[i].first};
+        // Figure out which portion of the room to draw based on the view corner that intersects it.
+        switch (i) {
+            case 0:
+                xMin = intersect.x; xMax = room.x + room.width;
+                yMin = intersect.y; yMax = room.y + room.height;
+                break;
+            case 1:
+                xMin = room.x;      xMax = intersect.x;
+                yMin = intersect.y; yMax = room.y + room.height;
+                break;
+            case 2:
+                xMin = intersect.x; xMax = room.x + room.width;
+                yMin = room.y;      yMax = intersect.y;
+                break;
+            case 3:
+                xMin = room.x;      xMax = intersect.x;
+                yMin = room.y;      yMax = intersect.y;
+                break;
+        }
+        
+        // Update pixels for the visible portion of the room.
+        for (int y = yMin; y < yMax; ++y) {
+        for (int x = xMin; x < xMax; ++x) {
+            gridImage.setPixel(x - visibleRooms[0].first.x, y - visibleRooms[0].first.y, 
+                                room.grid.colour[room.ToIndex(x, y)]); // Need to convert world coords to view coords
+        }
+        }
+        completed.push_back(visibleRooms[i].second);
+    }
+    gridTexture.loadFromImage(gridImage);
+    gridSprite.setTexture(gridTexture);
+    screen.Draw(gridSprite);
+}
+
+void SandGame::UpdateVisibleRooms() {
+    const sf::IntRect borders {screen.ViewBorders()};
+    sf::Vector2i size {borders.getSize() - sf::Vector2i(1, 1)};
+    sf::Vector2i corners[4] {
+        borders.getPosition() - sf::Vector2( size.x,  size.y) / 2,
+        borders.getPosition() - sf::Vector2(-size.x,  size.y) / 2,
+        borders.getPosition() - sf::Vector2( size.x, -size.y) / 2,
+        borders.getPosition() - sf::Vector2(-size.x, -size.y) / 2
+    };
+    std::vector<std::pair<sf::Vector2i, roomID_t>> rooms;
+    rooms.reserve(4);
+    for (sf::Vector2i corner : corners) {
+        roomID_t roomID {world.ContainingRoomID(corner)};
+        if (!VALID_ROOM(roomID)) {
+            roomID = world.SpawnRoom(corner.x, corner.y);
+        }
+        rooms.push_back(std::make_pair(corner, roomID));
+    }
+
+    std::swap(visibleRooms, rooms);
+}
+
+void SandGame::DrawChunks() {
+    sf::RectangleShape rectangle;
+    rectangle.setOutlineThickness(1);
+    rectangle.setFillColor(sf::Color::Transparent);
+    for (roomID_t id = 0; id < world.rooms.Range(); ++id) {
+        SandRoom &room {world.rooms[id]};
+        rectangle.setSize(sf::Vector2f(room.width, room.height));
+        rectangle.setOutlineColor(sf::Color::Red);
+        rectangle.setPosition(room.x, room.y);
+        screen.Draw(rectangle);
+        for (int i = 0; i < room.chunks.Size(); i++) {
+            if (room.chunks.IsActive(i)) {
+                Chunk &chunk {room.chunks.GetChunk(i)};
+                ChunkBounds bounds {room.chunks.GetBounds(i)};
+                rectangle.setSize(sf::Vector2f(bounds.width, bounds.height));
+                rectangle.setOutlineColor(sf::Color::Blue);
+                rectangle.setPosition(bounds.x, bounds.y);
+                screen.Draw(rectangle);
+                rectangle.setSize(sf::Vector2f(chunk.xMax - chunk.xMin, chunk.yMax - chunk.yMin));
+                rectangle.setOutlineColor(sf::Color::Green);
+                rectangle.setPosition(chunk.xMin, chunk.yMin);
+                screen.Draw(rectangle);
+            }
+        }
+    }
+}

@@ -5,7 +5,7 @@ project(Sand-cpp LANGUAGES CXX)
 add_executable(sand-cpp 
     src/main.cpp
     src/Screen.cpp
-    src/WorldState.cpp
+    src/SandGame.cpp
     src/SandWorld.cpp
     src/SandRoom.cpp
     src/SandWorker.cpp

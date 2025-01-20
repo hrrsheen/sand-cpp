@@ -1,5 +1,5 @@
 Functionality:
-    [ ] Fix the interaction system
+    [x] Fix the interaction system
     [ ] Improve fire behaviour
     [ ] Fix the cell drawing functionality to allow for recolouring on each frame
     [ ] Add UI for element selection

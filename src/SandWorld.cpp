@@ -44,9 +44,11 @@ bool SandWorld::InitProperties() {
 
 roomID_t SandWorld::SpawnRoom(int x, int y) {
     sf::Vector2i key {ToKey(x, y)};
-    ElementProperties* propPtr {&properties};
     if (key.x >= xMin && key.x < xMax && key.y >= yMin && key.y < yMax) {        
-        SandRoom room {x, y,
+        ElementProperties* propPtr {&properties};
+        SandRoom room {
+            constants::roomWidth * key.x, 
+            constants::roomHeight * key.y,
             constants::roomWidth,
             constants::roomHeight,
             propPtr};
@@ -109,8 +111,8 @@ void SandWorld::SetCell(int x, int y, Element id) {
 void SandWorld::SetArea(int x, int y, int w, int h, Element id) {
     SandRoom *room {nullptr};
     roomID_t roomID {-1}, prevRoomID {-1};
-    for (int yi = y; yi < y + h; ++yi) {
-        for (int xi = x; xi < x + w; ++xi) {
+    for (int yi = y; yi <= y + h; ++yi) {
+        for (int xi = x; xi <= x + w; ++xi) {
             sf::Vector2i coords {xi, yi};
             roomID_t roomID {ContainingRoomID(coords)};
             if (VALID_ROOM(roomID)) {
