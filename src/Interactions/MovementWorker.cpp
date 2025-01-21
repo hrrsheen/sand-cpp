@@ -120,11 +120,18 @@ bool MovementWorker::FallDown(sf::Vector2i p, float dt) {
         100.f * std::modf(cell.velocity.y * dt, &yDst) // The fractional part as a percentage.
     )};
     if (Probability(std::abs(yRem))) yDst -= 1.f; // The probability to advance an additional cell.
-    sf::Vector2i deltaP {0, static_cast<int>(yDst)};
+    sf::Vector2i deltaP {0, static_cast<int>(yDst) - 1};
 
-    auto [roomID, dst] = PathEmpty(p + sf::Vector2i(0, -1), p + deltaP);
-    static_assert(std::is_same_v<decltype(roomID), roomID_t>);
-    static_assert(std::is_same_v<decltype(dst), sf::Vector2i>);
+    roomID_t roomID;
+    sf::Vector2i dst;
+    std::tie(roomID, dst) = PathEmpty(p + sf::Vector2i(0, -1), p + deltaP);
+    // auto [roomID, dst] = PathEmpty(p + sf::Vector2i(0, -1), p + deltaP);
+    // static_assert(std::is_same_v<decltype(roomID), roomID_t>);
+    // static_assert(std::is_same_v<decltype(dst), sf::Vector2i>);
+
+    if (!room->InBounds(dst) && !VALID_ROOM(roomID) && world.InBounds(dst)) {
+        roomID = world.SpawnRoom(dst.x, dst.y);
+    }
 
     if (VALID_ROOM(roomID)) {
         SandRoom *dstRoom {GetRoom(roomID)};

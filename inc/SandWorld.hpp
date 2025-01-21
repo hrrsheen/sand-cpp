@@ -25,8 +25,9 @@ struct Vector2iHash {
 };
 
 class SandWorld {
+    using room_ptr = std::unique_ptr<SandRoom>;
 public:
-    FreeList<SandRoom> rooms;
+    FreeList<room_ptr> rooms;
     
     // The properties of the elements being simulated in the world.
     ElementProperties properties;

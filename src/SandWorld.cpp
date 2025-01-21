@@ -44,14 +44,15 @@ bool SandWorld::InitProperties() {
 
 roomID_t SandWorld::SpawnRoom(int x, int y) {
     sf::Vector2i key {ToKey(x, y)};
+    if (roomsMap.count(key)) return roomsMap[key];
     if (key.x >= xMin && key.x < xMax && key.y >= yMin && key.y < yMax) {        
         ElementProperties* propPtr {&properties};
-        SandRoom room {
+        room_ptr room {std::make_unique<SandRoom>(
             constants::roomWidth * key.x, 
             constants::roomHeight * key.y,
             constants::roomWidth,
             constants::roomHeight,
-            propPtr};
+            propPtr)};
         roomID_t id {rooms.Insert(std::move(room))};
         roomsMap[key] = id;
         return id;
@@ -81,7 +82,7 @@ size_t SandWorld::CellIndex(sf::Vector2i p) {
 }
 
 SandRoom& SandWorld::GetRoom(roomID_t id) {
-    return rooms[id];
+    return *rooms[id].get();
 }
 
 SandRoom& SandWorld::GetRoom(sf::Vector2i key) {

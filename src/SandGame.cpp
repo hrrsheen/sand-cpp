@@ -168,7 +168,7 @@ void SandGame::RepositionView(Mouse mouse) {
     if (newPos.x - size.x < constants::roomWidth * xMinRooms || newPos.x + size.x > constants::roomWidth * xMaxRooms) {
         delta.x = 0.f;
     }
-    if (newPos.y - size.y < constants::roomHeight * yMinRooms || newPos.y + size.y > constants::roomHeight * yMaxRooms) {
+    if (newPos.y - size.y < constants::roomHeight * yMinRooms || newPos.y + size.y > constants::roomHeight * yMaxRooms - 1) {
         delta.y = 0.f;
     }
 
@@ -256,7 +256,7 @@ void SandGame::DrawChunks() {
     rectangle.setOutlineThickness(1);
     rectangle.setFillColor(sf::Color::Transparent);
     for (roomID_t id = 0; id < world.rooms.Range(); ++id) {
-        SandRoom &room {world.rooms[id]};
+        SandRoom &room {world.GetRoom(id)};
         rectangle.setSize(sf::Vector2f(room.width, room.height));
         rectangle.setOutlineColor(sf::Color::Red);
         rectangle.setPosition(room.x, room.y);

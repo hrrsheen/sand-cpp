@@ -99,7 +99,7 @@ std::pair<roomID_t, sf::Vector2i> InteractionWorker::PathEmpty(sf::Vector2i star
         } else {
             break;
         }
-        
+
         if (checkRoom->IsEmpty(check)) {
             dst = check;
             validRoom = checkRoom;
