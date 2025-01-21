@@ -64,6 +64,8 @@ public:
     roomID_t EmptyRoom(sf::Vector2i p);
     // If a room that contains point p exists, return its ID. Otherwise return -1.
     roomID_t ContainingRoomID(sf::Vector2i p); 
+    // Returns true if p is within the boundaries of all possible rooms.
+    bool InBounds(sf::Vector2i p);
 
     // Helper functions.
     size_t Size() const; // Returns the number of active rooms.

@@ -60,8 +60,11 @@ void Mouse::SetState(sf::Event &event, sf::Vector2i position) {
 //  Game.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-SandGame::SandGame() : world(-2, 2, 0, 2), 
-    screen{constants::screenWidth, constants::screenHeight, constants::viewWidth, constants::viewHeight, "Falling Sand"} {
+SandGame::SandGame() : xMinRooms(-2), xMaxRooms(2), 
+                       yMinRooms(-1), yMaxRooms(2), 
+                       world(-2, 2, -1, 2), 
+                       screen{constants::screenWidth, constants::screenHeight, 
+                                constants::viewWidth, constants::viewHeight, "Falling Sand"} {
     gridImage.create(constants::roomWidth, constants::roomHeight);
     gridTexture.create(constants::roomWidth, constants::roomHeight);
     gridTexture.setSmooth(false);
@@ -157,7 +160,18 @@ void SandGame::Paint(Lerp &stroke, Element type, int radius) {
 }
 
 void SandGame::RepositionView(Mouse mouse) {
-    sf::Vector2f delta {screen.mapPixelToCoords(mouse.prevPos) - screen.mapPixelToCoords(mouse.pos)};
+    sf::Vector2f delta    {screen.mapPixelToCoords(mouse.prevPos) - screen.mapPixelToCoords(mouse.pos)};
+
+    const sf::Vector2i newPos   {screen.tfInv * (delta + screen.ViewCentre())};
+    sf::Vector2i size     {screen.ViewBorders().getSize() / 2.f};
+    size.y = size.y - 1;
+    if (newPos.x - size.x < constants::roomWidth * xMinRooms || newPos.x + size.x > constants::roomWidth * xMaxRooms) {
+        delta.x = 0.f;
+    }
+    if (newPos.y - size.y < constants::roomHeight * yMinRooms || newPos.y + size.y > constants::roomHeight * yMaxRooms) {
+        delta.y = 0.f;
+    }
+
     screen.RepositionView(delta);
 }
 

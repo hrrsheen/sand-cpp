@@ -12,7 +12,7 @@ roomID_t BoolToID(roomID_t id, bool valid);
 class InteractionWorker {
 public:
     roomID_t    thisID;
-    SandRoom* const room;
+    SandRoom*   room;
     SandWorld   &world;
 
 public:

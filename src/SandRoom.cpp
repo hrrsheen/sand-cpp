@@ -58,9 +58,11 @@ void SandRoom::SetCell(int _x, int _y, Element id) {
 //////////////////////////////////////////////////////////////////////////////////////////
 
 bool SandRoom::IsEmpty(int _x, int _y) {
-    if (InBounds(_x, _y)) return GetCell(ToIndex(_x, _y)).id == Element::air;
-
-    return false;
+    if (InBounds(_x, _y)) {
+        return GetCell(ToIndex(_x, _y)).id == Element::air;
+    } else {
+        return false;   
+    }
 }
 
 bool SandRoom::IsEmpty(sf::Vector2i p) {

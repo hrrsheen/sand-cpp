@@ -6,11 +6,12 @@
 class Drawable;
 
 class Screen : public sf::RenderWindow {
-private:
-    sf::RenderStates renderStates;
+public:
     sf::Transform tf;       // The transform from world space to screen space.
     sf::Transform tfInv;    // The transform from screen space to world space.
-
+    
+private:
+    sf::RenderStates renderStates;
     sf::View view;          // The visible area of the screen (viewport).
 
 public:
@@ -21,6 +22,7 @@ public:
     void Draw(const sf::Drawable &drawable);
 
     const sf::FloatRect ViewBorders() const;
+    const sf::Vector2f ViewCentre() const;
     // Repositions the centre of the current view to the given position in world space.
     void RepositionView(sf::Vector2f delta);
 

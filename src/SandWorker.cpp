@@ -28,7 +28,7 @@ void SandWorker::SimulateChunk(Chunk &chunk) {
     for (int y = chunk.yMin; y < chunk.yMax; ++y) { // Inactive chunks will have yMin > yMax.
         // Process each row.
         // Alternate processing rows left to right and right to left.
-        int dir {y % 2};
+        int dir {std::abs(y % 2)};
         int endpoints[] {chunk.xMin, chunk.xMax - 1};
         int start   {endpoints[1 - dir]};
         int end     {endpoints[dir]};

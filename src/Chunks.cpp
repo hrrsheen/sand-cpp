@@ -12,10 +12,10 @@ void Chunk::Reset(ChunkBounds bounds) {
     state       = false;
     nextState   = false;
     // Reset min; max.
-    xMin  = bounds.x + bounds.width;    xMax  = -1;
-    xMinW = bounds.x + bounds.width;    xMaxW = -1;
-    yMin  = bounds.y + bounds.height;   yMax  = -1;
-    yMinW = bounds.y + bounds.height;   yMaxW = -1;
+    xMin  = bounds.x + bounds.width;    xMax  = bounds.x - 1;
+    xMinW = bounds.x + bounds.width;    xMaxW = bounds.x - 1;
+    yMin  = bounds.y + bounds.height;   yMax  = bounds.y - 1;
+    yMinW = bounds.y + bounds.height;   yMaxW = bounds.y - 1;
 }
 
 void Chunk::KeepAlive(int x, int y, ChunkBounds bounds) {
@@ -32,8 +32,8 @@ void Chunk::Update(ChunkBounds bounds) {
     // Update current; reset working.
     xMin = xMinW; xMinW = bounds.x + bounds.width;
     yMin = yMinW; yMinW = bounds.y + bounds.height;
-    xMax = xMaxW; xMaxW = -1;
-    yMax = yMaxW; yMaxW = -1;
+    xMax = xMaxW; xMaxW = bounds.x - 1;
+    yMax = yMaxW; yMaxW = bounds.y - 1;
 }
 
 Chunks::Chunks(int width, int height, int chunkWidth, int chunkHeight, int xOffset, int yOffset) : 

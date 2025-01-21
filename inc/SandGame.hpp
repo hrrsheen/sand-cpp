@@ -35,6 +35,8 @@ struct Mouse {
 
 class SandGame {
     SandWorld world;
+    const int xMinRooms, xMaxRooms,
+              yMinRooms, yMaxRooms;
 
     Screen      screen;
     sf::Image   gridImage;

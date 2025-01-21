@@ -19,6 +19,10 @@ const sf::FloatRect Screen::ViewBorders() const {
     return sf::FloatRect(tf * view.getCenter(), view.getSize());
 }
 
+const sf::Vector2f Screen::ViewCentre() const {
+    return view.getCenter();
+}
+
 void Screen::RepositionView(sf::Vector2f delta) {
     const sf::Vector2f &centre {view.getCenter()};
 

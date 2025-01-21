@@ -162,6 +162,11 @@ roomID_t SandWorld::ContainingRoomID(sf::Vector2i p) {
     return -1;
 }
 
+bool SandWorld::InBounds(sf::Vector2i p) {
+    return p.x > xMin * constants::roomWidth && p.x < xMax * constants::roomWidth
+        && p.y > yMin * constants::roomHeight && p.y < yMax * constants::roomHeight;
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Helper functions.
 //////////////////////////////////////////////////////////////////////////////////////////
