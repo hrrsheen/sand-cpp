@@ -114,14 +114,7 @@ bool MovementWorker::FallDown(sf::Vector2i p, float dt) {
     size_t iCell {CellIndex(p)};
     CellState &cell {room->GetCell(iCell)};
     cell.ApplyAcceleration(sf::Vector2f(0.f, -constants::accelGravity), dt);
-    // If the resultant position a fractional part, use the fraction as a probability
-    // to advance an additional cell.
-    float yDst; // The y destination.
-    int yRem {static_cast<int>(
-        100.f * std::modf(cell.velocity.y * dt, &yDst) // The fractional part as a percentage.
-    )};
-    if (Probability(std::abs(yRem))) yDst -= 1.f; // The probability to advance an additional cell.
-    sf::Vector2i deltaP {0, static_cast<int>(yDst) - 1};
+    sf::Vector2i deltaP {AccelerationDistance(cell, p)}; 
 
     roomID_t roomID;
     sf::Vector2i dst;
@@ -236,4 +229,18 @@ bool MovementWorker::SpreadSide(sf::Vector2i p) {
     }
 
     return VALID_ROOM(left) || VALID_ROOM(right);
+}
+
+sf::Vector2i MovementWorker::AccelerationDistance(CellState &cell, sf::Vector2i p) {
+    // If the resultant position a fractional part, use the fraction as a probability
+    // to advance an additional cell.
+    float xDst, yDst; // The destination.
+    // Separate the fractional and whole part of the destination calculation.
+    int xRem = static_cast<int>(100.f * std::modf(cell.velocity.x * dt, &xDst));
+    int yRem = static_cast<int>(100.f * std::modf(cell.velocity.y * dt, &yDst));
+    // Use the fractional part as a probability to advance and additional cell.
+    if (Probability(std::abs(xRem))) xDst += (xDst > 0) - (xDst < 0);
+    if (Probability(std::abs(yRem))) yDst += (yDst > 0) - (yDst < 0);
+
+    return sf::Vector2i {static_cast<int>(xDst), static_cast<int>(yDst)};
 }

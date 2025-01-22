@@ -11,8 +11,8 @@ namespace constants {
     const int chunkWidth    = 64,   chunkHeight     = 64;
 
     constexpr float accelGravity    = 120.f;
-    constexpr float maxVelocity     = 240.f;
-    const sf::Vector2f initialV     = {0.f, -60.f};
+    constexpr float maxVelocity     = 480.f;
+    const sf::Vector2f initialV     = {0.f, -240.f};
 }
 
 #endif

@@ -37,6 +37,9 @@ private:
     bool SpreadDownSide (sf::Vector2i p);
     bool SpreadUpSide   (sf::Vector2i p);
     bool SpreadSide     (sf::Vector2i p);
+
+    // Helpers for movement
+    sf::Vector2i AccelerationDistance(CellState &cell, sf::Vector2i p);
 };
 
 #endif
