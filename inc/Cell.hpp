@@ -1,6 +1,7 @@
 #ifndef CELL_HPP
 #define CELL_HPP
 
+#include "Constants.hpp"
 #include "Elements/Names.hpp"
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/System/Vector2.hpp>

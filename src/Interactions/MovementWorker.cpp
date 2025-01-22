@@ -63,6 +63,7 @@ void MovementWorker::ConsolidateMovement() {
 
 bool MovementWorker::MoveCell(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
     if (prop.moveBehaviour == MoveType::NONE) return false;
+    if (cell.velocity == sf::Vector2f(0.f, 0.f)) cell.velocity = constants::initialV;
 
     if      (prop.moveBehaviour == MoveType::FLOAT_DOWN)  { return FloatDown   (p);     }
     else if (prop.moveBehaviour == MoveType::FLOAT_UP)    { return FloatUp     (p);     }
@@ -73,12 +74,12 @@ bool MovementWorker::MoveCell(CellState &cell, ConstProperties &prop, sf::Vector
 
 bool MovementWorker::SpreadCell(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
     if (prop.spreadBehaviour == SpreadType::NONE) return false;
-    cell.velocity = sf::Vector2f(0.f, 0.f); // Reset velocity. May later change to transferring y velocity to x.
 
     if      (prop.spreadBehaviour & SpreadType::DOWN_SIDE && SpreadDownSide(p)) { return true; }
     else if (prop.spreadBehaviour & SpreadType::UP_SIDE   && SpreadUpSide  (p)) { return true; } 
     else if (prop.spreadBehaviour & SpreadType::SIDE      && SpreadSide    (p)) { return true; }
 
+    cell.velocity = sf::Vector2f(0.f, 0.f); // Reset velocity. May later change to transferring y velocity to x.
     return false;
 }
 
@@ -125,9 +126,6 @@ bool MovementWorker::FallDown(sf::Vector2i p, float dt) {
     roomID_t roomID;
     sf::Vector2i dst;
     std::tie(roomID, dst) = PathEmpty(p + sf::Vector2i(0, -1), p + deltaP);
-    // auto [roomID, dst] = PathEmpty(p + sf::Vector2i(0, -1), p + deltaP);
-    // static_assert(std::is_same_v<decltype(roomID), roomID_t>);
-    // static_assert(std::is_same_v<decltype(dst), sf::Vector2i>);
 
     if (!room->InBounds(dst) && !VALID_ROOM(roomID) && world.InBounds(dst)) {
         roomID = world.SpawnRoom(dst.x, dst.y);

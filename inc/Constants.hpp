@@ -1,6 +1,8 @@
 #ifndef CONSTANTS_HPP
 #define CONSTANTS_HPP
 
+#include <SFML/System/Vector2.hpp>
+
 namespace constants {
     const int roomWidth     = 512,  roomHeight      = 512;
     const int viewWidth     = 512,  viewHeight      = 256;
@@ -8,8 +10,9 @@ namespace constants {
     const int numXChunks    = 8,    numYChunks      = 8;
     const int chunkWidth    = 64,   chunkHeight     = 64;
 
-    constexpr float accelGravity    = 2000.f;
-    constexpr float maxVelocity     = 9000.f;
+    constexpr float accelGravity    = 120.f;
+    constexpr float maxVelocity     = 240.f;
+    const sf::Vector2f initialV     = {0.f, -60.f};
 }
 
 #endif
