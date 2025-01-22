@@ -6,7 +6,7 @@ Functionality:
     [ ] Add a partical system
     [ ] Add player character
     [ ] Search "TODO" and fix what comes up
-    [ ] Improve water spreading
+    [ ] Improve water spreading - may require x velocity
     [x] Fix the interaction system
     [x] Fix the cell drawing functionality to allow for recolouring on each frame
     [x] Room loading / deloading as the view moves

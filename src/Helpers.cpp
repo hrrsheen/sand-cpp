@@ -82,11 +82,11 @@ Lerp::Lerp(sf::Vector2i start, sf::Vector2i finish) :
 }
 
 Lerp::iterator Lerp::begin() const {
-    return impl::LerpIterator(start, finish, 0, N + 1);
+    return impl::LerpIterator(start, finish, 0, N);
 }
 
 Lerp::iterator Lerp::end() const {
-    return impl::LerpIterator(start, finish, N + 2, N + 1);
+    return impl::LerpIterator(start, finish, N + 1, N);
 }
 
 
