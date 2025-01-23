@@ -80,6 +80,8 @@ bool ActionWorker::ActOnSelf(size_t self, float dt) {
             return ExplosionActOnSelf(self, dt);
         case Element::smoke:
             return SmokeActOnSelf(self, dt);
+        case Element::spark:
+            return SparkActOnSelf(self, dt);
         default:
             return false;
     }
@@ -165,17 +167,35 @@ bool ActionWorker::SmokeActOnSelf(size_t self, float dt) {
     CellState &thisState {grid.state[self]};
     if (thisState.health <= 0) {
         room->QueueAction(self, Element::air);
-        return true;
     }
 
     thisState.health -= (100.f + static_cast<float>(QuickRandRange(-50, 50))) * dt;
+
+    sf::Vector2i coords {room->ToWorldCoords(self)};
+    KeepContainingAlive(coords.x, coords.y);
     return false;
+}
+
+bool ActionWorker::SparkActOnSelf(size_t self, float dt) {
+    CellState &thisState {grid.state[self]};
+    if (thisState.health <= 0) {
+        room->QueueAction(self, Element::air);
+        return true;
+    }
+
+    grid.colour[self] = properties.Colour(Element::spark); // Recolour spark every frame.
+    float randFalloff = static_cast<float>(RandInt(5000));
+    thisState.health -= (10.f + randFalloff) * dt;
+
+    sf::Vector2i coords {room->ToWorldCoords(self)};
+    KeepContainingAlive(coords.x, coords.y);
+    return false;   
 }
 
 bool ActionWorker::ExplosionActOnSelf(size_t self, float dt) {
     sf::Vector2i centrei {room->ToWorldCoords(self)};
     sf::Vector2f centref {centrei};
-    int radius {50};
+    int radius {25};
     sf::Vector2i corners[4] {
         {-radius,  radius},
         { radius,  radius},
@@ -191,16 +211,23 @@ bool ActionWorker::ExplosionActOnSelf(size_t self, float dt) {
         for (Lerp::iterator pointIt = lerp.begin(); pointIt != --lerp.end(); ++pointIt) {
             // Find the point on the circle's perimiter to radiate to.
             sf::Vector2f dir {*pointIt};
-            dir = math::Normalise(dir) * static_cast<float>(radius);
+            dir = math::Normalise(dir) * (radius + 0.5f);
             sf::Vector2i circlePerimiter {math::RoundPoint(centref + dir)};
 
-            int blastStrength {100};
+            float force {100.f};
             for (sf::Vector2i point : Lerp(centrei, circlePerimiter)) {
                 if (cachedCells.find(point) != cachedCells.end()) continue;
-
                 cachedCells.insert(point); // Add to the set so we don't repeat actions on this cell.
-                if (GetCell(point).id == Element::stone) break;
-                room->QueueAction(room->ToIndex(point), Element::fire);
+                
+                force -= GetProperties(point).hardness;
+                if (force <= 0.f) {
+                    break;
+                } else {
+                    if (Probability(80))
+                        room->QueueAction(room->ToIndex(point), Element::air);
+                    else
+                        room->QueueAction(room->ToIndex(point), Element::spark);
+                }
             }
         }
     }

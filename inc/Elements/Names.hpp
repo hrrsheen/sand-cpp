@@ -13,6 +13,7 @@ enum Element {
     wood,
     explosion,
     smoke,
+    spark,
 
     // MUST REMAIN AS LAST ELEMENT.
     count

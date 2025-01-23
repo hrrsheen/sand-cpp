@@ -28,34 +28,6 @@ void Mouse::Reset() {
     prevPos = sf::Vector2i(-1, -1);
 }
 
-void Mouse::SetState(sf::Event &event, sf::Vector2i position) {
-    switch (event.type) {
-        case sf::Event::MouseButtonPressed:
-            if      (event.mouseButton.button == sf::Mouse::Left  ) { state = MouseState::DRAWING; }
-            else if (event.mouseButton.button == sf::Mouse::Middle) { state = MouseState::DRAGGING; }
-            prevPos = position;
-            break;
-        case sf::Event::MouseButtonReleased:
-            Reset();
-            break;
-        case sf::Event::MouseLeft:
-            Reset();
-            break;
-        case sf::Event::MouseWheelMoved:
-            if      (event.mouseWheel.delta > 0) { radius = std::clamp(radius + 1, 1, 10); }
-            else if (event.mouseWheel.delta < 0) { radius = std::clamp(radius - 1, 1, 10); }
-            break;
-        case sf::Event::KeyPressed: {
-            int number {KEY_TO_NUMBER(event.key.code)};
-            if (number >= 0 && number <= Element::count - 1)
-                brush = static_cast<Element>(number);
-            break; }
-        default:
-            // Nothing
-            break;
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Game.
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -85,6 +57,7 @@ void SandGame::Run() {
     sf::Clock clock;
     Mouse mouse;
     int elapsed {0};
+    float paintElapsed {0.f};
     while (screen.isOpen()) {
         sf::Time dt {clock.restart()};
         sf::Event event;
@@ -100,13 +73,16 @@ void SandGame::Run() {
                 DEBUG = !DEBUG;
             }
 
-            mouse.SetState(event, sf::Mouse::getPosition(screen));
+            SetMouseState(mouse, event, sf::Mouse::getPosition(screen));
         }
 
         if (mouse.state) {
             mouse.pos = sf::Mouse::getPosition(screen);
-            if (mouse.state == MouseState::DRAWING ) {
-                Paint(mouse);
+            if (mouse.state == MouseState::DRAWING) {
+                if (paintElapsed >= mouse.brushInfo.timeout) {
+                    Paint(mouse);
+                    paintElapsed =  0.f;
+                }
             } else if (mouse.state == MouseState::DRAGGING) {
                 // The view's position DOESN'T use the transformed world coordinates, so we need to use mapPixelToCoords.
                 RepositionView(mouse);
@@ -122,6 +98,7 @@ void SandGame::Run() {
         }
         screen.display();
 
+        paintElapsed += dt.asSeconds();
         if (elapsed >= 1000) {
             std::cout << "FPS: " << 1.f / dt.asSeconds() << "\n";
             elapsed = 0;
@@ -140,12 +117,41 @@ void SandGame::Step(float dt) {
 
 ///////////////////////////// Game interaction functions /////////////////////////////
 
+void SandGame::SetMouseState(Mouse &mouse, sf::Event &event, sf::Vector2i position) {
+    switch (event.type) {
+        case sf::Event::MouseButtonPressed:
+            if      (event.mouseButton.button == sf::Mouse::Left  ) { mouse.state = MouseState::DRAWING; }
+            else if (event.mouseButton.button == sf::Mouse::Middle) { mouse.state = MouseState::DRAGGING; }
+            mouse.prevPos = position;
+            break;
+        case sf::Event::MouseButtonReleased:
+            mouse.Reset();
+            break;
+        case sf::Event::MouseLeft:
+            mouse.Reset();
+            break;
+        case sf::Event::MouseWheelMoved:
+            if      (event.mouseWheel.delta > 0) { mouse.radius = std::clamp(mouse.radius + 1, 1, 10); }
+            else if (event.mouseWheel.delta < 0) { mouse.radius = std::clamp(mouse.radius - 1, 1, 10); }
+            break;
+        case sf::Event::KeyPressed: {
+            int number {KEY_TO_NUMBER(event.key.code)};
+            if (number >= 0 && number <= Element::count - 1)
+                mouse.brush = static_cast<Element>(number);
+                mouse.brushInfo = world.properties.brushes[mouse.brush];
+            break; }
+        default:
+            // Nothing
+            break;
+    }
+}
+
 void SandGame::Paint(Mouse &mouse) {
     sf::Vector2i end    {sf::Vector2i{screen.ToWorld(mouse.pos    )}};
     sf::Vector2i start  {sf::Vector2i{screen.ToWorld(mouse.prevPos)}};
 
     Lerp lerp {start, end};
-    Paint(lerp, mouse.brush, mouse.radius);
+    Paint(lerp, mouse.brush, std::min(mouse.radius, mouse.brushInfo.maxRadius));
 }
 
 void SandGame::Paint(Lerp &stroke, Element type, int radius) {

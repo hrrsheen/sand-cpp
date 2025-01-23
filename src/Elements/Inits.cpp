@@ -23,6 +23,7 @@ bool InitStone(ElementProperties &properties) {
     ConstProperties constsInit;
     constsInit.name     = "stone";
     constsInit.type     = ElementType::SOLID;
+    constsInit.hardness = 50.f;
     ColourProperties colourInit;
     sf::Image img;
     img.loadFromFile("./assets/stone2-texture.png");
@@ -36,6 +37,7 @@ bool InitWood(ElementProperties &properties) {
     constsInit.name         = "wood";
     constsInit.type         = ElementType::SOLID;
     constsInit.flammability = 200.f;
+    constsInit.hardness     = 15.f;
     ColourProperties colourInit;
     sf::Image img;
     img.loadFromFile("./assets/wood-texture.png");
@@ -116,6 +118,19 @@ bool InitExplosion(ElementProperties &properties) {
     constsInit.moveBehaviour      = MoveType::NONE;
     constsInit.spreadBehaviour    = SpreadType::NONE;
     ColourProperties colourInit;
+    colourInit.colourEachFrame    = false;
+    COLOUR(colourInit.palette).push_back(0xff3b14ff);
+
+    return properties.Insert(Element::explosion, constsInit, colourInit, {.25f, 1});
+}
+
+bool InitSpark(ElementProperties &properties) {
+    ConstProperties constsInit;
+    constsInit.name               = "spark";
+    constsInit.type               = ElementType::GAS;
+    constsInit.moveBehaviour      = MoveType::FLOAT_UP;
+    constsInit.spreadBehaviour    = SpreadType::SIDE | SpreadType::UP_SIDE;
+    ColourProperties colourInit;
     colourInit.colourEachFrame    = true;
     COLOUR(colourInit.palette).push_back(0xff3b14ff);
     COLOUR(colourInit.palette).push_back(0xff7429ff);
@@ -124,5 +139,5 @@ bool InitExplosion(ElementProperties &properties) {
     COLOUR(colourInit.palette).push_back(0xff3d24ff);
     COLOUR(colourInit.palette).push_back(0xff983dff);
 
-    return properties.Insert(Element::explosion, constsInit, colourInit);
+    return properties.Insert(Element::spark, constsInit, colourInit);
 }

@@ -39,6 +39,7 @@ bool SandWorld::InitProperties() {
     success |= InitFire (properties);
     success |= InitSmoke(properties);
     success |= InitExplosion(properties);
+    success |= InitSpark(properties);
 
     return success;
 }

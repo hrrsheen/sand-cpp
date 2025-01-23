@@ -1,12 +1,16 @@
 Functionality:
+    [ ] Fix explosions crossing rooms
     [ ] Improve fire behaviour
+    [ ] Add a partical system
     [ ] Add UI for element selection
     [ ] Add minimap for debugging
-    [ ] Add explosions
-    [ ] Add a partical system
     [ ] Add player character
     [ ] Search "TODO" and fix what comes up
     [ ] Improve water spreading - may require x velocity
+    [ ] Add lifespan functionality to elements
+        [ ] Allow values (like lifespan, explosion radius) to be passed to cell upon creation
+    [ ] Fix missing cells in explosion
+    [x] Add explosions
     [x] Fix the interaction system
     [x] Fix the cell drawing functionality to allow for recolouring on each frame
     [x] Room loading / deloading as the view moves

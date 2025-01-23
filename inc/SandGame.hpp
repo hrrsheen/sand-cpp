@@ -26,11 +26,11 @@ struct Mouse {
     sf::Vector2i pos;       // The current position of the mouse, in window pixels.
     sf::Vector2i prevPos;   // The position of the mouse last frame, in window pixels.
 
+    PaintProperties brushInfo;
+
     Mouse();
 
     void Reset();
-
-    void SetState(sf::Event &event, sf::Vector2i position);
 };
 
 class SandGame {
@@ -54,6 +54,7 @@ private:
     void Step(float dt);
 
     // Game interaction
+    void SetMouseState(Mouse &mouse, sf::Event &event, sf::Vector2i position);
     void Paint(Mouse &mouse);
     void Paint(Lerp &stroke, Element type, int radius);
 

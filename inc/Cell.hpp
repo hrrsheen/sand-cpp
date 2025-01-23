@@ -13,11 +13,11 @@ class ActionWorker;
 
 struct CellState {
     Element id;
-    float health;
-    sf::Vector2f velocity;
+    float health            = 100.f;
+    sf::Vector2f velocity   = sf::Vector2f(0.f, 0.f);
 
-    CellState() : id(Element::air), health(100.f), velocity(0.f, 0.f) {}
-    CellState(Element _id) : id(_id), health(100.f), velocity(0.f, 0.f) {}
+    CellState() : id(Element::air) {}
+    CellState(Element _id) : id(_id) {}
     void ApplyAcceleration(sf::Vector2f acc, float dt);
 };
 

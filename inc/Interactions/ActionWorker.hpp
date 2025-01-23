@@ -40,6 +40,8 @@ private:
 
     bool SmokeActOnSelf(size_t self, float dt);
 
+    bool SparkActOnSelf(size_t self, float dt);
+
     bool ExplosionActOnSelf(size_t self, float dt);
     bool ExplosionActOnOther(size_t self, size_t other, SandRoom *otherRoom, float dt);
 };

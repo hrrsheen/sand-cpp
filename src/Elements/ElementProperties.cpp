@@ -11,11 +11,9 @@
 #define TEXTURE_INDEX 1
 
 ConstProperties::ConstProperties() :
-    type(ElementType::AIR), name(), moveBehaviour(MoveType::NONE), spreadBehaviour(SpreadType::NONE), actionSet(),
-    spreadRate(1),
-    flammability(0.f) {}
+    type(ElementType::AIR), name(), moveBehaviour(MoveType::NONE), spreadBehaviour(SpreadType::NONE), actionSet() {}
 
-ElementProperties::ElementProperties() : constants(Element::count + 1), colours(Element::count + 1) {
+ElementProperties::ElementProperties() : constants(Element::count + 1), colours(Element::count + 1), brushes(Element::count + 1) {
     ConstProperties constsInit;
     constsInit.type = ElementType::AIR;
     constsInit.name = "air";
@@ -25,11 +23,12 @@ ElementProperties::ElementProperties() : constants(Element::count + 1), colours(
     Insert(Element::air, constsInit, colourInit);
 }
 
-bool ElementProperties::Insert(Element id, ConstProperties consts, ColourProperties palette) {
+bool ElementProperties::Insert(Element id, ConstProperties consts, ColourProperties palette, PaintProperties brush) {
     if (Contains(id)) return false;
 
     constants[id] = consts;
     colours[id] = palette;
+    brushes[id] = brush;
     return true;
 }
 
