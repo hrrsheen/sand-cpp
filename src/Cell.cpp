@@ -26,6 +26,10 @@ void Cells::Assign(size_t i, Element _id, int x, int y) {
     colour[i]   = properties->Colour(_id, x, y);
 }
 
+const ConstProperties& Cells::GetProperties(int index) const {
+    return properties->constants.at(state[index].id);
+}
+
 bool Cells::CanDisplace(Element self, Element other) const {
     return properties->CanDisplace(self, other);
 }

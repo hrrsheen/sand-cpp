@@ -14,5 +14,6 @@ bool InitWater  (ElementProperties &properties);
 //////// Gas inits ////////
 bool InitFire   (ElementProperties &properties);
 bool InitSmoke  (ElementProperties &properties);
+bool InitExplosion(ElementProperties &properties);
 
 #endif

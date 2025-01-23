@@ -38,6 +38,7 @@ bool SandWorld::InitProperties() {
     success |= InitWater(properties);
     success |= InitFire (properties);
     success |= InitSmoke(properties);
+    success |= InitExplosion(properties);
 
     return success;
 }
@@ -95,6 +96,11 @@ SandRoom& SandWorld::GetContainingRoom(sf::Vector2i p) {
 
 SandRoom& SandWorld::GetContainingRoom(int x, int y) {
     return GetRoom(ToKey(x, y));
+}
+
+const ConstProperties& SandWorld::GetProperties(sf::Vector2i p) {
+    SandRoom &room {GetContainingRoom(p.x, p.y)};
+    return room.grid.GetProperties(room.ToIndex(p));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

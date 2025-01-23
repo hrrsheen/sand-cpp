@@ -1,4 +1,7 @@
 #include "Interactions/ActionWorker.hpp"
+#include <cmath>
+#include <iostream>
+#include <unordered_set>
 
 ActionWorker::ActionWorker(roomID_t id, SandWorld &_world, SandRoom *_room) : 
     InteractionWorker(id, _world, _room), properties(_world.properties), grid(_room->grid) {}
@@ -73,6 +76,8 @@ bool ActionWorker::ActOnSelf(size_t self, float dt) {
     switch(grid.state[self].id) {
         case Element::fire:
             return FireActOnSelf(self, dt);
+        case Element::explosion:
+            return ExplosionActOnSelf(self, dt);
         case Element::smoke:
             return SmokeActOnSelf(self, dt);
         default:
@@ -164,5 +169,44 @@ bool ActionWorker::SmokeActOnSelf(size_t self, float dt) {
     }
 
     thisState.health -= (100.f + static_cast<float>(QuickRandRange(-50, 50))) * dt;
+    return false;
+}
+
+bool ActionWorker::ExplosionActOnSelf(size_t self, float dt) {
+    sf::Vector2i centrei {room->ToWorldCoords(self)};
+    sf::Vector2f centref {centrei};
+    int radius {50};
+    sf::Vector2i corners[4] {
+        {-radius,  radius},
+        { radius,  radius},
+        { radius, -radius},
+        {-radius, -radius}};
+    std::unordered_set<sf::Vector2i, Vector2iHash> cachedCells;
+    for (int i = 0; i < 4; ++i) {
+        sf::Vector2i start  {corners[i]};
+        sf::Vector2i end    {corners[(i + 1) % 4]};
+        
+        // Trace an edge of the square.
+        Lerp lerp(start, end);
+        for (Lerp::iterator pointIt = lerp.begin(); pointIt != --lerp.end(); ++pointIt) {
+            // Find the point on the circle's perimiter to radiate to.
+            sf::Vector2f dir {*pointIt};
+            dir = math::Normalise(dir) * static_cast<float>(radius);
+            sf::Vector2i circlePerimiter {math::RoundPoint(centref + dir)};
+
+            int blastStrength {100};
+            for (sf::Vector2i point : Lerp(centrei, circlePerimiter)) {
+                if (cachedCells.find(point) != cachedCells.end()) continue;
+
+                cachedCells.insert(point); // Add to the set so we don't repeat actions on this cell.
+                if (GetCell(point).id == Element::stone) break;
+                room->QueueAction(room->ToIndex(point), Element::fire);
+            }
+        }
+    }
+    return true;
+}
+
+bool ActionWorker::ExplosionActOnOther(size_t self, size_t other, SandRoom *otherRoom, float dt) {
     return false;
 }

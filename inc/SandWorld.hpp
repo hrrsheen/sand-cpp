@@ -53,6 +53,8 @@ public:
     SandRoom& GetContainingRoom(sf::Vector2i p);
     SandRoom& GetContainingRoom(int x, int y);
 
+    const ConstProperties& GetProperties(sf::Vector2i p);
+
     // Setting functions.
     void SetCell(int x, int y, Element id);
     // Sets the rectangle at (x, y) with the given width and height to the given element ID.

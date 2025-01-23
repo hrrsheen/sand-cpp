@@ -11,6 +11,7 @@ enum Element {
     water,
     fire,
     wood,
+    explosion,
     smoke,
 
     // MUST REMAIN AS LAST ELEMENT.

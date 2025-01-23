@@ -8,6 +8,7 @@
 #include <vector>
 
 struct ElementProperties;
+struct ConstProperties;
 class ActionWorker;
 
 struct CellState {
@@ -21,7 +22,6 @@ struct CellState {
 };
 
 class Cells {
-    friend ActionWorker;
 public:
     std::vector<CellState> state;
     std::vector<sf::Color> colour;
@@ -36,6 +36,7 @@ public:
     void Assign(size_t i, Element id, int x=0, int y=0);
 
     // Properties queries.
+    const ConstProperties& GetProperties(int index) const;
     bool CanDisplace(Element self, Element other) const;
     int SpreadRate(size_t i) const;
     float Flammability(size_t i) const;

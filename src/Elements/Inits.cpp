@@ -53,7 +53,7 @@ bool InitWater(ElementProperties &properties) {
     ConstProperties constsInit;
     constsInit.name               = "water";
     constsInit.type               = ElementType::LIQUID;
-    constsInit.moveBehaviour      = MoveType::FLOAT_DOWN;
+    constsInit.moveBehaviour      = MoveType::FALL_DOWN;
     constsInit.spreadBehaviour    = SpreadType::DOWN_SIDE | SpreadType::SIDE;
     constsInit.spreadRate         = 5;
     constsInit.actionSet          = moveset_t {sf::Vector2i(0, -1)};
@@ -107,4 +107,22 @@ bool InitSmoke(ElementProperties &properties) {
     COLOUR(colourInit.palette).push_back(0xb3b3b3ff);
 
     return properties.Insert(Element::smoke, constsInit, colourInit);
+}
+
+bool InitExplosion(ElementProperties &properties) {
+    ConstProperties constsInit;
+    constsInit.name               = "explosion";
+    constsInit.type               = ElementType::GAS;
+    constsInit.moveBehaviour      = MoveType::NONE;
+    constsInit.spreadBehaviour    = SpreadType::NONE;
+    ColourProperties colourInit;
+    colourInit.colourEachFrame    = true;
+    COLOUR(colourInit.palette).push_back(0xff3b14ff);
+    COLOUR(colourInit.palette).push_back(0xff7429ff);
+    COLOUR(colourInit.palette).push_back(0xf59d18ff);
+    COLOUR(colourInit.palette).push_back(0xfcaa2dff);
+    COLOUR(colourInit.palette).push_back(0xff3d24ff);
+    COLOUR(colourInit.palette).push_back(0xff983dff);
+
+    return properties.Insert(Element::explosion, constsInit, colourInit);
 }

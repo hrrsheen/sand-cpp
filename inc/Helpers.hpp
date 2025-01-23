@@ -55,6 +55,14 @@ private:
     const int N;
 };
 
+namespace math {
+    // Normalises the given vector to unit length.
+    sf::Vector2f Normalise(sf::Vector2f v);
+
+    // Rounds a point to the nearest grid cell.
+    sf::Vector2i RoundPoint(sf::Vector2f p);
+}
+
 // Seeds the random number generator.
 void InitRng();
 

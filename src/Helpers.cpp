@@ -4,11 +4,6 @@
 
 namespace impl {
 
-// Rounds a point to the nearest grid cell.
-sf::Vector2i RoundPoint(sf::Vector2f p) {
-    return sf::Vector2i(std::roundf(p.x), std::roundf(p.y));
-}
-
 // Returns the distance between two points.
 int DiagonalDistance(sf::Vector2i p0, sf::Vector2i p1) {
     int dx {p1.x - p0.x};
@@ -37,7 +32,7 @@ LerpIterator::LerpIterator(sf::Vector2f start, sf::Vector2f end, int step, int N
 // Dereference.
 LerpIterator::value_type LerpIterator::operator*() const {
     float t = N == 0 ? 0.f : step / static_cast<float>(N);
-    return RoundPoint(lerp(start, end, t));
+    return math::RoundPoint(lerp(start, end, t));
 }
 
 // Pre-increment: ++it.
@@ -89,7 +84,21 @@ Lerp::iterator Lerp::end() const {
     return impl::LerpIterator(start, finish, N + 1, N);
 }
 
+namespace math {
 
+    sf::Vector2f Normalise(sf::Vector2f v) {
+        if (v.x == 0.f && v.y == 0.f) return v;
+
+        float len {std::sqrtf(v.x * v.x + v.y * v.y)};
+        return v / len;
+    }
+
+    // Rounds a point to the nearest grid cell.
+    sf::Vector2i RoundPoint(sf::Vector2f p) {
+        return sf::Vector2i(std::roundf(p.x), std::roundf(p.y));
+    }
+
+}
 
 std::mt19937 rng(std::random_device{}());
 

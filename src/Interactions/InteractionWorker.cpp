@@ -57,6 +57,18 @@ void InteractionWorker::SetCell(int x, int y, Element id) {
     world.SetCell(x, y, id);
 }
 
+const ConstProperties& InteractionWorker::GetProperties(int index) const {
+    return room->grid.GetProperties(index);
+}
+
+const ConstProperties& InteractionWorker::GetProperties(sf::Vector2i p) const {
+    if (room->InBounds(p)) {
+        return GetProperties(room->ToIndex(p));
+    }
+
+    return world.GetProperties(p);
+}
+
 roomID_t InteractionWorker::ContainingRoomID(sf::Vector2i p) {
     if (room->InBounds(p)) {
         return thisID;

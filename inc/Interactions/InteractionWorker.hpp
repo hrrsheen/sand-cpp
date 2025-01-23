@@ -27,6 +27,9 @@ protected:
     size_t CellIndex(sf::Vector2i);
     void SetCell(int x, int y, Element id);
 
+    const ConstProperties& GetProperties(int index) const;
+    const ConstProperties& GetProperties(sf::Vector2i p) const;
+
     roomID_t ContainingRoomID(sf::Vector2i p);
     SandRoom *GetRoom(roomID_t id);
 
