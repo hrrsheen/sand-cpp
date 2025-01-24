@@ -202,6 +202,7 @@ bool ActionWorker::ExplosionActOnSelf(size_t self, float dt) {
         { radius, -radius},
         {-radius, -radius}};
     std::unordered_set<sf::Vector2i, Vector2iHash> cachedCells;
+    SandRoom *explosionRoom {room};
     for (int i = 0; i < 4; ++i) {
         sf::Vector2i start  {corners[i]};
         sf::Vector2i end    {corners[(i + 1) % 4]};
@@ -219,14 +220,24 @@ bool ActionWorker::ExplosionActOnSelf(size_t self, float dt) {
                 if (cachedCells.find(point) != cachedCells.end()) continue;
                 cachedCells.insert(point); // Add to the set so we don't repeat actions on this cell.
                 
+                // Account for explosions crossing rooms.
+                if (!explosionRoom->InBounds(point)) {
+                    roomID_t newRoomID {ContainingRoomID(point)};
+                    if (VALID_ROOM(newRoomID))
+                        explosionRoom = GetRoom(newRoomID);
+                    else
+                        break;
+                }
+
+                // Dampen the explosion based on the element hardness.
                 force -= GetProperties(point).hardness;
                 if (force <= 0.f) {
                     break;
                 } else {
                     if (Probability(80))
-                        room->QueueAction(room->ToIndex(point), Element::air);
+                        explosionRoom->QueueAction(explosionRoom->ToIndex(point), Element::air);
                     else
-                        room->QueueAction(room->ToIndex(point), Element::spark);
+                        explosionRoom->QueueAction(explosionRoom->ToIndex(point), Element::spark);
                 }
             }
         }
