@@ -192,9 +192,10 @@ bool ActionWorker::SparkActOnSelf(size_t self, float dt) {
 }
 
 void ActionWorker::ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, float force, cached_points &cachedCells) {
-    int dx      = pRadius.x - pCentre.x,    dy      = pRadius.y - pCentre.y;
-    float nx    = std::abs(dx),             ny      = std::abs(dy);
-    int sgnx    = (dx > 0) - (dx < 0),      sgny    = (dy > 0) - (dy < 0);
+    // Set up the variables for a supercover line.
+    int dx      = pRadius.x - pCentre.x,    dy      = pRadius.y - pCentre.y;    // The difference in point positions.
+    float nx    = std::abs(dx),             ny      = std::abs(dy);             // The number of grid spaces to move.
+    int sgnx    = (dx > 0) - (dx < 0),      sgny    = (dy > 0) - (dy < 0);      // The direction to step.
     SandRoom *explosionRoom {room};
 
     sf::Vector2i point {pCentre};
@@ -224,9 +225,11 @@ void ActionWorker::ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, flo
         }
 
         if ((0.5 + ix) / nx < (0.5 + iy) / ny) {
+            // Take a horizontal step.
             point.x += sgnx;
             ix++;
         } else {
+            // Take a vertical step.
             point.y += sgny;
             iy++;
         }
@@ -255,35 +258,6 @@ bool ActionWorker::ExplosionActOnSelf(size_t self, float dt) {
 
     return true;
 }
-
-// bool ActionWorker::ExplosionActOnSelf(size_t self, float dt) {
-//     sf::Vector2i centrei {room->ToWorldCoords(self)};
-//     sf::Vector2f centref {centrei};
-//     int radius {25};
-//     sf::Vector2i corners[4] {
-//         {-radius,  radius},
-//         { radius,  radius},
-//         { radius, -radius},
-//         {-radius, -radius}};
-//     cached_points cachedCells;
-//     for (int i = 0; i < 4; ++i) {
-//         sf::Vector2i start  {corners[i]};
-//         sf::Vector2i end    {corners[(i + 1) % 4]};
-        
-//         // Trace an edge of the square.
-//         Lerp lerp(start, end);
-//         for (Lerp::iterator pointIt = lerp.begin(); pointIt != --lerp.end(); ++pointIt) {
-//             // Find the point on the circle's perimiter to radiate to.
-//             sf::Vector2f dir {*pointIt};
-//             dir = math::Normalise(dir) * (radius + 0.5f);
-//             sf::Vector2i circlePerimiter {math::RoundPoint(centref + dir)};
-
-//             float force {100.f};
-//             ExplodeRadius(centrei, circlePerimiter, force, cachedCells);
-//         }
-//     }
-//     return true;
-// }
 
 bool ActionWorker::ExplosionActOnOther(size_t self, size_t other, SandRoom *otherRoom, float dt) {
     return false;
