@@ -1,7 +1,6 @@
 #include "Interactions/ActionWorker.hpp"
 #include <cmath>
 #include <iostream>
-#include <unordered_set>
 
 ActionWorker::ActionWorker(roomID_t id, SandWorld &_world, SandRoom *_room) : 
     InteractionWorker(id, _world, _room), properties(_world.properties), grid(_room->grid) {}
@@ -192,58 +191,84 @@ bool ActionWorker::SparkActOnSelf(size_t self, float dt) {
     return false;   
 }
 
-bool ActionWorker::ExplosionActOnSelf(size_t self, float dt) {
-    sf::Vector2i centrei {room->ToWorldCoords(self)};
-    sf::Vector2f centref {centrei};
-    int radius {25};
-    sf::Vector2i corners[4] {
-        {-radius,  radius},
-        { radius,  radius},
-        { radius, -radius},
-        {-radius, -radius}};
-    std::unordered_set<sf::Vector2i, Vector2iHash> cachedCells;
+void ActionWorker::ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, float force, cached_points &cachedCells) {
     SandRoom *explosionRoom {room};
-    for (int i = 0; i < 4; ++i) {
-        sf::Vector2i start  {corners[i]};
-        sf::Vector2i end    {corners[(i + 1) % 4]};
+    for (sf::Vector2i point : Lerp(pCentre, pRadius)) {
+        if (cachedCells.find(point) != cachedCells.end()) continue;
+        cachedCells.insert(point); // Add to the set so we don't repeat actions on this cell.
         
-        // Trace an edge of the square.
-        Lerp lerp(start, end);
-        for (Lerp::iterator pointIt = lerp.begin(); pointIt != --lerp.end(); ++pointIt) {
-            // Find the point on the circle's perimiter to radiate to.
-            sf::Vector2f dir {*pointIt};
-            dir = math::Normalise(dir) * (radius + 0.5f);
-            sf::Vector2i circlePerimiter {math::RoundPoint(centref + dir)};
+        // Account for explosions crossing rooms.
+        if (!explosionRoom->InBounds(point)) {
+            roomID_t newRoomID {ContainingRoomID(point)};
+            if (VALID_ROOM(newRoomID))
+                explosionRoom = GetRoom(newRoomID);
+            else
+                break;
+        }
 
-            float force {100.f};
-            for (sf::Vector2i point : Lerp(centrei, circlePerimiter)) {
-                if (cachedCells.find(point) != cachedCells.end()) continue;
-                cachedCells.insert(point); // Add to the set so we don't repeat actions on this cell.
-                
-                // Account for explosions crossing rooms.
-                if (!explosionRoom->InBounds(point)) {
-                    roomID_t newRoomID {ContainingRoomID(point)};
-                    if (VALID_ROOM(newRoomID))
-                        explosionRoom = GetRoom(newRoomID);
-                    else
-                        break;
-                }
-
-                // Dampen the explosion based on the element hardness.
-                force -= GetProperties(point).hardness;
-                if (force <= 0.f) {
-                    break;
-                } else {
-                    if (Probability(80))
-                        explosionRoom->QueueAction(explosionRoom->ToIndex(point), Element::air);
-                    else
-                        explosionRoom->QueueAction(explosionRoom->ToIndex(point), Element::spark);
-                }
-            }
+        // Dampen the explosion based on the element hardness.
+        force -= GetProperties(point).hardness;
+        if (force <= 0.f) {
+            break;
+        } else {
+            if (Probability(80))
+                explosionRoom->QueueAction(explosionRoom->ToIndex(point), Element::air);
+            else
+                explosionRoom->QueueAction(explosionRoom->ToIndex(point), Element::spark);
         }
     }
+}
+
+bool ActionWorker::ExplosionActOnSelf(size_t self, float dt) {
+    sf::Vector2i centre {room->ToWorldCoords(self)};
+    float radius {25.5};
+    cached_points cachedCells;
+    SandRoom *explosionRoom {room};
+    float force {100.f};
+    for (int h = 0; h <= std::round(radius * std::sqrtf(0.5f)); ++h) {
+        int b {static_cast<int>(std::round(std::sqrtf(radius * radius - h * h)))};
+
+        ExplodeRadius(centre, sf::Vector2i(centre.x + b, centre.y + h), force, cachedCells);
+        ExplodeRadius(centre, sf::Vector2i(centre.x - b, centre.y + h), force, cachedCells);
+        ExplodeRadius(centre, sf::Vector2i(centre.x + b, centre.y - h), force, cachedCells);
+        ExplodeRadius(centre, sf::Vector2i(centre.x - b, centre.y - h), force, cachedCells);
+        ExplodeRadius(centre, sf::Vector2i(centre.x + h, centre.y + b), force, cachedCells);
+        ExplodeRadius(centre, sf::Vector2i(centre.x - h, centre.y + b), force, cachedCells);
+        ExplodeRadius(centre, sf::Vector2i(centre.x + h, centre.y - b), force, cachedCells);
+        ExplodeRadius(centre, sf::Vector2i(centre.x - h, centre.y - b), force, cachedCells);
+    }
+
     return true;
 }
+
+// bool ActionWorker::ExplosionActOnSelf(size_t self, float dt) {
+//     sf::Vector2i centrei {room->ToWorldCoords(self)};
+//     sf::Vector2f centref {centrei};
+//     int radius {25};
+//     sf::Vector2i corners[4] {
+//         {-radius,  radius},
+//         { radius,  radius},
+//         { radius, -radius},
+//         {-radius, -radius}};
+//     cached_points cachedCells;
+//     for (int i = 0; i < 4; ++i) {
+//         sf::Vector2i start  {corners[i]};
+//         sf::Vector2i end    {corners[(i + 1) % 4]};
+        
+//         // Trace an edge of the square.
+//         Lerp lerp(start, end);
+//         for (Lerp::iterator pointIt = lerp.begin(); pointIt != --lerp.end(); ++pointIt) {
+//             // Find the point on the circle's perimiter to radiate to.
+//             sf::Vector2f dir {*pointIt};
+//             dir = math::Normalise(dir) * (radius + 0.5f);
+//             sf::Vector2i circlePerimiter {math::RoundPoint(centref + dir)};
+
+//             float force {100.f};
+//             ExplodeRadius(centrei, circlePerimiter, force, cachedCells);
+//         }
+//     }
+//     return true;
+// }
 
 bool ActionWorker::ExplosionActOnOther(size_t self, size_t other, SandRoom *otherRoom, float dt) {
     return false;

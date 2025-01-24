@@ -8,9 +8,11 @@
 #include "SandRoom.hpp"
 #include "SandWorld.hpp"
 #include <vector>
+#include <unordered_set>
 
 class ActionWorker : public InteractionWorker {
     using IW = InteractionWorker;
+    using cached_points = std::unordered_set<sf::Vector2i, Vector2iHash>;
 private:
     float dt;
 
@@ -42,6 +44,7 @@ private:
 
     bool SparkActOnSelf(size_t self, float dt);
 
+    void ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, float force, cached_points &cachedCells);
     bool ExplosionActOnSelf(size_t self, float dt);
     bool ExplosionActOnOther(size_t self, size_t other, SandRoom *otherRoom, float dt);
 };
