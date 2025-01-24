@@ -192,29 +192,43 @@ bool ActionWorker::SparkActOnSelf(size_t self, float dt) {
 }
 
 void ActionWorker::ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, float force, cached_points &cachedCells) {
+    int dx      = pRadius.x - pCentre.x,    dy      = pRadius.y - pCentre.y;
+    float nx    = std::abs(dx),             ny      = std::abs(dy);
+    int sgnx    = (dx > 0) - (dx < 0),      sgny    = (dy > 0) - (dy < 0);
     SandRoom *explosionRoom {room};
-    for (sf::Vector2i point : Lerp(pCentre, pRadius)) {
-        if (cachedCells.find(point) != cachedCells.end()) continue;
-        cachedCells.insert(point); // Add to the set so we don't repeat actions on this cell.
-        
-        // Account for explosions crossing rooms.
-        if (!explosionRoom->InBounds(point)) {
-            roomID_t newRoomID {ContainingRoomID(point)};
-            if (VALID_ROOM(newRoomID))
-                explosionRoom = GetRoom(newRoomID);
-            else
+
+    sf::Vector2i point {pCentre};
+    for (int ix = 0, iy = 0; ix < nx || iy < ny; ) {
+        if (cachedCells.find(point) == cachedCells.end()) {
+            cachedCells.insert(point); // Add to the set so we don't repeat actions on this cell.
+            
+            // Account for explosions crossing rooms.
+            if (!explosionRoom->InBounds(point)) {
+                roomID_t newRoomID {ContainingRoomID(point)};
+                if (VALID_ROOM(newRoomID))
+                    explosionRoom = GetRoom(newRoomID);
+                else
+                    break;
+            }
+
+            // Dampen the explosion based on the element hardness.
+            force -= GetProperties(point).hardness;
+            if (force <= 0.f) {
                 break;
+            } else {
+                if (Probability(80))
+                    explosionRoom->QueueAction(explosionRoom->ToIndex(point), Element::air);
+                else
+                    explosionRoom->QueueAction(explosionRoom->ToIndex(point), Element::spark);
+            }
         }
 
-        // Dampen the explosion based on the element hardness.
-        force -= GetProperties(point).hardness;
-        if (force <= 0.f) {
-            break;
+        if ((0.5 + ix) / nx < (0.5 + iy) / ny) {
+            point.x += sgnx;
+            ix++;
         } else {
-            if (Probability(80))
-                explosionRoom->QueueAction(explosionRoom->ToIndex(point), Element::air);
-            else
-                explosionRoom->QueueAction(explosionRoom->ToIndex(point), Element::spark);
+            point.y += sgny;
+            iy++;
         }
     }
 }
@@ -228,6 +242,7 @@ bool ActionWorker::ExplosionActOnSelf(size_t self, float dt) {
     for (int h = 0; h <= std::round(radius * std::sqrtf(0.5f)); ++h) {
         int b {static_cast<int>(std::round(std::sqrtf(radius * radius - h * h)))};
 
+        // The circumference calculation can be repeated for each octant.
         ExplodeRadius(centre, sf::Vector2i(centre.x + b, centre.y + h), force, cachedCells);
         ExplodeRadius(centre, sf::Vector2i(centre.x - b, centre.y + h), force, cachedCells);
         ExplodeRadius(centre, sf::Vector2i(centre.x + b, centre.y - h), force, cachedCells);
