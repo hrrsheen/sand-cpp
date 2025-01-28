@@ -114,15 +114,15 @@ bool MovementWorker::FallDown(sf::Vector2i p, float dt) {
     size_t iCell {CellIndex(p)};
     CellState &cell {room->GetCell(iCell)};
     cell.ApplyAcceleration(constants::accelGravity, dt);
-    sf::Vector2i deltaP {AccelerationDistance(cell.velocity, dt)}; 
+    sf::Vector2i deltaP {AccelerationDistance(cell.velocity, dt)};
 
     roomID_t roomID;
     sf::Vector2i dst;
-    std::tie(roomID, dst) = PathEmpty(p + sf::Vector2i(0, -1), p + deltaP);
+    std::tie(roomID, dst) = PathEmpty<PathOpts::SPAWN>(p + sf::Vector2i {0, -1}, p + deltaP);
 
-    if (!room->InBounds(dst) && !VALID_ROOM(roomID) && world.InBounds(dst)) {
-        roomID = world.SpawnRoom(dst.x, dst.y);
-    }
+    // if (!room->InBounds(dst) && !VALID_ROOM(roomID) && world.InBounds(dst)) {
+    //     roomID = world.SpawnRoom(dst.x, dst.y);
+    // }
 
     if (VALID_ROOM(roomID)) {
         SandRoom *dstRoom {GetRoom(roomID)};
@@ -219,11 +219,11 @@ bool MovementWorker::SpreadSide(sf::Vector2i p) {
     
     sf::Vector2i dst;
     if (VALID_ROOM(left)) {
-        std::tie( left, dst) = PathEmpty(p - lookAhead, p - spreadRate * lookAhead);
+        std::tie( left, dst) = PathEmpty<PathOpts::SPAWN>(p - lookAhead, p - spreadRate * lookAhead);
         SandRoom *dstRoom {GetRoom( left)};
         dstRoom->QueueMovement(thisID, room->ToIndex(p), dstRoom->ToIndex(dst));
     } else if (VALID_ROOM(right)) {
-        std::tie(right, dst) = PathEmpty(p + lookAhead, p + spreadRate * lookAhead);
+        std::tie(right, dst) = PathEmpty<PathOpts::SPAWN>(p + lookAhead, p + spreadRate * lookAhead);
         SandRoom *dstRoom {GetRoom(right)};
         dstRoom->QueueMovement(thisID, room->ToIndex(p), dstRoom->ToIndex(dst));
     }

@@ -98,32 +98,3 @@ roomID_t InteractionWorker::IsEmpty(sf::Vector2i p) {
 
     return world.EmptyRoom(p);
 }
-
-
-std::pair<roomID_t, sf::Vector2i> InteractionWorker::PathEmpty(sf::Vector2i start, sf::Vector2i end) {
-    SandRoom *checkRoom = nullptr;
-    roomID_t  checkID   = -1,       validID   = -1;
-
-    sf::Vector2i dst {start};
-    for (sf::Vector2i check : Lerp {start, end}) {
-        if (world.InBounds(check)) {
-            checkID = ContainingRoomID(check); // TODO: cache the currently checked room so that there's no need to re-get the ID / room.
-            if (VALID_ROOM(checkID)) {
-                checkRoom = GetRoom(checkID);
-                if (checkRoom->IsEmpty(check)) {
-                    dst = check;
-                    validID = checkID;
-                } else {
-                    break;
-                }
-            } else {
-                dst = check;
-                validID = checkID;
-            }
-        } else {
-            break;
-        }
-    }
-
-    return {validID, dst};
-}
