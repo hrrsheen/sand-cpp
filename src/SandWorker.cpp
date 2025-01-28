@@ -2,7 +2,7 @@
 #include "SandWorker.hpp"
 
 SandWorker::SandWorker(roomID_t id, SandWorld &_world, SandRoom *_room) :
-    movement(id, _world, _room), actions(id, _world, _room), 
+    movement(id, _world, _room), actions(id, _world, _room),
     room(_room), properties(_world.properties), dt(0.f) {}
 
 //////////////////////////////////////////////////////////////////////////////////////////

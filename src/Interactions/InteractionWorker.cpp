@@ -8,6 +8,8 @@ inline roomID_t BoolToID(roomID_t id, bool valid) {
 InteractionWorker::InteractionWorker(roomID_t id, SandWorld &_world, SandRoom *_room) :
     thisID(id), world(_world), room(_room) {}
 
+void InteractionWorker::SetDeltaTime(float _dt) { dt = _dt; }
+
 void InteractionWorker::KeepContainingAlive(int x, int y) {
     room->chunks.KeepContainingAlive(x, y);
     room->chunks.KeepNeighbourAlive(x, y);

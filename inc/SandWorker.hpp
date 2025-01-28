@@ -6,8 +6,9 @@
 #include "Elements/ElementProperties.hpp"
 #include "SandRoom.hpp"
 #include "SandWorld.hpp"
-#include "Interactions/MovementWorker.hpp"
 #include "Interactions/ActionWorker.hpp"
+#include "Interactions/MovementWorker.hpp"
+// #include "Interactions/ParticleWorker.hpp"
 #include <utility>
 
 class SandWorker {
@@ -16,6 +17,7 @@ private:
 
     ElementProperties &properties;
 
+    // ParticleWorker particles;
     MovementWorker movement;
     ActionWorker actions;
     

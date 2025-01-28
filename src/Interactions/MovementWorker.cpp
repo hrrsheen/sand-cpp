@@ -11,8 +11,6 @@ bool MovementWorker::PerformMovement(CellState &cell, ConstProperties &prop, sf:
     return false;
 }
 
-void MovementWorker::SetDeltaTime(float _dt) { dt = _dt; }
-
 void MovementWorker::ConsolidateMovement() {
     if (room->queuedMoves.size() == 0) return;
 
@@ -203,10 +201,11 @@ bool MovementWorker::SpreadUpSide(sf::Vector2i p) {
 }
 
 bool MovementWorker::SpreadSide(sf::Vector2i p) {
-    sf::Vector2i lookAhead  {1, 0};
+    sf::Vector2i lookAhead {1, 0};
+    int spreadRate = room->grid.SpreadRate(room->ToIndex(p));
 
-    roomID_t left   {IsEmpty(p - lookAhead)}; 
-    roomID_t right  {IsEmpty(p + lookAhead)};
+    auto [ left,  leftDst] = PathEmpty<PathOpts::SKIP | PathOpts::SPAWN>(p, p - spreadRate * lookAhead);
+    auto [right, rightDst] = PathEmpty<PathOpts::SKIP | PathOpts::SPAWN>(p, p + spreadRate * lookAhead);
 
     // Need to account for whether it's left OR right that gives a VALID_ROOM;
     if (VALID_ROOM(left) && VALID_ROOM(right)) {
@@ -214,18 +213,13 @@ bool MovementWorker::SpreadSide(sf::Vector2i p) {
         left    = BoolToID( left,  flip);
         right   = BoolToID(right, !flip);
     }
-
-    int spreadRate {room->grid.SpreadRate(room->ToIndex(p))}; 
     
-    sf::Vector2i dst;
     if (VALID_ROOM(left)) {
-        std::tie( left, dst) = PathEmpty<PathOpts::SPAWN>(p - lookAhead, p - spreadRate * lookAhead);
         SandRoom *dstRoom {GetRoom( left)};
-        dstRoom->QueueMovement(thisID, room->ToIndex(p), dstRoom->ToIndex(dst));
+        dstRoom->QueueMovement(thisID, room->ToIndex(p), dstRoom->ToIndex(leftDst));
     } else if (VALID_ROOM(right)) {
-        std::tie(right, dst) = PathEmpty<PathOpts::SPAWN>(p + lookAhead, p + spreadRate * lookAhead);
         SandRoom *dstRoom {GetRoom(right)};
-        dstRoom->QueueMovement(thisID, room->ToIndex(p), dstRoom->ToIndex(dst));
+        dstRoom->QueueMovement(thisID, room->ToIndex(p), dstRoom->ToIndex(rightDst));
     }
 
     return VALID_ROOM(left) || VALID_ROOM(right);

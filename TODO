@@ -1,4 +1,6 @@
 Functionality:
+    [ ] Rework falling acceleration behaviour - Improve valocity resetting on settle
+    [ ] Rework displacement behaviour / spreading
     [ ] Improve fire behaviour
     [ ] Add a partical system
     [ ] Add UI for element selection
@@ -18,4 +20,4 @@ Functionality:
 
 Optimisation:
     [ ] Add a thread pool
-    [ ] Cache room lookup in PathEmpty
+    [x] Cache room lookup in PathEmpty

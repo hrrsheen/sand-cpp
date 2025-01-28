@@ -6,8 +6,6 @@
 ActionWorker::ActionWorker(roomID_t id, SandWorld &_world, SandRoom *_room) : 
     InteractionWorker(id, _world, _room), properties(_world.properties), grid(_room->grid) {}
 
-void ActionWorker::SetDeltaTime(float _dt) { dt = _dt; }
-
 bool ActionWorker::PerformActions(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
     int thisIndex {room->ToIndex(p)};
     if (ActOnSelf(thisIndex, dt)) {

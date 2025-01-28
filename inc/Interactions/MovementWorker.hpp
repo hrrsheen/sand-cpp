@@ -14,13 +14,8 @@ using roomID_t = int;
 
 class MovementWorker : public InteractionWorker {
     using IW = InteractionWorker;
-private:
-    float dt;
-
 public:
     MovementWorker(roomID_t id, SandWorld &_world, SandRoom *_room);
-
-    void SetDeltaTime(float _dt);
 
     bool PerformMovement(CellState &cell, ConstProperties &prop, sf::Vector2i p);
     void ConsolidateMovement();

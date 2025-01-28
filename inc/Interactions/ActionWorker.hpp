@@ -22,8 +22,6 @@ private:
 public:
     ActionWorker(roomID_t id, SandWorld &_world, SandRoom *_room);
 
-    void SetDeltaTime(float _dt);
-
     bool PerformActions(CellState &cell, ConstProperties &constProp, sf::Vector2i p);
     void ConsolidateActions();
 

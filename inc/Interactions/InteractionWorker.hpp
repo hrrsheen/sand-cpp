@@ -23,8 +23,13 @@ public:
     SandRoom*   room;
     SandWorld   &world;
 
+protected:
+    float dt;
+
 public:
     InteractionWorker(roomID_t id, SandWorld &_world, SandRoom *_room);
+
+    void SetDeltaTime(float _dt);
 
     void KeepContainingAlive(int x, int y);
     void KeepNeighbourAlive(int x, int y);
@@ -45,11 +50,13 @@ protected:
     roomID_t IsEmpty(int x, int y);
     roomID_t IsEmpty(sf::Vector2i p);
 
-    template <PathOpts Op=PathOpts::NO_OPTS>
+    // Returns the roomID and the position of the furthest point along the line from start to finish
+    // that provides a clear path. If there is no clear path, then the roomID will be -1.
+    template <uint8_t=PathOpts::NO_OPTS>
     std::pair<roomID_t, sf::Vector2i> PathEmpty(sf::Vector2i start, sf::Vector2i end);
 };
 
-template <PathOpts Op>
+template <uint8_t Op>
 std::pair<roomID_t, sf::Vector2i> InteractionWorker::PathEmpty(sf::Vector2i start, sf::Vector2i end) {
     SandRoom *checkRoom = room;
     roomID_t  checkID   = thisID, validID   = -1;
