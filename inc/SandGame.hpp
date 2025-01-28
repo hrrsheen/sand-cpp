@@ -13,6 +13,8 @@
 
 #define KEY_TO_NUMBER(x) (x - sf::Keyboard::Num0)
 
+class Lerp;
+
 enum MouseState {
     IDLE = 0,
     DRAWING,

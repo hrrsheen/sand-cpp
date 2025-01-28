@@ -1,5 +1,5 @@
-#include "Helpers.hpp"
 #include "SandGame.hpp"
+#include "Utility/Random.hpp"
 #include <SFML/Graphics.hpp>
 #include <iostream>
 
@@ -8,4 +8,6 @@ int main() {
     SandGame game;
     
     game.Run();
+
+    return 0;
 }

@@ -33,6 +33,7 @@ public:
     Cells(int width, int height, const ElementProperties *_properties);
 
     //////// Assignment / manipulation functions ////////
+    void Assign(size_t i, Element id, sf::Color newColour);
     void Assign(size_t i, Element id, int x=0, int y=0);
 
     // Properties queries.

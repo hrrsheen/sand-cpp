@@ -6,7 +6,7 @@
 #include "Elements/Names.hpp"
 #include "Elements/ElementProperties.hpp"
 #include "FreeList.h"
-#include "Helpers.hpp"
+#include "Particles.hpp"
 #include <vector>
 #include <tuple>
 
@@ -34,6 +34,8 @@ public:
     Cells grid;
     // Contains the active chunks.
     Chunks chunks;
+    // Contains particles within the room.
+    ParticleSystem particles;
 
 private:
     std::vector<Move> queuedMoves;

@@ -1,7 +1,6 @@
 #include "Cell.hpp"
 #include "Constants.hpp"
 #include "Elements.hpp"
-#include "Helpers.hpp"
 #include "SandWorld.hpp"
 #include <algorithm>
 #include <limits>
@@ -171,8 +170,8 @@ roomID_t SandWorld::ContainingRoomID(sf::Vector2i p) {
 }
 
 bool SandWorld::InBounds(sf::Vector2i p) {
-    return p.x > xMin * constants::roomWidth && p.x < xMax * constants::roomWidth
-        && p.y > yMin * constants::roomHeight && p.y < yMax * constants::roomHeight;
+    return p.x >= xMin * constants::roomWidth && p.x < xMax * constants::roomWidth
+        && p.y >= yMin * constants::roomHeight && p.y < yMax * constants::roomHeight;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

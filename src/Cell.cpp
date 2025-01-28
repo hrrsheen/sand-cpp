@@ -1,7 +1,6 @@
 #include "Cell.hpp"
 #include "Constants.hpp"
 #include "Elements/ElementProperties.hpp"
-#include "Helpers.hpp"
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/System/Vector2.hpp>
 
@@ -21,9 +20,13 @@ Cells::Cells(int width, int height, const ElementProperties *_properties) :
 //  Assignment / Manipulation functions.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-void Cells::Assign(size_t i, Element _id, int x, int y) {
+void Cells::Assign(size_t i, Element _id, sf::Color newColour) {
     state[i]    = CellState(_id);
-    colour[i]   = properties->Colour(_id, x, y);
+    colour[i]   = newColour;
+}
+
+void Cells::Assign(size_t i, Element _id, int x, int y) {
+    Assign(i, _id, properties->Colour(_id, x, y));
 }
 
 const ConstProperties& Cells::GetProperties(int index) const {

@@ -1,7 +1,6 @@
 #include "Cell.hpp"
 #include "Constants.hpp"
 #include "Elements.hpp"
-#include "Helpers.hpp"
 #include "SandRoom.hpp"
 #include <algorithm>
 

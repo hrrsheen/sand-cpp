@@ -1,6 +1,6 @@
-#include "Helpers.hpp"
 #include "SandWorker.hpp"
 #include "SandGame.hpp"
+#include "Utility/Line.hpp"
 #include <SFML/Graphics.hpp>
 #include <algorithm>
 #include <iostream>
@@ -53,11 +53,11 @@ SandGame::SandGame() : xMinRooms(-2), xMaxRooms(2),
 }
 
 void SandGame::Run() {
-    bool DEBUG {false};
+    bool DEBUG = false;
     sf::Clock clock;
     Mouse mouse;
-    int elapsed {0};
-    float paintElapsed {0.f};
+    int     fpsElapsed = 0;     // Time elapsed since the last FPS message [milliseconds].
+    float paintElapsed = 0.f;   // Time elapsed since the last painting action [seconds].
     while (screen.isOpen()) {
         sf::Time dt {clock.restart()};
         sf::Event event;
@@ -99,11 +99,11 @@ void SandGame::Run() {
         screen.display();
 
         paintElapsed += dt.asSeconds();
-        if (elapsed >= 1000) {
+        if (fpsElapsed >= 1000) {
             std::cout << "FPS: " << 1.f / dt.asSeconds() << "\n";
-            elapsed = 0;
+            fpsElapsed = 0;
         } else {
-            elapsed += dt.asMilliseconds();
+            fpsElapsed += dt.asMilliseconds();
         }
     }
 }
@@ -168,8 +168,8 @@ void SandGame::Paint(Lerp &stroke, Element type, int radius) {
 void SandGame::RepositionView(Mouse mouse) {
     sf::Vector2f delta    {screen.mapPixelToCoords(mouse.prevPos) - screen.mapPixelToCoords(mouse.pos)};
 
-    const sf::Vector2i newPos   {screen.tfInv * (delta + screen.ViewCentre())};
-    sf::Vector2i size     {screen.ViewBorders().getSize() / 2.f};
+    const sf::Vector2i newPos {screen.tfInv * (delta + screen.ViewCentre())};
+    sf::Vector2i size {screen.ViewBorders().getSize() / 2.f};
     size.y = size.y - 1;
     if (newPos.x - size.x < constants::roomWidth * xMinRooms || newPos.x + size.x > constants::roomWidth * xMaxRooms) {
         delta.x = 0.f;
@@ -222,10 +222,10 @@ void SandGame::Draw(Screen &screen) {
         }
         
         // Update pixels for the visible portion of the room.
+        int blX = visibleRooms[0].first.x, blY = visibleRooms[0].first.y; // For translating world coords to view coords.
         for (int y = yMin; y < yMax; ++y) {
         for (int x = xMin; x < xMax; ++x) {
-            gridImage.setPixel(x - visibleRooms[0].first.x, y - visibleRooms[0].first.y, 
-                                room.grid.colour[room.ToIndex(x, y)]); // Need to convert world coords to view coords
+            gridImage.setPixel(x - blX, y - blY, room.grid.colour[room.ToIndex(x, y)]);
         }
         }
         completed.push_back(visibleRooms[i].second);

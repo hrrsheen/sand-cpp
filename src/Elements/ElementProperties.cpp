@@ -1,7 +1,7 @@
 #include "Elements/ElementProperties.hpp"
-#include "Helpers.hpp"
 #include "SandRoom.hpp"
 #include "SandWorld.hpp"
+#include "Utility/Random.hpp"
 #include <cmath>
 #include <fstream>
 #include <SFML/Graphics/Color.hpp>

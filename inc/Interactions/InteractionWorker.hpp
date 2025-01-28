@@ -7,6 +7,7 @@
 #include "SandWorld.hpp"
 #include <SFML/System/Vector2.hpp>
 
+// Helper functions used by all derived classes
 roomID_t BoolToID(roomID_t id, bool valid);
 
 class InteractionWorker {
@@ -36,6 +37,7 @@ protected:
     // Returns the containing room's ID if the given point is empty, -1 otherwise.
     roomID_t IsEmpty(int x, int y);
     roomID_t IsEmpty(sf::Vector2i p);
+    
     std::pair<roomID_t, sf::Vector2i> PathEmpty(sf::Vector2i start, sf::Vector2i end);
 };
 

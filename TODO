@@ -1,5 +1,4 @@
 Functionality:
-    [ ] Fix explosions crossing rooms
     [ ] Improve fire behaviour
     [ ] Add a partical system
     [ ] Add UI for element selection
@@ -9,7 +8,8 @@ Functionality:
     [ ] Improve water spreading - may require x velocity
     [ ] Add lifespan functionality to elements
         [ ] Allow values (like lifespan, explosion radius) to be passed to cell upon creation
-    [ ] Fix missing cells in explosion
+    [x] Fix missing cells in explosion
+    [x] Fix explosions crossing rooms
     [x] Add explosions
     [x] Fix the interaction system
     [x] Fix the cell drawing functionality to allow for recolouring on each frame

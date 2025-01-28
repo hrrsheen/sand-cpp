@@ -1,4 +1,6 @@
 #include "Interactions/MovementWorker.hpp"
+#include "Utility/Physics.hpp"
+#include "Utility/Random.hpp"
 
 MovementWorker::MovementWorker(roomID_t id, SandWorld &_world, SandRoom *_room) : InteractionWorker(id, _world, _room) {}
 
@@ -9,9 +11,7 @@ bool MovementWorker::PerformMovement(CellState &cell, ConstProperties &prop, sf:
     return false;
 }
 
-void MovementWorker::SetDeltaTime(float _dt) {
-    dt = _dt;
-}
+void MovementWorker::SetDeltaTime(float _dt) { dt = _dt; }
 
 void MovementWorker::ConsolidateMovement() {
     if (room->queuedMoves.size() == 0) return;
@@ -113,8 +113,8 @@ bool MovementWorker::FloatUp(sf::Vector2i p) {
 bool MovementWorker::FallDown(sf::Vector2i p, float dt) {
     size_t iCell {CellIndex(p)};
     CellState &cell {room->GetCell(iCell)};
-    cell.ApplyAcceleration(sf::Vector2f(0.f, -constants::accelGravity), dt);
-    sf::Vector2i deltaP {AccelerationDistance(cell, p)}; 
+    cell.ApplyAcceleration(constants::accelGravity, dt);
+    sf::Vector2i deltaP {AccelerationDistance(cell.velocity, dt)}; 
 
     roomID_t roomID;
     sf::Vector2i dst;
@@ -229,18 +229,4 @@ bool MovementWorker::SpreadSide(sf::Vector2i p) {
     }
 
     return VALID_ROOM(left) || VALID_ROOM(right);
-}
-
-sf::Vector2i MovementWorker::AccelerationDistance(CellState &cell, sf::Vector2i p) {
-    // If the resultant position a fractional part, use the fraction as a probability
-    // to advance an additional cell.
-    float xDst, yDst; // The destination.
-    // Separate the fractional and whole part of the destination calculation.
-    int xRem = static_cast<int>(100.f * std::modf(cell.velocity.x * dt, &xDst));
-    int yRem = static_cast<int>(100.f * std::modf(cell.velocity.y * dt, &yDst));
-    // Use the fractional part as a probability to advance and additional cell.
-    if (Probability(std::abs(xRem))) xDst += (xDst > 0) - (xDst < 0);
-    if (Probability(std::abs(yRem))) yDst += (yDst > 0) - (yDst < 0);
-
-    return sf::Vector2i {static_cast<int>(xDst), static_cast<int>(yDst)};
 }
