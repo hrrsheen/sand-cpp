@@ -12,7 +12,6 @@
 #include <unordered_set>
 
 class ActionWorker : public InteractionWorker {
-    using IW = InteractionWorker;
     using cached_points = std::unordered_set<sf::Vector2i, Vector2iHash>;
 private:
     ParticleWorker &particles;
@@ -42,9 +41,12 @@ private:
 
     bool SparkActOnSelf     (CellState &cell, ConstProperties &constProp, sf::Vector2i p);
 
-    void ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, float force, cached_points &cachedCells);
     bool ExplosionActOnSelf (CellState &cell, ConstProperties &constProp, sf::Vector2i p);
     bool ExplosionActOnOther(CellState &cell, ConstProperties &constProp, sf::Vector2i p);
+
+    //////// Helpers for action functions ////////
+    // Creates an explosion path from pCentre to pRadius.
+    void ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, float force, cached_points &cachedCells);
 };
 
 #endif

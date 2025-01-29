@@ -6,7 +6,7 @@
 ParticleWorker::ParticleWorker(roomID_t id, SandWorld &_world, SandRoom *_room) :
     InteractionWorker(id, _world, _room), properties(_world.properties) {}
 
-void ParticleWorker::BecomeParticle(sf::Vector2i p, CellState &cell, sf::Color colour) {
+void ParticleWorker::BecomeParticle(sf::Vector2i p, sf::Vector2f v, Element id, sf::Color colour) {
     SandRoom *particleRoom = GetRoom(ContainingRoomID(p));
 
     // Remove the cell from the grid.
@@ -14,8 +14,7 @@ void ParticleWorker::BecomeParticle(sf::Vector2i p, CellState &cell, sf::Color c
     particleRoom->QueueAction(particleRoom->ToIndex(p), Element::air);
 
     // Add the particle to the system.
-    particleRoom->particles.AddParticle(
-        cell.id, p, cell.velocity, colour);
+    particleRoom->particles.AddParticle(id, p, v, colour);
 }
 
 void ParticleWorker::BecomeCell(size_t index) {
@@ -39,6 +38,7 @@ void ParticleWorker::ProcessParticles() {
         sf::Vector2i    dst;
         roomID_t        roomID;
         SandRoom       *dstRoom;
+        bool collision = false;
         Lerp line {oldP, particle.p};
         for (Lerp::iterator lineIt = ++line.begin(); lineIt != line.end(); ++lineIt) {
             dst = *lineIt;
@@ -47,23 +47,25 @@ void ParticleWorker::ProcessParticles() {
                 roomID = world.SpawnRoom(dst.x, dst.y);
             } else if (!VALID_ROOM(roomID)) {
                 --lineIt;
-                dst = *lineIt;
+                particle.p = *lineIt;
                 roomID = ContainingRoomID(dst);
+                collision = true;
                 break;
             }
 
             dstRoom = GetRoom(roomID);
             if (!dstRoom->IsEmpty(dst)) {
                 --lineIt;
-                dst = *lineIt;
+                particle.p = *lineIt;
                 roomID = ContainingRoomID(dst);
+                collision = true;
                 break;
             }
         }
 
         // The path to the particle's destination contains a collision, 
         // therefore convert the particle to a cell.
-        if (dst != particle.p) {
+        if (collision) {
             BecomeCell(i);
             i--;
         }

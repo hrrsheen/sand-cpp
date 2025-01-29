@@ -109,10 +109,11 @@ bool MovementWorker::FloatUp(sf::Vector2i p) {
 }
 
 bool MovementWorker::FallDown(sf::Vector2i p, float dt) {
-    size_t iCell {CellIndex(p)};
-    CellState &cell {room->GetCell(iCell)};
+    size_t iCell    = CellIndex(p);
+    CellState &cell = room->GetCell(iCell);
+
     cell.ApplyAcceleration(constants::accelGravity, dt);
-    sf::Vector2i deltaP {AccelerationDistance(cell.velocity, dt)};
+    sf::Vector2i deltaP {AccelerateProbability(cell.velocity, dt)};
 
     roomID_t roomID;
     sf::Vector2i dst;
@@ -123,7 +124,7 @@ bool MovementWorker::FallDown(sf::Vector2i p, float dt) {
     // }
 
     if (VALID_ROOM(roomID)) {
-        SandRoom *dstRoom {GetRoom(roomID)};
+        SandRoom *dstRoom = GetRoom(roomID);
         dstRoom->QueueMovement(thisID, room->ToIndex(p.x, p.y), 
                                 dstRoom->ToIndex(dst.x, dst.y));
         return true;
@@ -139,35 +140,35 @@ bool MovementWorker::SpreadDownSide(sf::Vector2i p) {
     // These roomID_t will encode information about both cell openness and room validity. In the cases of either
     // an invalid room or a non-open cell, they will be -1. For an open cell in a valid room the variable will
     // simply hold the room's ID.
-    roomID_t left   {ContainingRoomID( leftPos)}; 
-    roomID_t right  {ContainingRoomID(rightPos)};
+    roomID_t left   = ContainingRoomID( leftPos);
+    roomID_t right  = ContainingRoomID(rightPos);
 
     CellState thisCell {GetCell(p)};
     // Determine whether the down-left cell is empty or displaceable.
     if (VALID_ROOM(left)) {
         CellState leftCell {GetCell(leftPos)};
-        bool empty {GetRoom(left)->IsEmpty(p) || room->grid.CanDisplace(thisCell.id, leftCell.id)};
+        bool empty = GetRoom(left)->IsEmpty(p) || room->grid.CanDisplace(thisCell.id, leftCell.id);
         left = BoolToID(left, empty);
     }
     // Determine whether the down-right cell is empty or displaceable.
     if (VALID_ROOM(right)) {
         CellState rightCell {GetCell(rightPos)};
-        bool empty {GetRoom(right)->IsEmpty(p) || room->grid.CanDisplace(thisCell.id, rightCell.id)};
+        bool empty = GetRoom(right)->IsEmpty(p) || room->grid.CanDisplace(thisCell.id, rightCell.id);
         right = BoolToID(right, empty);
     }
 
     // If both left and right are open / displaceable spaces, randomly select one.
     if (VALID_ROOM(left) && VALID_ROOM(right)) {
-        bool flip {Probability(50)};
+        bool flip = Probability(50);
         left    = BoolToID( left,  flip);
         right   = BoolToID(right, !flip);
     }
 
     if (VALID_ROOM(left)) {
-        SandRoom *dstRoom {GetRoom( left)};
+        SandRoom *dstRoom = GetRoom( left);
         dstRoom->QueueMovement(thisID, room->ToIndex(p), dstRoom->ToIndex( leftPos));
     } else if (VALID_ROOM(right)) {
-        SandRoom *dstRoom {GetRoom(right)};
+        SandRoom *dstRoom = GetRoom(right);
         dstRoom->QueueMovement(thisID, room->ToIndex(p), dstRoom->ToIndex(rightPos));
     }
 
@@ -178,22 +179,21 @@ bool MovementWorker::SpreadUpSide(sf::Vector2i p) {
     sf::Vector2i leftPos    {p + sf::Vector2i( 1, 1)};
     sf::Vector2i rightPos   {p + sf::Vector2i(-1, 1)};
 
-    roomID_t left   {IsEmpty( leftPos)}; 
-    roomID_t right  {IsEmpty(rightPos)};
+    roomID_t left   = IsEmpty( leftPos);
+    roomID_t right  = IsEmpty(rightPos);
 
     // If both left and right are open spaces, randomly select one.
     if (VALID_ROOM(left) && VALID_ROOM(right)) {
-        bool flip {Probability(50)};
+        bool flip = Probability(50);
         left    = BoolToID( left,  flip);
         right   = BoolToID(right, !flip);
     }
 
-    SandRoom *dstRoom;
     if (VALID_ROOM(left)) {
-        dstRoom = GetRoom(left);
+        SandRoom *dstRoom = GetRoom(left);
         dstRoom->QueueMovement(thisID, room->ToIndex(p), dstRoom->ToIndex(leftPos));
     } else if (VALID_ROOM(right)) {
-        dstRoom = GetRoom(right);
+        SandRoom *dstRoom = GetRoom(right);
         dstRoom->QueueMovement(thisID, room->ToIndex(p), dstRoom->ToIndex(rightPos));
     }
 
@@ -215,10 +215,10 @@ bool MovementWorker::SpreadSide(sf::Vector2i p) {
     }
     
     if (VALID_ROOM(left)) {
-        SandRoom *dstRoom {GetRoom( left)};
+        SandRoom *dstRoom = GetRoom( left);
         dstRoom->QueueMovement(thisID, room->ToIndex(p), dstRoom->ToIndex(leftDst));
     } else if (VALID_ROOM(right)) {
-        SandRoom *dstRoom {GetRoom(right)};
+        SandRoom *dstRoom = GetRoom(right);
         dstRoom->QueueMovement(thisID, room->ToIndex(p), dstRoom->ToIndex(rightDst));
     }
 

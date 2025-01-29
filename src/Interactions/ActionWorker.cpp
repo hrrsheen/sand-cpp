@@ -271,7 +271,11 @@ bool ActionWorker::ExplosionActOnSelf(CellState &cell, ConstProperties &prop, sf
         ExplodeRadius(p, sf::Vector2i(p.x + h, p.y - b), force, cachedCells);
         ExplodeRadius(p, sf::Vector2i(p.x - h, p.y - b), force, cachedCells);
     }
-    // particles.BecomeParticle(room->ToWorldCoords(self), 25.f * sf::Vector2f {otherRoom->ToWorldCoords(other) - room->ToWorldCoords(self)});
+    int ri = static_cast<int>(std::ceil(radius)) + 5;
+    particles.BecomeParticle(p + sf::Vector2i {ri, ri}, 
+        200.f * sf::Vector2f {1.f, 1.f}, 
+        Element::fire, 
+        properties.Colour(Element::fire));
     return true;
 }
 

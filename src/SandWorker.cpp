@@ -15,7 +15,7 @@ void SandWorker::Step(float dt) {
     actions.SetDeltaTime(dt);
     particles.SetDeltaTime(dt);
 
-    // particles.ProcessParticles();
+    particles.ProcessParticles();
     for (int ci = 0; ci < room->chunks.Size(); ++ci) {
         Chunk &chunk {room->chunks.GetChunk(ci)};
         room->chunks.UpdateChunk(ci);
