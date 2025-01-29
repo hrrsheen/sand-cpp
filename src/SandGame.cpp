@@ -200,7 +200,7 @@ void SandGame::Draw(Screen &screen) {
             continue;
 
         SandRoom &room {world.GetRoom(visibleRooms[i].second)};
-        sf::Vector2i intersect {visibleRooms[i].first};
+        sf::Vector2i intersect {visibleRooms[i].first}; // The point in the room at which the view corner is located.
         // Figure out which portion of the room to draw based on the view corner that intersects it.
         switch (i) {
             case 0:
@@ -227,6 +227,11 @@ void SandGame::Draw(Screen &screen) {
         for (int x = xMin; x < xMax; ++x) {
             gridImage.setPixel(x - blX, y - blY, room.grid.colour[room.ToIndex(x, y)]);
         }
+        }
+        // Draw the particles.
+        for (int ip = 0; ip < room.particles.Range(); ip++) {
+            Particle particle {room.particles[ip]};
+            gridImage.setPixel(particle.p.x - blX, particle.p.y - blY, particle.colour);
         }
         completed.push_back(visibleRooms[i].second);
     }

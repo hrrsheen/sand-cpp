@@ -2,17 +2,20 @@
 #include "SandWorker.hpp"
 
 SandWorker::SandWorker(roomID_t id, SandWorld &_world, SandRoom *_room) :
-    movement(id, _world, _room), actions(id, _world, _room),
-    room(_room), properties(_world.properties), dt(0.f) {}
+    movement(id, _world, _room), actions(id, _world, _room, particles), particles(id, _world, _room),
+    room(_room), properties(_world.properties) {}
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Simulation.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-void SandWorker::Step(float _dt) {
-    if (_dt > 1 / 60.f) _dt = 1 / 60.f; // DEBUG: Possibly remove this.
-    movement.SetDeltaTime(_dt);
-    actions.SetDeltaTime(_dt);
+void SandWorker::Step(float dt) {
+    if (dt > 1 / 60.f) dt = 1 / 60.f; // DEBUG: Possibly remove this.
+    movement.SetDeltaTime(dt);
+    actions.SetDeltaTime(dt);
+    particles.SetDeltaTime(dt);
+
+    // particles.ProcessParticles();
     for (int ci = 0; ci < room->chunks.Size(); ++ci) {
         Chunk &chunk {room->chunks.GetChunk(ci)};
         room->chunks.UpdateChunk(ci);
@@ -28,10 +31,10 @@ void SandWorker::SimulateChunk(Chunk &chunk) {
     for (int y = chunk.yMin; y < chunk.yMax; ++y) { // Inactive chunks will have yMin > yMax.
         // Process each row.
         // Alternate processing rows left to right and right to left.
-        int dir {std::abs(y % 2)};
+        int dir = std::abs(y % 2);
         int endpoints[] {chunk.xMin, chunk.xMax - 1};
-        int start   {endpoints[1 - dir]};
-        int end     {endpoints[dir]};
+        int start   = endpoints[1 - dir];
+        int end     = endpoints[dir];
         dir = 2 * dir - 1;
         end += dir;
         for (int x = start; x != end; x += dir) {

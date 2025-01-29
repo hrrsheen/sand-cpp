@@ -3,28 +3,14 @@
 #include <cmath>
 #include <iostream>
 
-ActionWorker::ActionWorker(roomID_t id, SandWorld &_world, SandRoom *_room) : 
-    InteractionWorker(id, _world, _room), properties(_world.properties), grid(_room->grid) {}
+ActionWorker::ActionWorker(roomID_t id, SandWorld &_world, SandRoom *_room, ParticleWorker &_particles) : 
+    InteractionWorker(id, _world, _room), particles(_particles), properties(_world.properties), grid(_room->grid) {}
 
 bool ActionWorker::PerformActions(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
-    int thisIndex {room->ToIndex(p)};
-    if (ActOnSelf(thisIndex, dt)) {
-        return true;
-    }
+    if      (ActOnSelf (cell, prop, p)) { return true; } 
+    else if (ActOnOther(cell, prop, p)) { return true; }
 
-    bool acted {false};
-    for (const sf::Vector2i deltaP : prop.actionSet) {
-        sf::Vector2i otherP {p + deltaP};
-        roomID_t roomID {ContainingRoomID(otherP)};
-        if (VALID_ROOM(roomID)) {
-            SandRoom *otherRoom {GetRoom(roomID)};
-            if (ActOnOther(thisIndex, otherRoom->ToIndex(otherP), otherRoom, dt)) {
-                acted = true;
-            }
-        }
-    }
-
-    return acted;
+    return false;
 }
 
 void ActionWorker::ConsolidateActions() {
@@ -68,29 +54,29 @@ void ActionWorker::ConsolidateActions() {
 //  High-level action functions.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-bool ActionWorker::ActOnSelf(size_t self, float dt) {
-    switch(grid.state[self].id) {
+bool ActionWorker::ActOnSelf(CellState &cell, ConstProperties &constProp, sf::Vector2i p) {
+    switch(cell.id) {
         case Element::fire:
-            return FireActOnSelf(self, dt);
+            return FireActOnSelf(cell, constProp, p);
         case Element::explosion:
-            return ExplosionActOnSelf(self, dt);
+            return ExplosionActOnSelf(cell, constProp, p);
         case Element::smoke:
-            return SmokeActOnSelf(self, dt);
+            return SmokeActOnSelf(cell, constProp, p);
         case Element::spark:
-            return SparkActOnSelf(self, dt);
+            return SparkActOnSelf(cell, constProp, p);
         default:
             return false;
     }
 }
 
-bool ActionWorker::ActOnOther(size_t self, size_t other, SandRoom *otherRoom, float dt) {
-    switch(grid.state[self].id) {
+bool ActionWorker::ActOnOther(CellState &cell, ConstProperties &constProp, sf::Vector2i p) {
+    switch(cell.id) {
         case Element::sand:
-            return SandActOnOther(self, other, otherRoom, dt);
+            return SandActOnOther(cell, constProp, p);
         case Element::water:
-            return WaterActOnOther(self, other, otherRoom, dt);
+            return WaterActOnOther(cell, constProp, p);
         case Element::fire:
-            return FireActOnOther(self, other, otherRoom, dt);
+            return FireActOnOther(cell, constProp, p);
         default:
             return false;
     }
@@ -102,11 +88,20 @@ bool ActionWorker::ActOnOther(size_t self, size_t other, SandRoom *otherRoom, fl
 
 //////////////// Solid interactions ////////////////
 
-bool ActionWorker::SandActOnOther(size_t self, size_t other, SandRoom *otherRoom, float dt) {
-    if (otherRoom->GetCell(other).id == Element::fire) {
-        room->QueueAction(self, Element::air);
-        otherRoom->QueueAction(other, Element::sand);
-        return true;
+bool ActionWorker::SandActOnOther(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
+    sf::Vector2i otherP {p + sf::Vector2i {0, -1}};
+    size_t self = room->ToIndex(p);
+
+    roomID_t roomID = ContainingRoomID(otherP);
+    if (VALID_ROOM(roomID)) {
+        SandRoom *otherRoom = GetRoom(roomID);
+        size_t other        = otherRoom->ToIndex(otherP);
+
+        if (otherRoom->GetCell(other).id == Element::fire) {
+            room->QueueAction(self, Element::air);
+            otherRoom->QueueAction(other, Element::sand);
+            return true;
+        }
     }
 
     return false;
@@ -114,11 +109,20 @@ bool ActionWorker::SandActOnOther(size_t self, size_t other, SandRoom *otherRoom
 
 //////////////// Liquid interactions ////////////////
 
-bool ActionWorker::WaterActOnOther(size_t self, size_t other, SandRoom *otherRoom, float dt) {
-    if (otherRoom->GetCell(other).id == Element::fire) {
-        room->QueueAction(self, Element::smoke);
-        otherRoom->QueueAction(other, Element::water);
-        return true;
+bool ActionWorker::WaterActOnOther(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
+    sf::Vector2i otherP {p + sf::Vector2i {0, -1}};
+    size_t self = room->ToIndex(p);
+
+    roomID_t roomID = ContainingRoomID(otherP);
+    if (VALID_ROOM(roomID)) {
+        SandRoom *otherRoom = GetRoom(roomID);
+        size_t other        = otherRoom->ToIndex(otherP);
+
+        if (otherRoom->GetCell(other).id == Element::fire) {
+            room->QueueAction(self, Element::smoke);
+            otherRoom->QueueAction(other, Element::water);
+            return true;
+        }
     }
 
     return false;
@@ -126,9 +130,10 @@ bool ActionWorker::WaterActOnOther(size_t self, size_t other, SandRoom *otherRoo
 
 //////////////// Gas interactions ////////////////
 
-bool ActionWorker::FireActOnSelf(size_t self, float dt) {
-    CellState &thisState {grid.state[self]};
-    if (thisState.health <= 0) {
+bool ActionWorker::FireActOnSelf(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
+    size_t self = room->ToIndex(p);
+
+    if (cell.health <= 0) {
         if (Probability(20))
             room->QueueAction(self, Element::smoke);
         else
@@ -137,54 +142,69 @@ bool ActionWorker::FireActOnSelf(size_t self, float dt) {
         return true;
     }
     grid.colour[self] = properties.Colour(Element::fire); // Recolour fire every frame.
-    thisState.health -= (500.f + static_cast<float>(QuickRandInt(200))) * dt;
+    cell.health -= (500.f + static_cast<float>(QuickRandInt(200))) * dt;
 
-    sf::Vector2i coords {room->ToWorldCoords(self)};
-    KeepContainingAlive(coords.x, coords.y);
+    KeepContainingAlive(p.x, p.y);
     return false;   
 }
 
-bool ActionWorker::FireActOnOther(size_t self, size_t other, SandRoom *otherRoom, float dt) {
-    CellState &otherState {otherRoom->GetCell(other)};
-    float flammability {properties.constants[otherState.id].flammability};
-    if (flammability > 0.f) {
-        grid.state[self].health += flammability * dt;
-        if (otherState.health <= 0.f) {
-            otherRoom->QueueAction(other, Element::fire);
-        } else {
-            otherState.health -= flammability * dt;
+bool ActionWorker::FireActOnOther(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
+    size_t self = room->ToIndex(p);
+
+    bool acted = false;
+    // Iterate over all cells that the fire can affect.
+    for (const sf::Vector2i dp : prop.actionSet) {
+        sf::Vector2i otherP {p + dp};
+        roomID_t roomID = ContainingRoomID(otherP);
+        if (VALID_ROOM(roomID)) {
+            SandRoom  *otherRoom = GetRoom(roomID);
+            size_t     other     = otherRoom->ToIndex(otherP);
+            CellState &otherCell = otherRoom->GetCell(other);
+
+            // Action code.
+            float flammability = properties.constants[otherCell.id].flammability;
+            if (flammability > 0.f) {
+                cell.health += flammability * dt;
+                if (otherCell.health <= 0.f)
+                    otherRoom->QueueAction(other, Element::fire);
+                else
+                    otherCell.health -= flammability * dt;
+
+                acted = true;
+            }
         }
-        return true;
     }
-    return false;
+
+    return acted;
 }
 
-bool ActionWorker::SmokeActOnSelf(size_t self, float dt) {
-    CellState &thisState {grid.state[self]};
-    if (thisState.health <= 0) {
+bool ActionWorker::SmokeActOnSelf(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
+    size_t self = room->ToIndex(p);
+
+    if (cell.health <= 0) {
         room->QueueAction(self, Element::air);
     }
 
-    thisState.health -= (100.f + static_cast<float>(QuickRandRange(-50, 50))) * dt;
+    cell.health -= (100.f + static_cast<float>(QuickRandRange(-50, 50))) * dt;
 
-    sf::Vector2i coords {room->ToWorldCoords(self)};
-    KeepContainingAlive(coords.x, coords.y);
+    KeepContainingAlive(p.x, p.y);
     return false;
 }
 
-bool ActionWorker::SparkActOnSelf(size_t self, float dt) {
-    CellState &thisState {grid.state[self]};
-    if (thisState.health <= 0) {
+bool ActionWorker::SparkActOnSelf(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
+    size_t self = room->ToIndex(p);
+
+    if (cell.health <= 0) {
         room->QueueAction(self, Element::air);
         return true;
     }
 
     grid.colour[self] = properties.Colour(Element::spark); // Recolour spark every frame.
-    float randFalloff = static_cast<float>(RandInt(5000));
-    thisState.health -= (10.f + randFalloff) * dt;
 
-    sf::Vector2i coords {room->ToWorldCoords(self)};
-    KeepContainingAlive(coords.x, coords.y);
+    float randFalloff = static_cast<float>(RandInt(5000));
+    cell.health -= (10.f + randFalloff) * dt;
+
+    KeepContainingAlive(p.x, p.y);
     return false;   
 }
 
@@ -233,8 +253,7 @@ void ActionWorker::ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, flo
     }
 }
 
-bool ActionWorker::ExplosionActOnSelf(size_t self, float dt) {
-    sf::Vector2i centre {room->ToWorldCoords(self)};
+bool ActionWorker::ExplosionActOnSelf(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
     float radius {25.5};
     cached_points cachedCells;
     SandRoom *explosionRoom {room};
@@ -243,19 +262,19 @@ bool ActionWorker::ExplosionActOnSelf(size_t self, float dt) {
         int b {static_cast<int>(std::round(std::sqrtf(radius * radius - h * h)))};
 
         // The circumference calculation can be repeated for each octant.
-        ExplodeRadius(centre, sf::Vector2i(centre.x + b, centre.y + h), force, cachedCells);
-        ExplodeRadius(centre, sf::Vector2i(centre.x - b, centre.y + h), force, cachedCells);
-        ExplodeRadius(centre, sf::Vector2i(centre.x + b, centre.y - h), force, cachedCells);
-        ExplodeRadius(centre, sf::Vector2i(centre.x - b, centre.y - h), force, cachedCells);
-        ExplodeRadius(centre, sf::Vector2i(centre.x + h, centre.y + b), force, cachedCells);
-        ExplodeRadius(centre, sf::Vector2i(centre.x - h, centre.y + b), force, cachedCells);
-        ExplodeRadius(centre, sf::Vector2i(centre.x + h, centre.y - b), force, cachedCells);
-        ExplodeRadius(centre, sf::Vector2i(centre.x - h, centre.y - b), force, cachedCells);
+        ExplodeRadius(p, sf::Vector2i(p.x + b, p.y + h), force, cachedCells);
+        ExplodeRadius(p, sf::Vector2i(p.x - b, p.y + h), force, cachedCells);
+        ExplodeRadius(p, sf::Vector2i(p.x + b, p.y - h), force, cachedCells);
+        ExplodeRadius(p, sf::Vector2i(p.x - b, p.y - h), force, cachedCells);
+        ExplodeRadius(p, sf::Vector2i(p.x + h, p.y + b), force, cachedCells);
+        ExplodeRadius(p, sf::Vector2i(p.x - h, p.y + b), force, cachedCells);
+        ExplodeRadius(p, sf::Vector2i(p.x + h, p.y - b), force, cachedCells);
+        ExplodeRadius(p, sf::Vector2i(p.x - h, p.y - b), force, cachedCells);
     }
-
+    // particles.BecomeParticle(room->ToWorldCoords(self), 25.f * sf::Vector2f {otherRoom->ToWorldCoords(other) - room->ToWorldCoords(self)});
     return true;
 }
 
-bool ActionWorker::ExplosionActOnOther(size_t self, size_t other, SandRoom *otherRoom, float dt) {
+bool ActionWorker::ExplosionActOnOther(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
     return false;
 }

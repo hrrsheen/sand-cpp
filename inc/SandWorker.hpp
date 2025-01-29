@@ -8,7 +8,7 @@
 #include "SandWorld.hpp"
 #include "Interactions/ActionWorker.hpp"
 #include "Interactions/MovementWorker.hpp"
-// #include "Interactions/ParticleWorker.hpp"
+#include "Interactions/ParticleWorker.hpp"
 #include <utility>
 
 class SandWorker {
@@ -17,12 +17,9 @@ private:
 
     ElementProperties &properties;
 
-    // ParticleWorker particles;
+    ParticleWorker particles;
     MovementWorker movement;
     ActionWorker actions;
-    
-
-    float dt; // The time between frames.
 
 public:
     SandWorker(roomID_t id, SandWorld &_world, SandRoom *_room);

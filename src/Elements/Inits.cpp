@@ -10,7 +10,6 @@ bool InitSand(ElementProperties &properties) {
     constsInit.type               = ElementType::SOLID;
     constsInit.moveBehaviour      = MoveType::FALL_DOWN;
     constsInit.spreadBehaviour    = SpreadType::DOWN_SIDE;
-    constsInit.actionSet          = moveset_t {sf::Vector2i(0, -1)};
     ColourProperties colourInit;
     colourInit.colourEachFrame    = false;
     COLOUR(colourInit.palette).push_back(0xfabf73ff);
@@ -58,7 +57,6 @@ bool InitWater(ElementProperties &properties) {
     constsInit.moveBehaviour      = MoveType::FALL_DOWN;
     constsInit.spreadBehaviour    = SpreadType::DOWN_SIDE | SpreadType::SIDE;
     constsInit.spreadRate         = 5;
-    constsInit.actionSet          = moveset_t {sf::Vector2i(0, -1)};
     ColourProperties colourInit;
     COLOUR(colourInit.palette).push_back(0x347debff);
 

@@ -11,11 +11,13 @@ add_executable(sand-cpp
     src/SandWorker.cpp
     src/Cell.cpp
     src/Chunks.cpp
+    src/Particles.cpp
     src/Elements/ElementProperties.cpp
     src/Elements/Inits.cpp
     src/Interactions/InteractionWorker.cpp
     src/Interactions/MovementWorker.cpp
     src/Interactions/ActionWorker.cpp
+    src/Interactions/ParticleWorker.cpp
     src/Utility/Line.cpp
     src/Utility/Random.cpp
     src/Utility/Physics.cpp)

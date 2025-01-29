@@ -5,6 +5,7 @@
 #include "Chunks.hpp"
 #include "Elements/Names.hpp"
 #include "Interactions/InteractionWorker.hpp"
+#include "Interactions/ParticleWorker.hpp"
 #include "SandRoom.hpp"
 #include "SandWorld.hpp"
 #include <vector>
@@ -14,37 +15,36 @@ class ActionWorker : public InteractionWorker {
     using IW = InteractionWorker;
     using cached_points = std::unordered_set<sf::Vector2i, Vector2iHash>;
 private:
-    float dt;
-
+    ParticleWorker &particles;
     ElementProperties &properties;
     Cells &grid;
 
 public:
-    ActionWorker(roomID_t id, SandWorld &_world, SandRoom *_room);
+    ActionWorker(roomID_t id, SandWorld &_world, SandRoom *_room, ParticleWorker &particles);
 
     bool PerformActions(CellState &cell, ConstProperties &constProp, sf::Vector2i p);
     void ConsolidateActions();
 
 private:
-    bool ActOnSelf    (size_t self, float dt);
-    bool ActOnOther   (size_t self, size_t other, SandRoom *otherRoom, float dt);
+    bool ActOnSelf    (CellState &cell, ConstProperties &constProp, sf::Vector2i p);
+    bool ActOnOther   (CellState &cell, ConstProperties &constProp, sf::Vector2i p);
 
     //////// Element-specific functions ////////
     // Solid
-    bool SandActOnOther(size_t self, size_t other, SandRoom *otherRoom, float dt);
+    bool SandActOnOther     (CellState &cell, ConstProperties &constProp, sf::Vector2i p);
     // Liquid
-    bool WaterActOnOther(size_t self, size_t other, SandRoom *otherRoom, float dt);
+    bool WaterActOnOther    (CellState &cell, ConstProperties &constProp, sf::Vector2i p);
     // Gas
-    bool FireActOnSelf(size_t self, float dt);
-    bool FireActOnOther(size_t self, size_t other, SandRoom *otherRoom, float dt);
+    bool FireActOnSelf      (CellState &cell, ConstProperties &constProp, sf::Vector2i p);
+    bool FireActOnOther     (CellState &cell, ConstProperties &constProp, sf::Vector2i p);
 
-    bool SmokeActOnSelf(size_t self, float dt);
+    bool SmokeActOnSelf     (CellState &cell, ConstProperties &constProp, sf::Vector2i p);
 
-    bool SparkActOnSelf(size_t self, float dt);
+    bool SparkActOnSelf     (CellState &cell, ConstProperties &constProp, sf::Vector2i p);
 
     void ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, float force, cached_points &cachedCells);
-    bool ExplosionActOnSelf(size_t self, float dt);
-    bool ExplosionActOnOther(size_t self, size_t other, SandRoom *otherRoom, float dt);
+    bool ExplosionActOnSelf (CellState &cell, ConstProperties &constProp, sf::Vector2i p);
+    bool ExplosionActOnOther(CellState &cell, ConstProperties &constProp, sf::Vector2i p);
 };
 
 #endif
