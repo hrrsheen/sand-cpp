@@ -50,18 +50,30 @@ SandGame::SandGame() : xMinRooms(-2), xMaxRooms(2),
             return transformation.getTransform();
         }()
     );
+
+    font.loadFromFile("./assets/pixel-font.otf");
+    text.setFont(font);
+    text.setFillColor(sf::Color::White);
+    text.setCharacterSize(12);
 }
 
 void SandGame::Run() {
     bool DEBUG = false;
+    char fpsBuffer[10];
+
     sf::Clock clock;
     Mouse mouse;
+    float fpsTarget = 10000.f;  // The maximum FPS that the screen will be drawn to.
     int     fpsElapsed = 0;     // Time elapsed since the last FPS message [milliseconds].
     float paintElapsed = 0.f;   // Time elapsed since the last painting action [seconds].
+    float frameElapsed = 0.f;   // Time elapsed since the last frame was drawn (not simulated) [seconds].
     while (screen.isOpen()) {
+        // Update timers.
         sf::Time dt {clock.restart()};
-        sf::Event event;
+        frameElapsed += dt.asSeconds();
+        paintElapsed += dt.asSeconds();
 
+        sf::Event event;
         // Handle all events for this frame.
         while (screen.pollEvent(event)) {
             if (ShouldClose(event)) {
@@ -86,21 +98,25 @@ void SandGame::Run() {
             } else if (mouse.state == MouseState::DRAGGING) {
                 // The view's position DOESN'T use the transformed world coordinates, so we need to use mapPixelToCoords.
                 RepositionView(mouse);
+                text.setPosition(screen.ViewCentre() - sf::Vector2f {256.f, 128.f});
             }
             mouse.prevPos = mouse.pos;
         }
         UpdateVisibleRooms();
         Step(dt.asSeconds());
-        Draw(screen);
-        // DEBUG ONLY - Draw the active chunks.
-        if (DEBUG) {
-            DrawChunks();
-        }
-        screen.display();
 
-        paintElapsed += dt.asSeconds();
-        if (fpsElapsed >= 1000) {
-            std::cout << "FPS: " << 1.f / dt.asSeconds() << "\n";
+        if (frameElapsed > 1.f / fpsTarget) {
+            Draw(screen);
+            // DEBUG ONLY - Draw the active chunks.
+            if (DEBUG) { DrawChunks(); }
+            screen.draw(text);
+            screen.display();
+            frameElapsed = 0.f;
+        }
+
+        if (fpsElapsed >= 100) {
+            sprintf(fpsBuffer, "%6d", static_cast<int>(1.f / dt.asSeconds()));
+            text.setString(std::string(fpsBuffer));
             fpsElapsed = 0;
         } else {
             fpsElapsed += dt.asMilliseconds();

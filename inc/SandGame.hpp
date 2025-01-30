@@ -44,6 +44,9 @@ class SandGame {
     sf::Image   gridImage;
     sf::Texture gridTexture;
     sf::Sprite  gridSprite;
+    // FPS display.
+    sf::Font    font;
+    sf::Text    text;
 
      std::vector<std::pair<sf::Vector2i, roomID_t>> visibleRooms;    
 
