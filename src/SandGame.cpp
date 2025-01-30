@@ -231,7 +231,8 @@ void SandGame::Draw(Screen &screen) {
         // Draw the particles.
         for (int ip = 0; ip < room.particles.Range(); ip++) {
             Particle particle {room.particles[ip]};
-            gridImage.setPixel(particle.p.x - blX, particle.p.y - blY, particle.colour);
+            sf::Vector2i position {particle.Position()};
+            gridImage.setPixel(position.x - blX, position.y - blY, particle.colour);
         }
         completed.push_back(visibleRooms[i].second);
     }

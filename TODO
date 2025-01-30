@@ -1,4 +1,5 @@
 Functionality:
+    [ ] Fix the time delay between painting elements - when dragging, the reload period is ignored
     [ ] Rework falling acceleration behaviour - Improve valocity resetting on settle
     [ ] Rework displacement behaviour / spreading
     [ ] Improve fire behaviour

@@ -7,14 +7,25 @@
 #include <vector>
 
 struct Particle {
-    Element id      = Element::null;
-    sf::Vector2i p  = {0, 0};
-    sf::Vector2f v  = {0.f, 0.f};
-
+public:
+    Element id = Element::null;
     sf::Color colour;
 
-    Particle(Element _id, sf::Vector2i _p, sf::Vector2f _v, sf::Color _colour) : id(_id), p(_p), v(_v), colour(_colour) {}
+private:
+    sf::Vector2f p  = {0.f, 0.f};
+    sf::Vector2f v  = {0.f, 0.f};
+    sf::Vector2f F  = {0.f, 0.f};
 
+public:
+    Particle(Element _id, sf::Vector2i _p, sf::Color _colour) : id(_id), p(_p), v(), F(), colour(_colour) {}
+
+    // Returns the position of the particle (snapped to the grid).
+    sf::Vector2i Position() const;
+    // Sets the new position of the particle.
+    void Position(sf::Vector2i newP);
+
+    // Launch the particle with a given initial force.
+    void ApplyForce(sf::Vector2f Fapplied={0.f, 0.f});
     void Integrate(float dt);
 };
 
@@ -24,15 +35,15 @@ class ParticleSystem {
 
 public:
     // Adds a particle with the given properties to the system.
-    void AddParticle(Element id, sf::Vector2i p, sf::Vector2f v, sf::Color colour);
-    void AddParticle(Particle  particle);
-    void AddParticle(Particle &particle);
+    void AddParticle(Particle &particle, sf::Vector2f Finit={0.f, 0.f});
 
     // Removes a particle at a given index from the system.
     void RemoveParticle(size_t index);
 
     // Returns the index range of the active particles.
     size_t Range() const;
+
+    size_t Capacity() const;
 
     Particle& operator[](size_t n);
 };

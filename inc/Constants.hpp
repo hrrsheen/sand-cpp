@@ -13,6 +13,9 @@ namespace constants {
     constexpr float maxVelocity     = 480.f;
     const sf::Vector2f accelGravity = {0.f, -60.f};
     const sf::Vector2f initialV     = {0.f, -240.f};
+
+    const float M = 1e-2f;   // The particle mass coefficient.
+    const float k = 1e-5f;   // The particle drag coefficient.
 }
 
 #endif

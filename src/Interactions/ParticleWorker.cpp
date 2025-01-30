@@ -6,7 +6,7 @@
 ParticleWorker::ParticleWorker(roomID_t id, SandWorld &_world, SandRoom *_room) :
     InteractionWorker(id, _world, _room), properties(_world.properties) {}
 
-void ParticleWorker::BecomeParticle(sf::Vector2i p, sf::Vector2f v, Element id, sf::Color colour) {
+void ParticleWorker::BecomeParticle(sf::Vector2i p, sf::Vector2f F, Element id, sf::Color colour) {
     SandRoom *particleRoom = GetRoom(ContainingRoomID(p));
 
     // Remove the cell from the grid.
@@ -14,12 +14,13 @@ void ParticleWorker::BecomeParticle(sf::Vector2i p, sf::Vector2f v, Element id, 
     particleRoom->QueueAction(particleRoom->ToIndex(p), Element::air);
 
     // Add the particle to the system.
-    particleRoom->particles.AddParticle(id, p, v, colour);
+    Particle particle {id, p, colour};
+    particleRoom->particles.AddParticle(particle, F);
 }
 
 void ParticleWorker::BecomeCell(size_t index) {
     // Convert the particle to a cell in the grid.
-    sf::Vector2i p {room->particles[index].p};
+    sf::Vector2i p {room->particles[index].Position()};
     room->grid.Assign(
         room->ToIndex(p), 
         room->particles[index].id,
@@ -32,14 +33,14 @@ void ParticleWorker::BecomeCell(size_t index) {
 void ParticleWorker::ProcessParticles() {
     for (int i = 0; i < room->particles.Range(); i++) {
         Particle &particle {room->particles[i]};
-        sf::Vector2i oldP {particle.p};
+        sf::Vector2i oldP {particle.Position()};
         particle.Integrate(dt);
 
         sf::Vector2i    dst;
         roomID_t        roomID;
         SandRoom       *dstRoom;
         bool collision = false;
-        Lerp line {oldP, particle.p};
+        Lerp line {oldP, particle.Position()};
         for (Lerp::iterator lineIt = ++line.begin(); lineIt != line.end(); ++lineIt) {
             dst = *lineIt;
             roomID = ContainingRoomID(dst);
@@ -47,7 +48,7 @@ void ParticleWorker::ProcessParticles() {
                 roomID = world.SpawnRoom(dst.x, dst.y);
             } else if (!VALID_ROOM(roomID)) {
                 --lineIt;
-                particle.p = *lineIt;
+                particle.Position(*lineIt);
                 roomID = ContainingRoomID(dst);
                 collision = true;
                 break;
@@ -56,7 +57,7 @@ void ParticleWorker::ProcessParticles() {
             dstRoom = GetRoom(roomID);
             if (!dstRoom->IsEmpty(dst)) {
                 --lineIt;
-                particle.p = *lineIt;
+                particle.Position(*lineIt);
                 roomID = ContainingRoomID(dst);
                 collision = true;
                 break;
