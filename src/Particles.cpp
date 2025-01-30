@@ -20,15 +20,8 @@ void Particle::ApplyForce(sf::Vector2f Fapplied) {
 void Particle::Integrate(float dt) {
     // Calculate the drag force.
     float vMag = std::sqrtf(v.x * v.x + v.y * v.y);
-    sf::Vector2f vNorm {0.f, 0.f};
-    if (vMag)
-        vNorm = (1.f / vMag) * v;
-        
-    // Ignore drag that is in the negative y direction.
-    if (vNorm.y < 0)
-        vNorm.y = 0.f;
-    sf::Vector2f Fdrag {-constants::k * vMag * vMag * vNorm};
-    // sf::Vector2f Fdrag {0.f, 0.f};
+
+    sf::Vector2f Fdrag {-constants::k * vMag * v};
 
     sf::Vector2f a {((F + Fdrag) / constants::M) + 5.f * constants::accelGravity};
     v = v + a * dt;

@@ -241,6 +241,7 @@ void ActionWorker::ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, flo
             }
         }
 
+        // Continue the walk of the explosion radiating outward.
         if ((0.5 + ix) / nx < (0.5 + iy) / ny) {
             // Take a horizontal step.
             point.x += sgnx;
@@ -250,6 +251,25 @@ void ActionWorker::ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, flo
             point.y += sgny;
             iy++;
         }
+    }
+
+    // Shoot a particle from the edge of the explosion.
+    if (GetProperties(point).moveBehaviour != MoveType::NONE) {
+        size_t cellIndex = explosionRoom->ToIndex(point);
+
+        sf::Vector2f dir {point - pCentre};
+        dir *= (1.f / std::sqrtf(dir.x * dir.x + dir.y * dir.y));
+
+        force += QuickRandInt(50);
+
+        particles.BecomeParticle(point, force * dir,
+            grid.state[cellIndex].id, grid.colour[cellIndex]);
+    } else if (Probability(10)) {
+        sf::Vector2f dir {point - pCentre};
+        dir *= (1.f / std::sqrtf(dir.x * dir.x + dir.y * dir.y));
+        force += QuickRandInt(50);
+        particles.BecomeParticle(point, force * dir,
+            Element::fire, properties.Colour(Element::fire));
     }
 }
 
@@ -271,12 +291,7 @@ bool ActionWorker::ExplosionActOnSelf(CellState &cell, ConstProperties &prop, sf
         ExplodeRadius(p, sf::Vector2i(p.x + h, p.y - b), force, cachedCells);
         ExplodeRadius(p, sf::Vector2i(p.x - h, p.y - b), force, cachedCells);
     }
-    room->QueueAction(room->ToIndex(p), Element::air);
-    int ri = static_cast<int>(std::ceil(radius)) + 5;
-    particles.BecomeParticle(p + sf::Vector2i {ri, ri}, 
-        100.f * sf::Vector2f {1.f, 1.f}, 
-        Element::fire, 
-        properties.Colour(Element::fire));
+
     return true;
 }
 
