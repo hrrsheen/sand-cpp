@@ -15,7 +15,7 @@ void Screen::Draw(const sf::Drawable &drawable) {
     sf::RenderWindow::draw(drawable, renderStates);
 }
 
-const sf::FloatRect Screen::ViewBorders() const {
+const sf::FloatRect Screen::ViewDimensions() const {
     return sf::FloatRect(tf * view.getCenter(), view.getSize());
 }
 

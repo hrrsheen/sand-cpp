@@ -47,6 +47,8 @@ void ParticleSystem::RemoveParticle(size_t index) {
     // std::swap(particles[index], particles[numParticles]); // Move the particle that is to  deleted to the end of the active list.
     Particle tmp {particles[numParticles]};
     particles[index] = tmp;
+
+    // return particles[numParticles];
 }
 
 size_t ParticleSystem::Range() const {

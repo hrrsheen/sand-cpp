@@ -54,7 +54,7 @@ SandGame::SandGame() : xMinRooms(-2), xMaxRooms(2),
     font.loadFromFile("./assets/pixel-font.otf");
     text.setFont(font);
     text.setFillColor(sf::Color::White);
-    text.setCharacterSize(12);
+    text.setScale(sf::Vector2f {0.45f, 0.45f});
 }
 
 void SandGame::Run() {
@@ -182,11 +182,13 @@ void SandGame::Paint(Lerp &stroke, Element type, int radius) {
 }
 
 void SandGame::RepositionView(Mouse mouse) {
-    sf::Vector2f delta    {screen.mapPixelToCoords(mouse.prevPos) - screen.mapPixelToCoords(mouse.pos)};
+    sf::Vector2f delta {screen.mapPixelToCoords(mouse.prevPos) - screen.mapPixelToCoords(mouse.pos)};
 
     const sf::Vector2i newPos {screen.tfInv * (delta + screen.ViewCentre())};
-    sf::Vector2i size {screen.ViewBorders().getSize() / 2.f};
+    sf::Vector2i size {screen.ViewDimensions().getSize() / 2.f};
     size.y = size.y - 1;
+
+    // Check that the new view position would not extend outside the world limits.
     if (newPos.x - size.x < constants::roomWidth * xMinRooms || newPos.x + size.x > constants::roomWidth * xMaxRooms) {
         delta.x = 0.f;
     }
@@ -201,8 +203,7 @@ void SandGame::RepositionView(Mouse mouse) {
 
 void SandGame::Draw(Screen &screen) {
     screen.clear();
-    const sf::IntRect borders {screen.ViewBorders()};
-    gridSprite.setPosition(visibleRooms[0].first.x, visibleRooms[0].first.y);
+    gridSprite.setPosition(visibleRooms[0].first.x, visibleRooms[0].first.y); // Update the sprite to sit under the view.
 
     int xMin, xMax, // Determines the potion of a room that's drawn.
         yMin, yMax;
@@ -248,7 +249,9 @@ void SandGame::Draw(Screen &screen) {
         for (int ip = 0; ip < room.particles.Range(); ip++) {
             Particle& particle {room.particles[ip]};
             sf::Vector2i position {particle.Position()};
-            gridImage.setPixel(position.x - blX, position.y - blY, particle.colour);
+            // Only draw particles that are inside the view.
+            if (position.x >= xMin && position.x < xMax && position.y >= yMin && position.y < yMax)
+                gridImage.setPixel(position.x - blX, position.y - blY, particle.colour);
         }
         completed.push_back(visibleRooms[i].second);
     }
@@ -258,16 +261,20 @@ void SandGame::Draw(Screen &screen) {
 }
 
 void SandGame::UpdateVisibleRooms() {
-    const sf::IntRect borders {screen.ViewBorders()};
-    sf::Vector2i size {borders.getSize() - sf::Vector2i(1, 1)};
+    const sf::IntRect dimensions {screen.ViewDimensions()};
+    sf::Vector2i size {dimensions.getSize() - sf::Vector2i(1, 1)};
+
+    // Get the position of each view corner in world space.
     sf::Vector2i corners[4] {
-        borders.getPosition() - sf::Vector2( size.x,  size.y) / 2,
-        borders.getPosition() - sf::Vector2(-size.x,  size.y) / 2,
-        borders.getPosition() - sf::Vector2( size.x, -size.y) / 2,
-        borders.getPosition() - sf::Vector2(-size.x, -size.y) / 2
+        dimensions.getPosition() - sf::Vector2( size.x,  size.y) / 2,   // Bottom Left
+        dimensions.getPosition() - sf::Vector2(-size.x,  size.y) / 2,   // Bottom Right
+        dimensions.getPosition() - sf::Vector2( size.x, -size.y) / 2,   // Top Left
+        dimensions.getPosition() - sf::Vector2(-size.x, -size.y) / 2    // Top Right
     };
+
     std::vector<std::pair<sf::Vector2i, roomID_t>> rooms;
     rooms.reserve(4);
+    // Make a vector that pairs each corner position with the ID of the room that contains it.
     for (sf::Vector2i corner : corners) {
         roomID_t roomID {world.ContainingRoomID(corner)};
         if (!VALID_ROOM(roomID)) {
@@ -276,6 +283,7 @@ void SandGame::UpdateVisibleRooms() {
         rooms.push_back(std::make_pair(corner, roomID));
     }
 
+    // Update the member vector.
     std::swap(visibleRooms, rooms);
 }
 

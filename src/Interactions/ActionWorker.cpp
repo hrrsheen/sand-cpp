@@ -221,13 +221,13 @@ void ActionWorker::ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, flo
             cachedCells.insert(point); // Add to the set so we don't repeat actions on this cell.
             
             // Account for explosions crossing rooms.
-            if (!explosionRoom->InBounds(point)) {
-                roomID_t newRoomID {ContainingRoomID(point)};
-                if (VALID_ROOM(newRoomID))
-                    explosionRoom = GetRoom(newRoomID);
-                else
-                    break;
+            roomID_t newRoomID = ContainingRoomID(point);
+            if (world.InBounds(point) && !VALID_ROOM(newRoomID)) {
+                newRoomID = world.SpawnRoom(point.x, point.y);
+            } else if (!VALID_ROOM(newRoomID)) {
+                break;
             }
+            explosionRoom = GetRoom(newRoomID);
 
             // Dampen the explosion based on the element hardness.
             force -= GetProperties(point).hardness;

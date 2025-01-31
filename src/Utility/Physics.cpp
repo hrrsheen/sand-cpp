@@ -13,14 +13,21 @@ sf::Vector2i AccelerateProbability(sf::Vector2f velocity, float dt) {
     if (Probability(std::abs(xRem))) xDst += (velocity.x > 0) - (velocity.x < 0);
     if (Probability(std::abs(yRem))) yDst += (velocity.y > 0) - (velocity.y < 0);
 
+    // if (std::abs(velocity.x) > 0) velocity.x = xDst / dt;
+    // if (std::abs(velocity.y) > 0) velocity.y = yDst / dt;
+
     return sf::Vector2i {static_cast<int>(xDst), static_cast<int>(yDst)};
 }
 
-sf::Vector2i AccelerationDistance(sf::Vector2f velocity, float dt) {
+sf::Vector2i AccelerationDistance(sf::Vector2f &velocity, float dt) {
     sf::Vector2f distance {velocity * dt};
 
-    return sf::Vector2i {
+    sf::Vector2i distRound {
         static_cast<int>(std::roundf(distance.x)),
         static_cast<int>(std::roundf(distance.y))
     };
+
+    // velocity.x = static_cast<float>(distRound.x) / dt;
+    // velocity.y = static_cast<float>(distRound.y) / dt;
+    return distRound;
 }

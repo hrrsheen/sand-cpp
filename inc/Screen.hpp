@@ -21,8 +21,13 @@ public:
 
     void Draw(const sf::Drawable &drawable);
 
-    const sf::FloatRect ViewBorders() const;
+    // Returns the dimensions of the view (centre position and width / height) in world space.
+    const sf::FloatRect ViewDimensions() const;
+
+    // Returns the centre of the view in screen space (y axis points down).
+    // This is useful for functions that don't operate in world space.
     const sf::Vector2f ViewCentre() const;
+
     // Repositions the centre of the current view to the given position in world space.
     void RepositionView(sf::Vector2f delta);
 

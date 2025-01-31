@@ -54,7 +54,15 @@ void ParticleWorker::ProcessParticles() {
                 break;
             }
 
+            // Account for particles crossing rooms.
             dstRoom = GetRoom(roomID);
+            if (roomID != thisID) {
+                dstRoom->particles.AddParticle(particle);
+                room->particles.RemoveParticle(i);
+                i--;
+                break;
+            }
+
             if (!dstRoom->IsEmpty(dst)) {
                 --lineIt;
                 particle.Position(*lineIt);

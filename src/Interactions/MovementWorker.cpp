@@ -119,10 +119,6 @@ bool MovementWorker::FallDown(sf::Vector2i p, float dt) {
     sf::Vector2i dst;
     std::tie(roomID, dst) = PathEmpty<PathOpts::SPAWN>(p + sf::Vector2i {0, -1}, p + deltaP);
 
-    // if (!room->InBounds(dst) && !VALID_ROOM(roomID) && world.InBounds(dst)) {
-    //     roomID = world.SpawnRoom(dst.x, dst.y);
-    // }
-
     if (VALID_ROOM(roomID)) {
         SandRoom *dstRoom = GetRoom(roomID);
         dstRoom->QueueMovement(thisID, room->ToIndex(p.x, p.y), 

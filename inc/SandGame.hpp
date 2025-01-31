@@ -48,7 +48,8 @@ class SandGame {
     sf::Font    font;
     sf::Text    text;
 
-     std::vector<std::pair<sf::Vector2i, roomID_t>> visibleRooms;    
+    // Contains the room ID of each view corner. Will always be ordered BL -> BR -> TL -> TR.
+    std::vector<std::pair<sf::Vector2i, roomID_t>> visibleRooms;
 
 public:
     SandGame();
@@ -63,11 +64,13 @@ private:
     void Paint(Mouse &mouse);
     void Paint(Lerp &stroke, Element type, int radius);
 
+    // Moves the view based on the mouse state.
     void RepositionView(Mouse mouse);
 
     // Draws visible area of the world to the screen.
     void Draw(Screen &screen);
-    // Returns a vector of pairs that contain a view corner and the room the corner intersects with.
+    
+    // Updates the member vector (visibleRooms) that contains the IDs of each room that is currently visible in the view.
     void UpdateVisibleRooms();
 
     // DEBUGGING.
