@@ -287,12 +287,14 @@ void ActionWorker::ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, flo
         cachedCells.insert(point); // Add to the set so we don't repeat actions on this cell.
 
         const ConstProperties &prop = GetProperties(point);
+        // Darken immovable elements to create scorch marks.
         if (prop.Immoveable()) {
             explosionRoom->grid.Darken(explosionRoom->ToIndex(point));
             continue;
         }
-        if (dampened) { continue; }
+        if (dampened) { continue; } // If the explosion has been dampened, there is no need to throw debris.
 
+        // Throw moveable elements as debris.
         if (prop.Moveable()) {
             size_t cellIndex = explosionRoom->ToIndex(point);
 
