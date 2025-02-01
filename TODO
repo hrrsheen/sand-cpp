@@ -1,5 +1,4 @@
 Functionality:
-    [ ] Fix particle room crossing
     [ ] Fix the time delay between painting elements - when dragging, the reload period is ignored
     [ ] Clean up the FPS display code
     [ ] Trial Verlet Integration on the particle system
@@ -13,6 +12,7 @@ Functionality:
     [ ] Improve water spreading - may require x velocity
     [ ] Add lifespan functionality to elements
         [ ] Allow values (like lifespan, explosion radius) to be passed to cell upon creation
+    [x] Fix particle room crossing
     [x] Fix missing cells in explosion
     [x] Fix explosions crossing rooms
     [x] Add explosions

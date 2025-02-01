@@ -36,6 +36,8 @@ public:
     void Assign(size_t i, Element id, sf::Color newColour);
     void Assign(size_t i, Element id, int x=0, int y=0);
 
+    void Darken(size_t i);
+
     // Properties queries.
     const ConstProperties& GetProperties(int index) const;
     bool CanDisplace(Element self, Element other) const;

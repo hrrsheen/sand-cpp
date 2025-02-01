@@ -246,48 +246,65 @@ void ActionWorker::ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, flo
         explosionRoom = GetRoom(newRoomID);
 
         // Dampen the explosion when it hits hard elements.
-        force -= GetProperties(point).hardness;
+        const ConstProperties &prop = GetProperties(point);
+        force -= prop.hardness;
         if (force <= 0.f) {
             dampened = true;
             break;
         }
 
-        if (Probability(80))
-            explosionRoom->QueueAction(explosionRoom->ToIndex(point), Element::air);
-        else
-            explosionRoom->QueueAction(explosionRoom->ToIndex(point), Element::spark);
-    }
-
-    for (; ix < shockwaveRadius && iy < shockwaveRadius; point = updateStep(point, ix, iy)) {
-        if (dampened) { break; } // TODO: Remove break and replace with darkening code.
-        if (GetProperties(point).moveBehaviour == MoveType::NONE) { break; }
-        
-        if (Probability(5)) {
-            sf::Vector2f dir {point - pCentre};
-            dir *= (1.f / std::sqrtf(dir.x * dir.x + dir.y * dir.y));
-
-            particles.BecomeParticle(point, (force + QuickRandInt(force)) * dir,
-                Element::fire, properties.Colour(Element::fire));
-
+        // Chance to destroy - Always destroy immovable elements.
+        if (Probability(60) || prop.Immoveable()) {
+            if (Probability(80))
+                explosionRoom->QueueAction(explosionRoom->ToIndex(point), Element::air);
+            else
+                explosionRoom->QueueAction(explosionRoom->ToIndex(point), Element::spark);
+        // Chance to throw debris.
         } else {
-            size_t cellIndex = explosionRoom->ToIndex(point);
-
             sf::Vector2f dir {point - pCentre};
             dir *= (1.f / std::sqrtf(dir.x * dir.x + dir.y * dir.y));
+            if (Probability(5)) {
+                particles.BecomeParticle(point, (force + QuickRandInt(2 * force)) * dir,
+                    Element::fire, properties.Colour(Element::fire));
 
-            particles.BecomeParticle(point, (force + QuickRandInt(force)) * dir,
-                grid.state[cellIndex].id, grid.colour[cellIndex]);
+            } else if (prop.Moveable()) {
+                size_t cellIndex = explosionRoom->ToIndex(point);
+
+                particles.BecomeParticle(point, (force + QuickRandInt(2 * force)) * dir,
+                    grid.state[cellIndex].id, grid.colour[cellIndex]);
+            }
         }
     }
 
-    // Shoot a particle from the edge of the explosion.
-    // if (Probability(10)) {
-    //     sf::Vector2f dir {point - pCentre};
-    //     dir *= (1.f / std::sqrtf(dir.x * dir.x + dir.y * dir.y));
-    //     force += QuickRandInt(50);
-    //     particles.BecomeParticle(point, force * dir,
-    //         Element::fire, properties.Colour(Element::fire));
-    // }
+    // Extend a shockwave past the immediate destructive radius.
+    for (; ix < shockwaveRadius && iy < shockwaveRadius; point = updateStep(point, ix, iy)) {
+        roomID_t newRoomID = ContainingRoomID(point);
+        if (!VALID_ROOM(newRoomID)) {
+            break;
+        }
+
+        explosionRoom = GetRoom(newRoomID);
+
+        if (cachedCells.find(point) != cachedCells.end()) { continue; }
+        cachedCells.insert(point); // Add to the set so we don't repeat actions on this cell.
+
+        const ConstProperties &prop = GetProperties(point);
+        if (prop.Immoveable()) {
+            explosionRoom->grid.Darken(explosionRoom->ToIndex(point)); // TODO: Prevent over-darkening.
+            continue;
+        }
+        if (dampened) { continue; }
+
+        if (prop.Moveable()) {
+            sf::Vector2f dir {point - pCentre};
+            dir *= (1.f / std::sqrtf(dir.x * dir.x + dir.y * dir.y));
+
+            size_t cellIndex = explosionRoom->ToIndex(point);
+
+            particles.BecomeParticle(point, (force + QuickRandInt(2 * force)) * dir,
+                grid.state[cellIndex].id, grid.colour[cellIndex]);
+        }
+    }
 }
 
 bool ActionWorker::ExplosionActOnSelf(CellState &cell, ConstProperties &prop, sf::Vector2i p) {

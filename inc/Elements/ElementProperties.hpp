@@ -59,6 +59,9 @@ struct ConstProperties {
     float   hardness        = 0.f;  // Used for resisting explosions.
 
     ConstProperties();
+
+    bool Moveable() const   { return type != ElementType::AIR && moveBehaviour != MoveType::NONE; }
+    bool Immoveable() const { return type != ElementType::AIR && moveBehaviour == MoveType::NONE; }
 };
 
 struct ColourProperties {

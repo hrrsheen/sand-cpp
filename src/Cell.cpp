@@ -29,6 +29,13 @@ void Cells::Assign(size_t i, Element _id, int x, int y) {
     Assign(i, _id, properties->Colour(_id, x, y));
 }
 
+void Cells::Darken(size_t i) {
+    sf::Color &cellColour {colour[i]};
+    cellColour.r = std::clamp(static_cast<int>((cellColour.r * 3.f) / 4.f), 25, 255);
+    cellColour.g = std::clamp(static_cast<int>((cellColour.g * 3.f) / 4.f), 25, 255);
+    cellColour.b = std::clamp(static_cast<int>((cellColour.b * 3.f) / 4.f), 25, 255);
+}
+
 const ConstProperties& Cells::GetProperties(int index) const {
     return properties->constants.at(state[index].id);
 }
