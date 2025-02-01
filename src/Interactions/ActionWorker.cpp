@@ -307,7 +307,6 @@ void ActionWorker::ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, flo
 bool ActionWorker::ExplosionActOnSelf(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
     float radius {25.5};
     cached_points cachedCells;
-    SandRoom *explosionRoom {room};
     float force {100.f};
     for (int h = 0; h <= std::round(radius * std::sqrtf(0.5f)); ++h) {
         int b {static_cast<int>(std::round(std::sqrtf(radius * radius - h * h)))};
