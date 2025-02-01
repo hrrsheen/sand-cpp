@@ -213,9 +213,13 @@ void ActionWorker::ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, flo
     int dx      = pRadius.x - pCentre.x,    dy      = pRadius.y - pCentre.y;    // The difference in point positions.
     float nx    = std::abs(dx),             ny      = std::abs(dy);             // The number of grid spaces to move.
     int sgnx    = (dx > 0) - (dx < 0),      sgny    = (dy > 0) - (dy < 0);      // The direction to step.
+    // The current room that the explosion is occuring in.
     SandRoom *explosionRoom {room};
-    int shockwaveRadius = std::max(nx, ny) + RandInt(std::max(nx, ny) / 1);
+    // The direction that the explosion is travelling.
+    sf::Vector2f dir {pRadius - pCentre};
+    dir *= (1.f / std::sqrtf(dir.x * dir.x + dir.y * dir.y));
 
+    // Lambda expression for stepping towards the explosion radius.
     auto updateStep = [nx, ny, sgnx, sgny](sf::Vector2i point, int &x, int &y) {
         if ((0.5 + x) / nx < (0.5 + y) / ny) {
             // Take a horizontal step.
@@ -229,20 +233,17 @@ void ActionWorker::ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, flo
         return point;
     };
 
-    sf::Vector2i point {pCentre};
-    int ix = 0, iy = 0;
-    bool dampened = false; // Whether or not the explosion was stopped by something.
+    sf::Vector2i point {pCentre}; // The point of the explosion.
+    int ix = 0, iy = 0;     // The number of x and y steps that have been taken.
+    bool dampened = false;  // Whether or not the explosion was stopped by something.
+    // Step through the destructive distance of the explosion.
     for (; ix < nx || iy < ny; point = updateStep(point, ix, iy)) {
-        if (cachedCells.find(point) != cachedCells.end()) { continue; }
+        if (cachedCells.find(point) != cachedCells.end()) { continue; } // Ignore cells that have been exploded already.
         cachedCells.insert(point); // Add to the set so we don't repeat actions on this cell.
         
         // Account for explosions crossing rooms.
         roomID_t newRoomID = ContainingRoomID(point);
-        if (world.InBounds(point) && !VALID_ROOM(newRoomID)) {
-            newRoomID = world.SpawnRoom(point.x, point.y);
-        } else if (!VALID_ROOM(newRoomID)) {
-            break;
-        }
+        if (!VALID_ROOM(newRoomID)) { return; } // No need to spawn new rooms, as an invalid room implies it's empty (nothing to explode).
         explosionRoom = GetRoom(newRoomID);
 
         // Dampen the explosion when it hits hard elements.
@@ -261,13 +262,11 @@ void ActionWorker::ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, flo
                 explosionRoom->QueueAction(explosionRoom->ToIndex(point), Element::spark);
         // Chance to throw debris.
         } else {
-            sf::Vector2f dir {point - pCentre};
-            dir *= (1.f / std::sqrtf(dir.x * dir.x + dir.y * dir.y));
-            if (Probability(5)) {
+            if (Probability(5)) { // Shoot sparks out that can catch fire.
                 particles.BecomeParticle(point, (force + QuickRandInt(2 * force)) * dir,
                     Element::fire, properties.Colour(Element::fire));
 
-            } else if (prop.Moveable()) {
+            } else if (prop.Moveable()) { // Shoot moveable debris around.
                 size_t cellIndex = explosionRoom->ToIndex(point);
 
                 particles.BecomeParticle(point, (force + QuickRandInt(2 * force)) * dir,
@@ -276,29 +275,25 @@ void ActionWorker::ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, flo
         }
     }
 
+    int shockwaveRadius = std::max(nx, ny) + RandInt(std::max(nx, ny) / 1);
     // Extend a shockwave past the immediate destructive radius.
     for (; ix < shockwaveRadius && iy < shockwaveRadius; point = updateStep(point, ix, iy)) {
         roomID_t newRoomID = ContainingRoomID(point);
-        if (!VALID_ROOM(newRoomID)) {
-            break;
-        }
+        if (!VALID_ROOM(newRoomID)) { return; } // No need to spawn new rooms, as an invalid room implies it's empty (nothing to explode).
 
         explosionRoom = GetRoom(newRoomID);
 
-        if (cachedCells.find(point) != cachedCells.end()) { continue; }
+        if (cachedCells.find(point) != cachedCells.end()) { continue; } // Ignore cells that have been exploded already.
         cachedCells.insert(point); // Add to the set so we don't repeat actions on this cell.
 
         const ConstProperties &prop = GetProperties(point);
         if (prop.Immoveable()) {
-            explosionRoom->grid.Darken(explosionRoom->ToIndex(point)); // TODO: Prevent over-darkening.
+            explosionRoom->grid.Darken(explosionRoom->ToIndex(point));
             continue;
         }
         if (dampened) { continue; }
 
         if (prop.Moveable()) {
-            sf::Vector2f dir {point - pCentre};
-            dir *= (1.f / std::sqrtf(dir.x * dir.x + dir.y * dir.y));
-
             size_t cellIndex = explosionRoom->ToIndex(point);
 
             particles.BecomeParticle(point, (force + QuickRandInt(2 * force)) * dir,
