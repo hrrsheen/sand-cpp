@@ -46,7 +46,7 @@ private:
 
     //////// Helpers for action functions ////////
     // Creates an explosion path from pCentre to pRadius.
-    void ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, float force, cached_points &cachedCells);
+    void ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, float force, cached_points &cachedCells, cached_points &cachedShockwave);
 };
 
 #endif

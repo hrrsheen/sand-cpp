@@ -208,7 +208,8 @@ bool ActionWorker::SparkActOnSelf(CellState &cell, ConstProperties &prop, sf::Ve
     return false;   
 }
 
-void ActionWorker::ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, float force, cached_points &cachedCells) {
+void ActionWorker::ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, float force, 
+    cached_points &cachedCells, cached_points &cachedShockwave) {
     // Set up the variables for a supercover line.
     int dx      = pRadius.x - pCentre.x,    dy      = pRadius.y - pCentre.y;    // The difference in point positions.
     float nx    = std::abs(dx),             ny      = std::abs(dy);             // The number of grid spaces to move.
@@ -234,10 +235,10 @@ void ActionWorker::ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, flo
     };
 
     sf::Vector2i point {pCentre}; // The point of the explosion.
-    int ix = 0, iy = 0;     // The number of x and y steps that have been taken.
+         // The number of x and y steps that have been taken.
     bool dampened = false;  // Whether or not the explosion was stopped by something.
     // Step through the destructive distance of the explosion.
-    for (; ix < nx || iy < ny; point = updateStep(point, ix, iy)) {
+    for (int ix = 0, iy = 0; ix < nx || iy < ny; point = updateStep(point, ix, iy)) {
         if (cachedCells.find(point) != cachedCells.end()) { continue; } // Ignore cells that have been exploded already.
         cachedCells.insert(point); // Add to the set so we don't repeat actions on this cell.
         
@@ -275,16 +276,16 @@ void ActionWorker::ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, flo
         }
     }
 
-    int shockwaveRadius = std::max(nx, ny) + RandInt(std::max(nx, ny) / 1);
+    int shockwaveRadius = RandInt(std::max(nx, ny) / 2);
     // Extend a shockwave past the immediate destructive radius.
-    for (; ix < shockwaveRadius && iy < shockwaveRadius; point = updateStep(point, ix, iy)) {
+    for (int ix = 0, iy = 0; ix < shockwaveRadius && iy < shockwaveRadius; point = updateStep(point, ix, iy)) {
         roomID_t newRoomID = ContainingRoomID(point);
         if (!VALID_ROOM(newRoomID)) { return; } // No need to spawn new rooms, as an invalid room implies it's empty (nothing to explode).
 
         explosionRoom = GetRoom(newRoomID);
 
-        if (cachedCells.find(point) != cachedCells.end()) { continue; } // Ignore cells that have been exploded already.
-        cachedCells.insert(point); // Add to the set so we don't repeat actions on this cell.
+        if (cachedShockwave.find(point) != cachedShockwave.end()) { continue; } // Ignore cells that have been exploded already.
+        cachedShockwave.insert(point); // Add to the set so we don't repeat actions on this cell.
 
         const ConstProperties &prop = GetProperties(point);
         // Darken immovable elements to create scorch marks.
@@ -307,19 +308,20 @@ void ActionWorker::ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, flo
 bool ActionWorker::ExplosionActOnSelf(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
     float radius {25.5};
     cached_points cachedCells;
+    cached_points cachedShockwave;
     float force {100.f};
     for (int h = 0; h <= std::round(radius * std::sqrtf(0.5f)); ++h) {
         int b {static_cast<int>(std::round(std::sqrtf(radius * radius - h * h)))};
 
         // The circumference calculation can be repeated for each octant.
-        ExplodeRadius(p, sf::Vector2i(p.x + b, p.y + h), force, cachedCells);
-        ExplodeRadius(p, sf::Vector2i(p.x - b, p.y + h), force, cachedCells);
-        ExplodeRadius(p, sf::Vector2i(p.x + b, p.y - h), force, cachedCells);
-        ExplodeRadius(p, sf::Vector2i(p.x - b, p.y - h), force, cachedCells);
-        ExplodeRadius(p, sf::Vector2i(p.x + h, p.y + b), force, cachedCells);
-        ExplodeRadius(p, sf::Vector2i(p.x - h, p.y + b), force, cachedCells);
-        ExplodeRadius(p, sf::Vector2i(p.x + h, p.y - b), force, cachedCells);
-        ExplodeRadius(p, sf::Vector2i(p.x - h, p.y - b), force, cachedCells);
+        ExplodeRadius(p, sf::Vector2i(p.x + b, p.y + h), force, cachedCells, cachedShockwave);
+        ExplodeRadius(p, sf::Vector2i(p.x - b, p.y + h), force, cachedCells, cachedShockwave);
+        ExplodeRadius(p, sf::Vector2i(p.x + b, p.y - h), force, cachedCells, cachedShockwave);
+        ExplodeRadius(p, sf::Vector2i(p.x - b, p.y - h), force, cachedCells, cachedShockwave);
+        ExplodeRadius(p, sf::Vector2i(p.x + h, p.y + b), force, cachedCells, cachedShockwave);
+        ExplodeRadius(p, sf::Vector2i(p.x - h, p.y + b), force, cachedCells, cachedShockwave);
+        ExplodeRadius(p, sf::Vector2i(p.x + h, p.y - b), force, cachedCells, cachedShockwave);
+        ExplodeRadius(p, sf::Vector2i(p.x - h, p.y - b), force, cachedCells, cachedShockwave);
     }
 
     return true;
