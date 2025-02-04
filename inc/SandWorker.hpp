@@ -22,10 +22,10 @@ private:
     ActionWorker actions;
 
 public:
-    SandWorker(roomID_t id, SandWorld &_world, SandRoom *_room);
+    SandWorker(roomID_t id, SandWorld &_world, SandRoom *_room, float _dt);
 
     // Performs one iteration of the simulation.
-    void Step(float dt);
+    void Step();
 
 private:
     // Performs one step in the simulation of the given chunk.

@@ -2,11 +2,11 @@
 #include "Utility/Physics.hpp"
 #include "Utility/Random.hpp"
 
-MovementWorker::MovementWorker(roomID_t id, SandWorld &_world, SandRoom *_room) : InteractionWorker(id, _world, _room) {}
+MovementWorker::MovementWorker(roomID_t id, SandWorld &_world, SandRoom *_room, float _dt) : InteractionWorker(id, _world, _room, _dt) {}
 
-bool MovementWorker::PerformMovement(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
-    if      (  MoveCell(cell, prop, p)) { return true; }  // Apply movement behaviours (falling, floating, etc).
-    else if (SpreadCell(cell, prop, p)) { return true; }  // Apply spreading behaviour.
+bool MovementWorker::PerformMovement(sf::Vector2i p, CellState &cell, ConstProperties &prop) {
+    if      (  MoveCell(p, cell, prop)) { return true; }  // Apply movement behaviours (falling, floating, etc).
+    else if (SpreadCell(p, cell, prop)) { return true; }  // Apply spreading behaviour.
 
     return false;
 }
@@ -59,18 +59,18 @@ void MovementWorker::ConsolidateMovement() {
 //  High-level behaviour.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-bool MovementWorker::MoveCell(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
+bool MovementWorker::MoveCell(sf::Vector2i p, CellState &cell, ConstProperties &prop) {
     if (prop.moveBehaviour == MoveType::NONE) return false;
     if (cell.velocity == sf::Vector2f(0.f, 0.f)) cell.velocity = constants::initialV;
 
-    if      (prop.moveBehaviour == MoveType::FLOAT_DOWN)  { return FloatDown   (p);     }
-    else if (prop.moveBehaviour == MoveType::FLOAT_UP)    { return FloatUp     (p);     }
-    else if (prop.moveBehaviour == MoveType::FALL_DOWN)   { return FallDown    (p, dt); }
+    if      (prop.moveBehaviour == MoveType::FLOAT_DOWN)  { return FloatDown   (p); }
+    else if (prop.moveBehaviour == MoveType::FLOAT_UP)    { return FloatUp     (p); }
+    else if (prop.moveBehaviour == MoveType::FALL_DOWN)   { return FallDown    (p); }
 
     return false;
 }
 
-bool MovementWorker::SpreadCell(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
+bool MovementWorker::SpreadCell(sf::Vector2i p, CellState &cell, ConstProperties &prop) {
     if (prop.spreadBehaviour == SpreadType::NONE) return false;
 
     if      (prop.spreadBehaviour & SpreadType::DOWN_SIDE && SpreadDownSide(p)) { return true; }
@@ -108,7 +108,7 @@ bool MovementWorker::FloatUp(sf::Vector2i p) {
     return SpreadUpSide(p);
 }
 
-bool MovementWorker::FallDown(sf::Vector2i p, float dt) {
+bool MovementWorker::FallDown(sf::Vector2i p) {
     size_t iCell    = CellIndex(p);
     CellState &cell = room->GetCell(iCell);
 

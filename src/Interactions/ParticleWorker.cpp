@@ -3,8 +3,8 @@
 #include "Utility/Line.hpp"
 #include "Utility/Physics.hpp"
 
-ParticleWorker::ParticleWorker(roomID_t id, SandWorld &_world, SandRoom *_room) :
-    InteractionWorker(id, _world, _room), properties(_world.properties) {}
+ParticleWorker::ParticleWorker(roomID_t id, SandWorld &_world, SandRoom *_room, float _dt) :
+    InteractionWorker(id, _world, _room, _dt), properties(_world.properties) {}
 
 void ParticleWorker::BecomeParticle(sf::Vector2i p, sf::Vector2f F, Element id, sf::Color colour) {
     SandRoom *particleRoom = GetRoom(ContainingRoomID(p));

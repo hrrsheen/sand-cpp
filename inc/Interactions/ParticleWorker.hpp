@@ -11,7 +11,7 @@ private:
     ElementProperties &properties;
 
 public:
-    ParticleWorker(roomID_t id, SandWorld &_world, SandRoom *_room);
+    ParticleWorker(roomID_t id, SandWorld &_world, SandRoom *_room, float _dt);
 
     void BecomeParticle(sf::Vector2i p, sf::Vector2f v, Element id, sf::Color colour);
     void BecomeCell(size_t index);

@@ -125,9 +125,10 @@ void SandGame::Run() {
 }
 
 void SandGame::Step(float dt) {
+    if (dt > 1 / 60.f) dt = 1 / 60.f; // DEBUG: Possibly remove this.
     for (roomID_t id = 0; id < world.rooms.Range(); ++id) {
-        SandWorker worker {id, world, &world.GetRoom(id)};
-        worker.Step(dt);
+        SandWorker worker {id, world, &world.GetRoom(id), dt};
+        worker.Step();
     }
 }
 

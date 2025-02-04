@@ -27,9 +27,7 @@ protected:
     float dt;
 
 public:
-    InteractionWorker(roomID_t id, SandWorld &_world, SandRoom *_room);
-
-    void SetDeltaTime(float _dt);
+    InteractionWorker(roomID_t id, SandWorld &_world, SandRoom *_room, float _dt);
 
     void KeepContainingAlive(int x, int y);
     void KeepNeighbourAlive(int x, int y);

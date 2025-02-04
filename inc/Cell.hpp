@@ -16,6 +16,8 @@ struct CellState {
     float health            = 100.f;
     sf::Vector2f velocity   = sf::Vector2f(0.f, 0.f);
 
+    uint64_t data           = 0; // Miscellaneous data to be used on a per-cell basis.
+
     CellState() : id(Element::air) {}
     CellState(Element _id) : id(_id) {}
     void ApplyAcceleration(sf::Vector2f acc, float dt);

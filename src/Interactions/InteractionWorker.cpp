@@ -5,10 +5,8 @@ inline roomID_t BoolToID(roomID_t id, bool valid) {
     return (id * valid) + (valid - 1); // Should map (valid == true) -> id and (valid == false) -> -1.
 }
 
-InteractionWorker::InteractionWorker(roomID_t id, SandWorld &_world, SandRoom *_room) :
-    thisID(id), world(_world), room(_room) {}
-
-void InteractionWorker::SetDeltaTime(float _dt) { dt = _dt; }
+InteractionWorker::InteractionWorker(roomID_t id, SandWorld &_world, SandRoom *_room, float _dt) :
+    thisID(id), world(_world), room(_room), dt(_dt) {}
 
 void InteractionWorker::KeepContainingAlive(int x, int y) {
     room->chunks.KeepContainingAlive(x, y);

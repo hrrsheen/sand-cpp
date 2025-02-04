@@ -3,12 +3,12 @@
 #include <cmath>
 #include <iostream>
 
-ActionWorker::ActionWorker(roomID_t id, SandWorld &_world, SandRoom *_room, ParticleWorker &_particles) : 
-    InteractionWorker(id, _world, _room), particles(_particles), properties(_world.properties), grid(_room->grid) {}
+ActionWorker::ActionWorker(roomID_t id, SandWorld &_world, SandRoom *_room, ParticleWorker &_particles, float _dt) : 
+    InteractionWorker(id, _world, _room, _dt), particles(_particles), properties(_world.properties), grid(_room->grid) {}
 
-bool ActionWorker::PerformActions(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
-    if      (ActOnSelf (cell, prop, p)) { return true; } 
-    else if (ActOnOther(cell, prop, p)) { return true; }
+bool ActionWorker::PerformActions(sf::Vector2i p, CellState &cell, ConstProperties &prop) {
+    if      (ActOnSelf (p, cell, prop)) { return true; } 
+    else if (ActOnOther(p, cell, prop)) { return true; }
 
     return false;
 }
@@ -54,29 +54,29 @@ void ActionWorker::ConsolidateActions() {
 //  High-level action functions.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-bool ActionWorker::ActOnSelf(CellState &cell, ConstProperties &constProp, sf::Vector2i p) {
+bool ActionWorker::ActOnSelf(sf::Vector2i p, CellState &cell, ConstProperties &constProp) {
     switch(cell.id) {
         case Element::fire:
-            return FireActOnSelf(cell, constProp, p);
+            return FireActOnSelf(p, cell, constProp);
         case Element::explosion:
-            return ExplosionActOnSelf(cell, constProp, p);
+            return ExplosionActOnSelf(p, cell, constProp);
         case Element::smoke:
-            return SmokeActOnSelf(cell, constProp, p);
+            return SmokeActOnSelf(p, cell, constProp);
         case Element::spark:
-            return SparkActOnSelf(cell, constProp, p);
+            return SparkActOnSelf(p, cell, constProp);
         default:
             return false;
     }
 }
 
-bool ActionWorker::ActOnOther(CellState &cell, ConstProperties &constProp, sf::Vector2i p) {
+bool ActionWorker::ActOnOther(sf::Vector2i p, CellState &cell, ConstProperties &constProp) {
     switch(cell.id) {
         case Element::sand:
-            return SandActOnOther(cell, constProp, p);
+            return SandActOnOther(p, cell, constProp);
         case Element::water:
-            return WaterActOnOther(cell, constProp, p);
+            return WaterActOnOther(p, cell, constProp);
         case Element::fire:
-            return FireActOnOther(cell, constProp, p);
+            return FireActOnOther(p, cell, constProp);
         default:
             return false;
     }
@@ -88,7 +88,7 @@ bool ActionWorker::ActOnOther(CellState &cell, ConstProperties &constProp, sf::V
 
 //////////////// Solid interactions ////////////////
 
-bool ActionWorker::SandActOnOther(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
+bool ActionWorker::SandActOnOther(sf::Vector2i p, CellState &cell, ConstProperties &prop) {
     sf::Vector2i otherP {p + sf::Vector2i {0, -1}};
     size_t self = room->ToIndex(p);
 
@@ -109,7 +109,7 @@ bool ActionWorker::SandActOnOther(CellState &cell, ConstProperties &prop, sf::Ve
 
 //////////////// Liquid interactions ////////////////
 
-bool ActionWorker::WaterActOnOther(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
+bool ActionWorker::WaterActOnOther(sf::Vector2i p, CellState &cell, ConstProperties &prop) {
     sf::Vector2i otherP {p + sf::Vector2i {0, -1}};
     size_t self = room->ToIndex(p);
 
@@ -130,7 +130,7 @@ bool ActionWorker::WaterActOnOther(CellState &cell, ConstProperties &prop, sf::V
 
 //////////////// Gas interactions ////////////////
 
-bool ActionWorker::FireActOnSelf(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
+bool ActionWorker::FireActOnSelf(sf::Vector2i p, CellState &cell, ConstProperties &prop) {
     size_t self = room->ToIndex(p);
 
     if (cell.health <= 0) {
@@ -148,7 +148,7 @@ bool ActionWorker::FireActOnSelf(CellState &cell, ConstProperties &prop, sf::Vec
     return false;   
 }
 
-bool ActionWorker::FireActOnOther(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
+bool ActionWorker::FireActOnOther(sf::Vector2i p, CellState &cell, ConstProperties &prop) {
     size_t self = room->ToIndex(p);
 
     bool acted = false;
@@ -178,7 +178,7 @@ bool ActionWorker::FireActOnOther(CellState &cell, ConstProperties &prop, sf::Ve
     return acted;
 }
 
-bool ActionWorker::SmokeActOnSelf(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
+bool ActionWorker::SmokeActOnSelf(sf::Vector2i p, CellState &cell, ConstProperties &prop) {
     size_t self = room->ToIndex(p);
 
     if (cell.health <= 0) {
@@ -191,7 +191,7 @@ bool ActionWorker::SmokeActOnSelf(CellState &cell, ConstProperties &prop, sf::Ve
     return false;
 }
 
-bool ActionWorker::SparkActOnSelf(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
+bool ActionWorker::SparkActOnSelf(sf::Vector2i p, CellState &cell, ConstProperties &prop) {
     size_t self = room->ToIndex(p);
 
     if (cell.health <= 0) {
@@ -305,7 +305,7 @@ void ActionWorker::ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, flo
     }
 }
 
-bool ActionWorker::ExplosionActOnSelf(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
+bool ActionWorker::ExplosionActOnSelf(sf::Vector2i p, CellState &cell, ConstProperties &prop) {
     float radius {25.5};
     cached_points cachedCells;
     cached_points cachedShockwave;
@@ -327,6 +327,6 @@ bool ActionWorker::ExplosionActOnSelf(CellState &cell, ConstProperties &prop, sf
     return true;
 }
 
-bool ActionWorker::ExplosionActOnOther(CellState &cell, ConstProperties &prop, sf::Vector2i p) {
+bool ActionWorker::ExplosionActOnOther(sf::Vector2i p, CellState &cell, ConstProperties &prop) {
     return false;
 }

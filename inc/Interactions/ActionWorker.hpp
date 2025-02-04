@@ -19,30 +19,30 @@ private:
     Cells &grid;
 
 public:
-    ActionWorker(roomID_t id, SandWorld &_world, SandRoom *_room, ParticleWorker &particles);
+    ActionWorker(roomID_t id, SandWorld &_world, SandRoom *_room, ParticleWorker &particles, float _dt);
 
-    bool PerformActions(CellState &cell, ConstProperties &constProp, sf::Vector2i p);
+    bool PerformActions(sf::Vector2i p, CellState &cell, ConstProperties &constProp);
     void ConsolidateActions();
 
 private:
-    bool ActOnSelf    (CellState &cell, ConstProperties &constProp, sf::Vector2i p);
-    bool ActOnOther   (CellState &cell, ConstProperties &constProp, sf::Vector2i p);
+    bool ActOnSelf    (sf::Vector2i p, CellState &cell, ConstProperties &constProp);
+    bool ActOnOther   (sf::Vector2i p, CellState &cell, ConstProperties &constProp);
 
     //////// Element-specific functions ////////
     // Solid
-    bool SandActOnOther     (CellState &cell, ConstProperties &constProp, sf::Vector2i p);
+    bool SandActOnOther     (sf::Vector2i p, CellState &cell, ConstProperties &constProp);
     // Liquid
-    bool WaterActOnOther    (CellState &cell, ConstProperties &constProp, sf::Vector2i p);
+    bool WaterActOnOther    (sf::Vector2i p, CellState &cell, ConstProperties &constProp);
     // Gas
-    bool FireActOnSelf      (CellState &cell, ConstProperties &constProp, sf::Vector2i p);
-    bool FireActOnOther     (CellState &cell, ConstProperties &constProp, sf::Vector2i p);
+    bool FireActOnSelf      (sf::Vector2i p, CellState &cell, ConstProperties &constProp);
+    bool FireActOnOther     (sf::Vector2i p, CellState &cell, ConstProperties &constProp);
 
-    bool SmokeActOnSelf     (CellState &cell, ConstProperties &constProp, sf::Vector2i p);
+    bool SmokeActOnSelf     (sf::Vector2i p, CellState &cell, ConstProperties &constProp);
 
-    bool SparkActOnSelf     (CellState &cell, ConstProperties &constProp, sf::Vector2i p);
+    bool SparkActOnSelf     (sf::Vector2i p, CellState &cell, ConstProperties &constProp);
 
-    bool ExplosionActOnSelf (CellState &cell, ConstProperties &constProp, sf::Vector2i p);
-    bool ExplosionActOnOther(CellState &cell, ConstProperties &constProp, sf::Vector2i p);
+    bool ExplosionActOnSelf (sf::Vector2i p, CellState &cell, ConstProperties &constProp);
+    bool ExplosionActOnOther(sf::Vector2i p, CellState &cell, ConstProperties &constProp);
 
     //////// Helpers for action functions ////////
     // Creates an explosion path from pCentre to pRadius.

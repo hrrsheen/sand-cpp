@@ -1,20 +1,15 @@
 #include "Constants.hpp"
 #include "SandWorker.hpp"
 
-SandWorker::SandWorker(roomID_t id, SandWorld &_world, SandRoom *_room) :
-    movement(id, _world, _room), actions(id, _world, _room, particles), particles(id, _world, _room),
+SandWorker::SandWorker(roomID_t id, SandWorld &_world, SandRoom *_room, float _dt) :
+    movement(id, _world, _room, _dt), actions(id, _world, _room, particles, _dt), particles(id, _world, _room, _dt),
     room(_room), properties(_world.properties) {}
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Simulation.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-void SandWorker::Step(float dt) {
-    if (dt > 1 / 60.f) dt = 1 / 60.f; // DEBUG: Possibly remove this.
-    movement.SetDeltaTime(dt);
-    actions.SetDeltaTime(dt);
-    particles.SetDeltaTime(dt);
-
+void SandWorker::Step() {
     particles.ProcessParticles();
     for (int ci = 0; ci < room->chunks.Size(); ++ci) {
         Chunk &chunk {room->chunks.GetChunk(ci)};
@@ -53,8 +48,8 @@ bool SandWorker::ApplyRules(sf::Vector2i p) {
     CellState &cell {room->GetCell(p)};
     ConstProperties &prop {properties.constants[cell.id]};
     
-    if      (  actions.PerformActions(cell, prop, p)) { return true; }  // Act on other cells.
-    else if (movement.PerformMovement(cell, prop, p)) { return true; }  // Move the cell.
+    if      (  actions.PerformActions(p, cell, prop)) { return true; }  // Act on other cells.
+    else if (movement.PerformMovement(p, cell, prop)) { return true; }  // Move the cell.
 
     return false;
 }

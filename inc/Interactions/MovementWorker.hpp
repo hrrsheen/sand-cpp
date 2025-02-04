@@ -15,19 +15,19 @@ using roomID_t = int;
 class MovementWorker : public InteractionWorker {
     using IW = InteractionWorker;
 public:
-    MovementWorker(roomID_t id, SandWorld &_world, SandRoom *_room);
+    MovementWorker(roomID_t id, SandWorld &_world, SandRoom *_room, float _dt);
 
-    bool PerformMovement(CellState &cell, ConstProperties &prop, sf::Vector2i p);
+    bool PerformMovement(sf::Vector2i p, CellState &cell, ConstProperties &prop);
     void ConsolidateMovement();
 
 private:
-    bool MoveCell   (CellState &cell, ConstProperties &constProp, sf::Vector2i p);
-    bool SpreadCell (CellState &cell, ConstProperties &constProp, sf::Vector2i p);
+    bool MoveCell   (sf::Vector2i p, CellState &cell, ConstProperties &constProp);
+    bool SpreadCell (sf::Vector2i p, CellState &cell, ConstProperties &constProp);
 
     //////// Movement functions ////////
     bool FloatDown      (sf::Vector2i p);
     bool FloatUp        (sf::Vector2i p);
-    bool FallDown       (sf::Vector2i p, float dt);
+    bool FallDown       (sf::Vector2i p);
 
     bool SpreadDownSide (sf::Vector2i p);
     bool SpreadUpSide   (sf::Vector2i p);
