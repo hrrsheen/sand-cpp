@@ -1,5 +1,15 @@
 #include "Elements/Inits.hpp"
 
+bool InitAir(ElementProperties &properties) {
+    ConstProperties constsInit;
+    constsInit.name = "air";
+    constsInit.type = ElementType::AIR;
+    ColourProperties colourInit;
+    COLOUR(colourInit.palette).push_back(0x000000ff);
+    
+    properties.Insert(Element::air, constsInit, colourInit);
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Solids.
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -138,4 +148,20 @@ bool InitSpark(ElementProperties &properties) {
     COLOUR(colourInit.palette).push_back(0xff983dff);
 
     return properties.Insert(Element::spark, constsInit, colourInit);
+}
+
+bool InitAllElements(ElementProperties &properties) {
+    bool success = false;
+
+    success |= InitAir  (properties);
+    success |= InitSand (properties);
+    success |= InitStone(properties);
+    success |= InitWood (properties);
+    success |= InitWater(properties);
+    success |= InitFire (properties);
+    success |= InitSmoke(properties);
+    success |= InitExplosion(properties);
+    success |= InitSpark(properties);
+
+    return success;
 }

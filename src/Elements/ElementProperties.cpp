@@ -1,4 +1,5 @@
 #include "Elements/ElementProperties.hpp"
+#include "Elements/Inits.hpp"
 #include "SandRoom.hpp"
 #include "SandWorld.hpp"
 #include "Utility/Random.hpp"
@@ -14,13 +15,9 @@ ConstProperties::ConstProperties() :
     type(ElementType::AIR), name(), moveBehaviour(MoveType::NONE), spreadBehaviour(SpreadType::NONE), actionSet() {}
 
 ElementProperties::ElementProperties() : constants(Element::count + 1), colours(Element::count + 1), brushes(Element::count + 1) {
-    ConstProperties constsInit;
-    constsInit.type = ElementType::AIR;
-    constsInit.name = "air";
-    ColourProperties colourInit;
-    COLOUR(colourInit.palette).push_back(0x000000ff);
-    
-    Insert(Element::air, constsInit, colourInit);
+    if (!InitAllElements(*this)) {
+        throw std::runtime_error("Failed to initialise ElementProperties.");
+    }
 }
 
 bool ElementProperties::Insert(Element id, ConstProperties consts, ColourProperties palette, PaintProperties brush) {

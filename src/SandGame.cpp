@@ -32,9 +32,9 @@ void Mouse::Reset() {
 //  Game.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-SandGame::SandGame() : xMinRooms(-2), xMaxRooms(2), 
-                       yMinRooms(-1), yMaxRooms(2), 
-                       world(-2, 2, -1, 2), 
+SandGame::SandGame() : xMinRooms(-2), xMaxRooms(2),
+                       yMinRooms( 0), yMaxRooms(3),
+                       world(-2, 2, 0, 3),
                        screen{constants::screenWidth, constants::screenHeight, 
                                 constants::viewWidth, constants::viewHeight, "Falling Sand"} {
     gridImage.create(constants::roomWidth, constants::roomHeight);

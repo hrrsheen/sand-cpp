@@ -14,33 +14,13 @@ SandWorld::SandWorld() :
     xMin(std::numeric_limits<int>::min()), xMax(std::numeric_limits<int>::max()),
     yMin(std::numeric_limits<int>::min()), yMax(std::numeric_limits<int>::max()),
     properties() {
-    if (!InitProperties()) {
-        throw std::runtime_error("Failed to initialise ElementProperties.");
-    }
     SpawnRoom(0, 0);
 }
 
 SandWorld::SandWorld(int _xMin, int _xMax, int _yMin, int _yMax) : 
     xMin(_xMin), xMax(_xMax), yMin(_yMin), yMax(_yMax),
     properties() {
-    if (!InitProperties()) {
-        throw std::runtime_error("Failed to initialise ElementProperties.");
-    }
     SpawnRoom(0, 0);
-}
-
-bool SandWorld::InitProperties() {
-    bool success = false;
-    success |= InitSand (properties);
-    success |= InitStone(properties);
-    success |= InitWood (properties);
-    success |= InitWater(properties);
-    success |= InitFire (properties);
-    success |= InitSmoke(properties);
-    success |= InitExplosion(properties);
-    success |= InitSpark(properties);
-
-    return success;
 }
 
 roomID_t SandWorld::SpawnRoom(int x, int y) {
