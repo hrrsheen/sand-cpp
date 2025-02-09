@@ -7,8 +7,11 @@
 #include "Elements/ElementProperties.hpp"
 #include "FreeList.h"
 #include "Particles.hpp"
+#include "Utility/Hashes.hpp"
+#include <limits>
 #include <vector>
 #include <tuple>
+#include <unordered_map>
 
 using roomID_t = int;
 
@@ -68,6 +71,38 @@ public:
     sf::Vector2i ToLocalCoords(int index) const;
     sf::Vector2i ToWorldCoords(int index) const;
 
+};
+
+class Rooms {
+public:
+    using room_ptr = std::unique_ptr<SandRoom>;
+    using iterator = std::vector<room_ptr>::iterator;
+private:
+    std::vector<room_ptr> rooms;
+
+    size_t activeRooms = 0;
+    size_t    maxRooms = std::numeric_limits<size_t>::max();
+
+public:
+    Rooms() = default;
+    Rooms(size_t max) : maxRooms(max) {}
+
+    // Inserts a new room and returns the index at which it was added. Returns -1 if no room is added.
+    roomID_t NewRoom(int x, int y, int width, int height, const ElementProperties* properties);
+
+    // Removes the room at the given index and returns the number of active rooms.
+    void RemoveRoom(size_t index);
+
+    size_t Range() const;
+    bool Full() const;
+
+    SandRoom* operator[](size_t n);
+
+    // Returns the last active room in the container.
+    SandRoom* Last() { return rooms[activeRooms - 1].get(); }
+    // Iterator functions.
+    iterator begin() { return rooms.begin(); }
+    iterator end() { return rooms.end(); }
 };
 
 #endif

@@ -16,18 +16,10 @@
 
 using roomID_t = int;
 
-struct Vector2iHash {
-    std::size_t operator()(sf::Vector2i const &p) const {
-        std::size_t h {std::hash<int>{}(p.x)};
-        HashCombine(h, p.y);
-        return h;
-    }
-};
-
 class SandWorld {
     using room_ptr = std::unique_ptr<SandRoom>;
 public:
-    FreeList<room_ptr> rooms;
+    Rooms rooms;
     
     // The properties of the elements being simulated in the world.
     ElementProperties properties;
@@ -40,10 +32,12 @@ private:
 
 public:
     SandWorld();
-    SandWorld(int _xMin, int _xMax, int _yMin, int _yMax);
+    SandWorld(int _xMin, int _xMax, int _yMin, int _yMax, size_t maxRooms=std::numeric_limits<int>::max());
 
     roomID_t SpawnRoom(int x, int y);
-    roomID_t RemoveRoom(int x, int y);
+
+    // Despawns the room that is furthest from the given coordinates.
+    void RemoveFurthestRoom(int x, int y);
 
     // Access functions.
     CellState &GetCell(int x, int y);
@@ -74,9 +68,6 @@ public:
     size_t Size() const; // Returns the number of active rooms.
 
 private:
-    // Populated the properties container. Returns true if successful, false otherwise.
-    bool InitProperties();
-
     // Returns the key to the room that contains the point (x, y).
     sf::Vector2i ToKey(int x, int y);
 

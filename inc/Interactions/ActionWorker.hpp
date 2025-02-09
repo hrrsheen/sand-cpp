@@ -8,6 +8,7 @@
 #include "Interactions/ParticleWorker.hpp"
 #include "SandRoom.hpp"
 #include "SandWorld.hpp"
+#include "Utility/Hashes.hpp"
 #include <vector>
 #include <unordered_set>
 

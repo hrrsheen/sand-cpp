@@ -17,37 +17,62 @@ SandWorld::SandWorld() :
     SpawnRoom(0, 0);
 }
 
-SandWorld::SandWorld(int _xMin, int _xMax, int _yMin, int _yMax) : 
-    xMin(_xMin), xMax(_xMax), yMin(_yMin), yMax(_yMax),
+SandWorld::SandWorld(int _xMin, int _xMax, int _yMin, int _yMax, size_t maxRooms) : 
+    xMin(_xMin), xMax(_xMax), yMin(_yMin), yMax(_yMax), rooms(maxRooms),
     properties() {
+    if (maxRooms < 4) {
+        throw std::invalid_argument("maxRooms must be >= 4.");
+    }
     SpawnRoom(0, 0);
 }
 
 roomID_t SandWorld::SpawnRoom(int x, int y) {
     sf::Vector2i key {ToKey(x, y)};
     if (roomsMap.count(key)) return roomsMap[key];
-    if (key.x >= xMin && key.x < xMax && key.y >= yMin && key.y < yMax) {        
-        ElementProperties* propPtr {&properties};
-        room_ptr room {std::make_unique<SandRoom>(
-            constants::roomWidth * key.x, 
-            constants::roomHeight * key.y,
+    if (key.x >= xMin && key.x < xMax && key.y >= yMin && key.y < yMax) {
+        if (rooms.Full()) { RemoveFurthestRoom(x, y); } // TODO: ensure that sand/particles can't move into unspawned rooms when they're full.
+        roomID_t id = rooms.NewRoom(
+            key.x * constants::roomWidth,
+            key.y * constants::roomHeight,
             constants::roomWidth,
             constants::roomHeight,
-            propPtr)};
-        roomID_t id {rooms.Insert(std::move(room))};
+            &properties);
         roomsMap[key] = id;
         return id;
     }
     throw std::runtime_error("Failed to spawn SandRoom.");
 }
 
-roomID_t SandWorld::RemoveRoom(int x, int y) {
-    sf::Vector2i key {x, y};
-    roomID_t id {roomsMap.at(key)}; // TODO: error-checking
-    rooms.Erase(id);
-    roomsMap.erase(key);
+void SandWorld::RemoveFurthestRoom(int x, int y) {
+    // The Signed Distance Field function for a rectangle, centres on (0, 0) with width 2Rx and height 2Ry.
+    auto rectSDF = [](int Px, int Py, int Rx, int Ry) {
+        int Dx = std::abs(Px) - Rx, Dy = std::abs(Py) - Ry;
+        int outLen = std::sqrt(std::max(Dx, 0) * std::max(Dx, 0) + std::max(Dy, 0) * std::max(Dy, 0));
+        int inLen = std::min(std::max(Dx, Dy), 0);
+        return outLen + inLen;
+    };
 
-    return id;
+    int furthestIndex   = 0;
+    int furthestDist    = 0;
+    for (int i = 0; i < rooms.Range(); i++) {
+        SandRoom *current = rooms[i];
+        // Transform for the point to be relative to a centred rectangle.
+        sf::Vector2i T {current->x + current->width / 2, current->y + current->height / 2};
+        // Calculate the distance to the room border.
+        int dist = std::abs(rectSDF(x - T.x, y - T.y, current->width / 2, current->height / 2));
+        if (dist > furthestDist) {
+            furthestIndex   = i;
+            furthestDist    = dist;
+        }
+    }
+
+    // Update the mapping with the index of the room that's been swapped with the furthest room.
+    sf::Vector2i keyReplacement {ToKey(rooms.Last()->x,         rooms.Last()->y)};
+    sf::Vector2i keyRemoved     {ToKey(rooms[furthestIndex]->x, rooms[furthestIndex]->y)};
+    std::swap(roomsMap[keyReplacement], roomsMap[keyRemoved]);
+    roomsMap.erase(keyRemoved);
+
+    rooms.RemoveRoom(furthestIndex);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -63,7 +88,7 @@ size_t SandWorld::CellIndex(sf::Vector2i p) {
 }
 
 SandRoom& SandWorld::GetRoom(roomID_t id) {
-    return *rooms[id].get();
+    return *rooms[id];
 }
 
 SandRoom& SandWorld::GetRoom(sf::Vector2i key) {

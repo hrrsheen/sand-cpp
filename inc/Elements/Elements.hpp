@@ -3,6 +3,5 @@
 
 #include "Elements/Names.hpp"
 #include "Elements/ElementProperties.hpp"
-#include "Elements/Inits.hpp"
 
 #endif

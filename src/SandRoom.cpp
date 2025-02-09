@@ -103,3 +103,41 @@ sf::Vector2i SandRoom::ToWorldCoords(int index) const {
 
     return coords;
 }
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//  Rooms container functions.
+//////////////////////////////////////////////////////////////////////////////////////////
+
+roomID_t Rooms::NewRoom(int x, int y, int width, int height, const ElementProperties* properties) {
+    if (activeRooms >= maxRooms) return -1;
+
+    room_ptr room {std::make_unique<SandRoom>(x, y, width, height, properties)};
+    if (activeRooms == rooms.size()) {
+        rooms.push_back(std::move(room));
+    } else {
+        rooms[activeRooms] = std::move(room);
+    }
+
+    activeRooms++;
+    return activeRooms - 1;
+}
+
+void Rooms::RemoveRoom(size_t index) {
+    activeRooms--;
+    std::swap(rooms[index], rooms[activeRooms]);
+
+    rooms.erase(rooms.begin() + activeRooms);
+}
+
+size_t Rooms::Range() const {
+    return activeRooms;
+}
+
+bool Rooms::Full() const {
+    return activeRooms >= maxRooms;
+}
+
+SandRoom* Rooms::operator[](size_t n) {
+    return rooms[n].get();
+}

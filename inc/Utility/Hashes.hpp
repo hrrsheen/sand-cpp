@@ -7,4 +7,12 @@ void HashCombine(std::size_t &seed, const T &v, const Rest&... rest) {
     (HashCombine(seed, rest), ...);
 }
 
+struct Vector2iHash {
+    std::size_t operator()(sf::Vector2i const &p) const {
+        std::size_t h {std::hash<int>{}(p.x)};
+        HashCombine(h, p.y);
+        return h;
+    }
+};
+
 #endif
