@@ -1,5 +1,5 @@
-#ifndef INTERACTIONS_INTERACTION_WORKER_HPP
-#define INTERACTIONS_INTERACTION_WORKER_HPP
+#ifndef INTERACTIONS_WORLD_DELEGATE_HPP
+#define INTERACTIONS_WORLD_DELEGATE_HPP
 
 #include "Cell.hpp"
 #include "Chunks.hpp"
@@ -17,30 +17,42 @@ enum PathOpts : uint8_t {
 // Helper functions used by all derived classes
 roomID_t BoolToID(roomID_t id, bool valid);
 
-class InteractionWorker {
+class WorldDelegate {
 public:
     roomID_t    thisID;
     SandRoom*   room;
     SandWorld   &world;
 
-protected:
-    float dt;
+    ElementProperties &properties;
 
 public:
-    InteractionWorker(roomID_t id, SandWorld &_world, SandRoom *_room, float _dt);
+    WorldDelegate(roomID_t id, SandWorld &_world, SandRoom *_room);
 
+    void SetDeltaTime(float _dt);
+
+    //////////////////////   Chunk maniptilation    //////////////////////
     void KeepContainingAlive(int x, int y);
     void KeepNeighbourAlive(int x, int y);
-protected:
 
+    //////////////////////   Cell maniptilation    //////////////////////
     CellState &GetCell(int x, int y);
     CellState &GetCell(sf::Vector2i p);
-    size_t CellIndex(sf::Vector2i);
+    size_t CellIndex(sf::Vector2i p);
     void SetCell(int x, int y, Element id);
 
+    ////////////////////// Particle maniptilation //////////////////////
+    // Converts the cell at the given position to a particle and applies inition force F.
+    void CellToParticle(sf::Vector2i p, sf::Vector2f F);
+    // Spawns a particle at the given position and applies initial force F. The particle will be of the given type and colour.
+    void SpawnParticle(sf::Vector2i p, sf::Vector2f F, Element id, sf::Color colour);
+
+
+    //////////////////////   Properties queries  //////////////////////
+    const ConstProperties& GetProperties(Element id) const;
     const ConstProperties& GetProperties(int index) const;
     const ConstProperties& GetProperties(sf::Vector2i p) const;
 
+    //////////////////////      Room queries     //////////////////////
     roomID_t ContainingRoomID(sf::Vector2i p);
     SandRoom *GetRoom(roomID_t id);
 
@@ -55,7 +67,7 @@ protected:
 };
 
 template <uint8_t Op>
-std::pair<roomID_t, sf::Vector2i> InteractionWorker::PathEmpty(sf::Vector2i start, sf::Vector2i end) {
+std::pair<roomID_t, sf::Vector2i> WorldDelegate::PathEmpty(sf::Vector2i start, sf::Vector2i end) {
     SandRoom *checkRoom = room;
     roomID_t  checkID   = thisID, validID   = -1;
     sf::Vector2i dst {start};

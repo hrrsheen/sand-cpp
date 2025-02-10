@@ -2,6 +2,7 @@
 #include "Constants.hpp"
 #include "Elements.hpp"
 #include "SandRoom.hpp"
+#include "Utility/Random.hpp"
 #include <algorithm>
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -16,14 +17,6 @@ SandRoom::SandRoom(int _x, int _y, int _width, int _height, const ElementPropert
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Access Functions.
 //////////////////////////////////////////////////////////////////////////////////////////
-
-void SandRoom::QueueMovement(roomID_t srcRoomID, int pFrom, int pTo) {
-    queuedMoves.emplace_back(srcRoomID, pFrom, pTo);
-}
-
-void SandRoom::QueueAction(size_t i, Element transform) {
-    queuedActions.emplace_back(i, transform);
-}
 
 CellState& SandRoom::GetCell(int index) {
     return grid.state.at(index);
@@ -140,4 +133,97 @@ bool Rooms::Full() const {
 
 SandRoom* Rooms::operator[](size_t n) {
     return rooms[n].get();
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//  Rooms mutationfunctions.
+//////////////////////////////////////////////////////////////////////////////////////////
+
+void SandRoom::QueueMovement(roomID_t srcRoomID, int pFrom, int pTo) {
+    queuedMoves.emplace_back(srcRoomID, pFrom, pTo);
+}
+
+void SandRoom::QueueAction(size_t i, Element transform) {
+    queuedActions.emplace_back(i, transform);
+}
+
+void SandRoom::ConsolidateMovement(Rooms &rooms) {
+    if (queuedMoves.size() == 0) return;
+
+    // Remove moves that have had their destination filled between frames.
+    // TODO. Will probably be needed for threading?
+
+    // Sort moves by source rooms then by destination.
+    std::sort(queuedMoves.begin(), queuedMoves.end(), 
+        [](const Move &a, const Move &b) { return a.dst < b.dst; }
+    );
+    
+    // As the vector is sorted, this end object is guaranteed to be different to any other element.
+    queuedMoves.emplace_back();
+
+    int iStart {0};
+
+    for (int i = 0; i < queuedMoves.size() - 1; ++i) {
+        Move move       {queuedMoves.at(i)};
+        Move nextMove   {queuedMoves.at(i + 1)};
+
+        if (move.dst != nextMove.dst) {
+            // Perform the randomly-selected move from the competing moves group.
+            int iRand {iStart + QuickRandInt(i - iStart)};
+            
+            roomID_t id {queuedMoves[iRand].srcRoomID};
+            int src     {queuedMoves[iRand].src};
+            int dst     {queuedMoves[iRand].dst};
+            
+            SandRoom *srcRoom {rooms[id]};
+            std::swap(srcRoom->grid.state[src], grid.state[dst]);
+            std::swap(srcRoom->grid.colour[src], grid.colour[dst]);
+
+            sf::Vector2i srcCoords {srcRoom->ToWorldCoords(src)};
+            sf::Vector2i dstCoords {         ToWorldCoords(dst)};
+            srcRoom->chunks.KeepContainingAlive(srcCoords.x, srcCoords.y);
+                     chunks.KeepContainingAlive(dstCoords.x, dstCoords.y);
+
+            iStart = i + 1;
+        }
+    }
+
+    queuedMoves.clear();
+}
+
+void SandRoom::ConsolidateActions() {
+    if (queuedActions.size() == 0) return;
+
+    // Sort the queued actions by destination.
+    std::sort(queuedActions.begin(), queuedActions.end(), 
+        [](const std::pair<size_t, Element> &a, const std::pair<size_t, Element> &b) { 
+            return a.first < b.first;
+        }
+    );
+
+    // Used to catch the final action. 
+    queuedActions.emplace_back(-1, Element::null);
+
+    int iStart {0};
+
+    for (int i = 0; i < queuedActions.size() - 1; ++i) {
+        std::pair<size_t, Element> move       {queuedActions.at(i)};
+        std::pair<size_t, Element> nextMove   {queuedActions.at(i + 1)};
+
+        if (move.first != nextMove.first) {
+            // Perform the randomly-selected action from the competing actions group.
+            int iRand {iStart + QuickRandInt(i - iStart)};
+            
+            size_t iCell {queuedActions[iRand].first};
+            Element tfID {queuedActions[iRand].second};
+            grid.Assign(iCell, tfID);
+
+            sf::Vector2i coords {ToWorldCoords(iCell)};
+            chunks.KeepContainingAlive(coords.x, coords.y);
+        
+            iStart = i + 1;
+        }
+    }
+
+    queuedActions.clear();
 }

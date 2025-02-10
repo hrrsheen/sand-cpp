@@ -34,7 +34,7 @@ void Mouse::Reset() {
 
 SandGame::SandGame() : xMinRooms(-2), xMaxRooms(2),
                        yMinRooms( 0), yMaxRooms(3),
-                       world(-2, 2, 0, 3, 6),
+                       world(-2, 2, 0, 3),
                        screen{constants::screenWidth, constants::screenHeight, 
                                 constants::viewWidth, constants::viewHeight, "Falling Sand"} {
     gridImage.create(constants::roomWidth, constants::roomHeight);
@@ -125,10 +125,15 @@ void SandGame::Run() {
 }
 
 void SandGame::Step(float dt) {
-    if (dt > 1 / 60.f) dt = 1 / 60.f; // DEBUG: Possibly remove this.
-    for (roomID_t id = 0; id < world.rooms.Range(); ++id) {
+    if (dt > 1 / 60.f) dt = 1 / 60.f; // DEBUG: Remove this for release.
+    for (roomID_t id = 0; id < world.rooms.Range(); ++id) { // TODO: This needs to be adjusted for rooms despawning.
         SandWorker worker {id, world, &world.GetRoom(id), dt};
-        worker.Step();
+        worker.UpdateRoom();
+    }
+
+    for (roomID_t id = 0; id < world.rooms.Range(); ++id) {
+        world.rooms[id]->ConsolidateMovement(world.rooms);
+        world.rooms[id]->ConsolidateActions();
     }
 }
 

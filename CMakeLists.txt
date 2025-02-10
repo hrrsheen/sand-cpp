@@ -14,10 +14,7 @@ add_executable(sand-cpp
     src/Particles.cpp
     src/Elements/ElementProperties.cpp
     src/Elements/Inits.cpp
-    src/Interactions/InteractionWorker.cpp
-    src/Interactions/MovementWorker.cpp
-    src/Interactions/ActionWorker.cpp
-    src/Interactions/ParticleWorker.cpp
+    src/WorldDelegate.cpp
     src/Utility/Line.cpp
     src/Utility/Random.cpp
     src/Utility/Physics.cpp)
@@ -26,8 +23,7 @@ target_include_directories(sand-cpp
     PRIVATE ${PROJECT_SOURCE_DIR}/inc
     PRIVATE ${PROJECT_SOURCE_DIR}/inc/Elements
     PRIVATE ${PROJECT_SOURCE_DIR}/inc/Interactions
-    PRIVATE ${PROJECT_SOURCE_DIR}/inc/Utility
-    PRIVATE ${PROJECT_SOURCE_DIR}/lib)
+    PRIVATE ${PROJECT_SOURCE_DIR}/inc/Utility)
 target_compile_features(sand-cpp PRIVATE cxx_std_17)
 
 include(FetchContent)

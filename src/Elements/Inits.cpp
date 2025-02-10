@@ -7,7 +7,7 @@ bool InitAir(ElementProperties &properties) {
     ColourProperties colourInit;
     COLOUR(colourInit.palette).push_back(0x000000ff);
     
-    properties.Insert(Element::air, constsInit, colourInit);
+    return properties.Insert(Element::air, constsInit, colourInit);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

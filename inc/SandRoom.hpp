@@ -5,7 +5,6 @@
 #include "Chunks.hpp"
 #include "Elements/Names.hpp"
 #include "Elements/ElementProperties.hpp"
-#include "FreeList.h"
 #include "Particles.hpp"
 #include "Utility/Hashes.hpp"
 #include <limits>
@@ -15,7 +14,7 @@
 
 using roomID_t = int;
 
-class MovementWorker;
+class Rooms;
 
 struct Move {
     roomID_t srcRoomID;
@@ -27,8 +26,6 @@ struct Move {
 };
 
 class SandRoom {
-    friend MovementWorker;
-    friend ActionWorker;
 public:
     int x, y;
     int width, height;
@@ -46,9 +43,6 @@ private:
 
 public:
     SandRoom(int _x, int _y, int _width, int _height, const ElementProperties * properties);
-
-    void QueueMovement(roomID_t srcRoomID, int pFrom, int pTo);
-    void QueueAction(size_t i, Element transform);
 
     // Access functions.
     CellState& GetCell(int index);
@@ -70,6 +64,13 @@ public:
     int ToIndex(sf::Vector2i p) const;
     sf::Vector2i ToLocalCoords(int index) const;
     sf::Vector2i ToWorldCoords(int index) const;
+
+    // Room mutation.
+    void QueueMovement(roomID_t srcRoomID, int pFrom, int pTo);
+    void QueueAction(size_t i, Element transform);
+
+    void ConsolidateMovement(Rooms &rooms);
+    void ConsolidateActions();
 
 };
 

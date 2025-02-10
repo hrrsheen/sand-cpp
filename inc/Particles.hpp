@@ -17,7 +17,7 @@ private:
     sf::Vector2f F  = {0.f, 0.f};
 
 public:
-    Particle(Element _id, sf::Vector2i _p, sf::Color _colour) : id(_id), p(_p), v(), F(), colour(_colour) {}
+    Particle(sf::Vector2i _p, Element _id, sf::Color _colour) : id(_id), p(_p), v(), F(), colour(_colour) {}
 
     // Returns the position of the particle (snapped to the grid).
     sf::Vector2i Position() const;
