@@ -13,6 +13,8 @@ add_executable(sand-cpp
     src/Chunks.cpp
     src/Particles.cpp
     src/Elements/ElementProperties.cpp
+    src/Elements/ElementBehaviours.cpp
+    src/Elements/Behaviour/Gas.cpp
     src/Elements/Inits.cpp
     src/WorldDelegate.cpp
     src/Utility/Line.cpp
@@ -22,6 +24,7 @@ add_executable(sand-cpp
 target_include_directories(sand-cpp
     PRIVATE ${PROJECT_SOURCE_DIR}/inc
     PRIVATE ${PROJECT_SOURCE_DIR}/inc/Elements
+    PRIVATE ${PROJECT_SOURCE_DIR}/inc/Elements/Behaviour
     PRIVATE ${PROJECT_SOURCE_DIR}/inc/Interactions
     PRIVATE ${PROJECT_SOURCE_DIR}/inc/Utility)
 target_compile_features(sand-cpp PRIVATE cxx_std_17)

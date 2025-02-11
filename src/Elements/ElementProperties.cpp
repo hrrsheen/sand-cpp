@@ -33,12 +33,20 @@ bool ElementProperties::Insert(Element id, ConstProperties consts, ColourPropert
 //  Colouring.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-sf::Color ElementProperties::Colour(Element id, int x, int y) const {
-    if (HasTexture(id)) {
-        return ColourFromTexture(id, x, y);
+sf::Color ColourProperties::Pick(int x, int y) const {
+    if (palette.index() == TEXTURE_INDEX) {
+        sf::Vector2u size {TEXTURE(palette).getSize()};
+        x = x % static_cast<int>(size.x);
+        y = y % static_cast<int>(size.y);
+        return TEXTURE(palette).getPixel(std::abs(x), std::abs(y));
     } else {
-        return ColourFromArray(id);
+        int position = QuickRandInt(COLOUR(palette).size());
+        return sf::Color(COLOUR(palette).at(position));
     }
+}
+
+sf::Color ElementProperties::Colour(Element id, int x, int y) const {
+    return colours[id].Pick(x, y);
 }
 
 sf::Color ElementProperties::ColourFromArray(Element id) const {
@@ -66,17 +74,6 @@ bool ElementProperties::HasTexture(Element id) const {
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Simulation.
 //////////////////////////////////////////////////////////////////////////////////////////
-
-// Action ElementProperties::ActUponSelf(sf::Vector2i p, Cell &self, float dt) const {
-//     return Action::Null();
-// }
-
-// Action ElementProperties::ActUponOther(Cell &self,  ElementProperties &selfProp,
-//                                        Cell &other, ElementProperties &otherProp,
-//                                        sf::Vector2i p, sf::Vector2i otherP,
-//                                        float dt) const {
-//     return Action::Null();
-// }
 
 bool ElementProperties::CanDisplace(Element self, Element other) const {
     return CanDisplace(constants[self].type, constants[other].type);

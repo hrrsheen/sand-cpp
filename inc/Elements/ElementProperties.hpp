@@ -72,6 +72,8 @@ struct ColourProperties {
     std::variant<std::vector<sf::Uint32>, sf::Image> palette;
 
     ColourProperties() : colourEachFrame(false), palette() {}
+
+    sf::Color Pick(int x=0, int y=0) const;
 };
 
 struct PaintProperties {

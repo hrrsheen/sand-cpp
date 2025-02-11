@@ -3,6 +3,7 @@
 
 #include "Cell.hpp"
 #include "Chunks.hpp"
+#include "Elements/ElementBehaviours.hpp"
 #include "Elements/ElementProperties.hpp"
 #include "SandWorld.hpp"
 #include "Screen.hpp"
@@ -35,9 +36,15 @@ struct Mouse {
 };
 
 class SandGame {
+    ///////////////////////// World / simulation-related objects /////////////////////////
     SandWorld world;
     const int xMinRooms, xMaxRooms,
               yMinRooms, yMaxRooms;
+
+    // The properties of the elements being simulated in the world.
+    ElementProperties properties;
+
+    ////////////////////////////// Display-related objects //////////////////////////////
 
     Screen      screen;
     sf::Image   gridImage;

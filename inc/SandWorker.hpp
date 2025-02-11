@@ -16,7 +16,7 @@ private:
     float dt;
 
 public:
-    SandWorker(roomID_t id, SandWorld &world, SandRoom *room, float _dt);
+    SandWorker(roomID_t id, SandWorld &world, SandRoom *room, ElementProperties &properties, float _dt);
 
     // Performs one iteration of the simulation.
     void UpdateRoom();

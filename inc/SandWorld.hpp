@@ -4,6 +4,7 @@
 #include "Cell.hpp"
 #include "Chunks.hpp"
 #include "Constants.hpp"
+#include "Elements/ElementBehaviours.hpp"
 #include "Elements/ElementProperties.hpp"
 #include "SandRoom.hpp"
 #include "Utility/Hashes.hpp"
@@ -16,12 +17,8 @@
 using roomID_t = int;
 
 class SandWorld {
-    using room_ptr = std::unique_ptr<SandRoom>;
 public:
     Rooms rooms;
-    
-    // The properties of the elements being simulated in the world.
-    ElementProperties properties;
 
 private:
     std::unordered_map<sf::Vector2i, roomID_t, Vector2iHash> roomsMap;
@@ -49,9 +46,9 @@ public:
     const ConstProperties& GetProperties(sf::Vector2i p);
 
     // Setting functions.
-    void SetCell(int x, int y, Element id);
+    void SetCell(int x, int y, Element id, ColourProperties &colours);
     // Sets the rectangle at (x, y) with the given width and height to the given element ID.
-    void SetArea(int x, int y, int width, int height, Element id);
+    void SetArea(int x, int y, int width, int height, Element id, ColourProperties &colours);
 
     // Querying the grid.
     bool IsEmpty(int x, int y);

@@ -1,4 +1,6 @@
-#include "Elements/Behaviour/Explosion.hpp"
+#include "Elements/Behaviour/Gas.hpp"
+#include "WorldDelegate.hpp"
+#include "Utility/Hashes.hpp"
 #include "Utility/Random.hpp"
 #include <unordered_set>
 
@@ -10,43 +12,6 @@ bool CacheCell(sf::Vector2i point, cached_points cachedCells) {
     }
 
     cachedCells.insert(point);
-    return false;
-}
-
-bool ExplodeCell(sf::Vector2i point, float force, sf::Vector2f direction, WorldDelegate &d, cached_points cachedExplosion) {
-    if (CacheCell(point, cachedExplosion)) { return false; } // Ignore cells that have been exploded already.
-        
-    // Account for explosions crossing rooms.
-    roomID_t newRoomID = d.ContainingRoomID(point);
-    if (!VALID_ROOM(newRoomID)) { return; } // No need to spawn new rooms, as an invalid room implies it's empty (nothing to explode).
-    SandRoom *explosionRoom = d.GetRoom(newRoomID);
-
-    // Dampen the explosion when it hits hard elements.
-    const ConstProperties &prop = d.GetProperties(point);
-    force -= prop.hardness;
-    if (force <= 0.f) {
-        return true;
-    }
-
-    // Chance to destroy - Always destroy immovable elements.
-    if (Probability(60) || prop.Immoveable()) {
-        if (Probability(80))
-            explosionRoom->QueueAction(explosionRoom->ToIndex(point), Element::air);
-        else
-            explosionRoom->QueueAction(explosionRoom->ToIndex(point), Element::spark);
-    // Chance to throw debris.
-    } else {
-        if (Probability(5)) { // Shoot sparks out that can catch fire.
-            d.SpawnParticle(point, (force + QuickRandInt(2 * force)) * direction,
-                Element::fire, d.properties.Colour(Element::fire));
-
-        } else if (prop.Moveable()) { // Shoot moveable debris around.
-            size_t cellIndex = explosionRoom->ToIndex(point);
-
-            d.CellToParticle(point, (force + QuickRandInt(2 * force)) * direction);
-        }
-    }
-
     return false;
 }
 
@@ -141,7 +106,7 @@ void ExplodeRadius(sf::Vector2i pCentre, sf::Vector2i pRadius, float force, Worl
     }
 }
 
-bool Explosion::ActOnSelf  (sf::Vector2i p, CellState &cell, ConstProperties &constProp, WorldDelegate &delegate) {
+bool ExplosionActOnSelf(sf::Vector2i p, CellState &cell, ConstProperties &constProp, WorldDelegate &delegate) {
     float radius {25.5};
     cached_points cachedCells;
     cached_points cachedShockwave;
@@ -163,6 +128,6 @@ bool Explosion::ActOnSelf  (sf::Vector2i p, CellState &cell, ConstProperties &co
     return true;
 }
 
-bool Explosion::ActOnOther (sf::Vector2i p, CellState &cell, ConstProperties &constProp, WorldDelegate &delegate) {
-
+bool ExplosionActOnOther(sf::Vector2i p, CellState &cell, ConstProperties &constProp, WorldDelegate &delegate) {
+    return false;
 }

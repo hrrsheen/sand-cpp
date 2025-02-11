@@ -5,8 +5,8 @@ inline roomID_t BoolToID(roomID_t id, bool valid) {
     return (id * valid) + (valid - 1); // Should map (valid == true) -> id and (valid == false) -> -1.
 }
 
-WorldDelegate::WorldDelegate(roomID_t id, SandWorld &_world, SandRoom *_room) :
-    thisID(id), world(_world), room(_room), properties(_world.properties) {}
+WorldDelegate::WorldDelegate(roomID_t id, SandWorld &_world, SandRoom *_room, ElementProperties &_properties) :
+    thisID(id), world(_world), room(_room), properties(_properties) {}
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Chunk manipulation
@@ -58,14 +58,6 @@ size_t WorldDelegate::CellIndex(sf::Vector2i p) {
     return world.CellIndex(p);
 }
 
-void WorldDelegate::SetCell(int x, int y, Element id) {
-    if (room->InBounds(x, y)) {
-        return room->SetCell(x, y, id);
-    }
-
-    world.SetCell(x, y, id);
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////
 // Particle manipulation
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -107,7 +99,7 @@ const ConstProperties& WorldDelegate::GetProperties(Element id) const {
 }
 
 const ConstProperties& WorldDelegate::GetProperties(int index) const {
-    return room->grid.GetProperties(index);
+    return GetProperties(room->grid.state[index].id);
 }
 
 const ConstProperties& WorldDelegate::GetProperties(sf::Vector2i p) const {
@@ -115,7 +107,8 @@ const ConstProperties& WorldDelegate::GetProperties(sf::Vector2i p) const {
         return GetProperties(room->ToIndex(p));
     }
 
-    return world.GetProperties(p);
+    SandRoom &containingRoom {world.GetContainingRoom(p.x, p.y)};
+    return GetProperties(containingRoom.ToIndex(p));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

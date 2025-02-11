@@ -9,9 +9,9 @@
 //  Initialisation Functions.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-SandRoom::SandRoom(int _x, int _y, int _width, int _height, const ElementProperties * properties) : 
+SandRoom::SandRoom(int _x, int _y, int _width, int _height) : 
     x(_x), y(_y), width(_width), height(_height), 
-    grid(_width, _height, properties),
+    grid(_width, _height),
     chunks(constants::numXChunks, constants::numYChunks, constants::chunkWidth, constants::chunkHeight, x, y) {}
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -34,15 +34,9 @@ CellState& SandRoom::GetCell(sf::Vector2i p) {
 //  Setting functions.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-void SandRoom::SetCell(int index, Element id) {
-    sf::Vector2i coords {ToLocalCoords(index)};
-    grid.Assign(index, id, coords.x, coords.y);
-    chunks.KeepContainingAlive(coords.x, coords.y);
-}
-
-void SandRoom::SetCell(int _x, int _y, Element id) {
-    grid.Assign(ToIndex(_x, _y), id, _x, _y);
-    chunks.KeepContainingAlive(_x, _y);
+void SandRoom::SetCell(int wx, int wy, Element id, sf::Color colour) {
+    grid.Assign(ToIndex(wx, wy), id, colour);
+    chunks.KeepContainingAlive(wx, wy);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -102,10 +96,10 @@ sf::Vector2i SandRoom::ToWorldCoords(int index) const {
 //  Rooms container functions.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-roomID_t Rooms::NewRoom(int x, int y, int width, int height, const ElementProperties* properties) {
+roomID_t Rooms::NewRoom(int x, int y, int width, int height) {
     if (activeRooms >= maxRooms) return -1;
 
-    room_ptr room {std::make_unique<SandRoom>(x, y, width, height, properties)};
+    room_ptr room {std::make_unique<SandRoom>(x, y, width, height)};
     if (activeRooms == rooms.size()) {
         rooms.push_back(std::move(room));
     } else {
@@ -191,7 +185,7 @@ void SandRoom::ConsolidateMovement(Rooms &rooms) {
     queuedMoves.clear();
 }
 
-void SandRoom::ConsolidateActions() {
+void SandRoom::ConsolidateActions(ElementProperties &properties) {
     if (queuedActions.size() == 0) return;
 
     // Sort the queued actions by destination.
@@ -216,7 +210,7 @@ void SandRoom::ConsolidateActions() {
             
             size_t iCell {queuedActions[iRand].first};
             Element tfID {queuedActions[iRand].second};
-            grid.Assign(iCell, tfID);
+            grid.Assign(iCell, tfID, properties.Colour(tfID)); // TODO: Modify so that textured elements are accounted for.
 
             sf::Vector2i coords {ToWorldCoords(iCell)};
             chunks.KeepContainingAlive(coords.x, coords.y);

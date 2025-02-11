@@ -12,14 +12,12 @@
 
 SandWorld::SandWorld() : 
     xMin(std::numeric_limits<int>::min()), xMax(std::numeric_limits<int>::max()),
-    yMin(std::numeric_limits<int>::min()), yMax(std::numeric_limits<int>::max()),
-    properties() {
+    yMin(std::numeric_limits<int>::min()), yMax(std::numeric_limits<int>::max()) {
     SpawnRoom(0, 0);
 }
 
 SandWorld::SandWorld(int _xMin, int _xMax, int _yMin, int _yMax, size_t maxRooms) : 
-    xMin(_xMin), xMax(_xMax), yMin(_yMin), yMax(_yMax), rooms(maxRooms),
-    properties() {
+    xMin(_xMin), xMax(_xMax), yMin(_yMin), yMax(_yMax), rooms(maxRooms) {
     if (maxRooms < 4) {
         throw std::invalid_argument("maxRooms must be >= 4.");
     }
@@ -35,8 +33,7 @@ roomID_t SandWorld::SpawnRoom(int x, int y) {
             key.x * constants::roomWidth,
             key.y * constants::roomHeight,
             constants::roomWidth,
-            constants::roomHeight,
-            &properties);
+            constants::roomHeight);
         roomsMap[key] = id;
         return id;
     }
@@ -103,24 +100,19 @@ SandRoom& SandWorld::GetContainingRoom(int x, int y) {
     return GetRoom(ToKey(x, y));
 }
 
-const ConstProperties& SandWorld::GetProperties(sf::Vector2i p) {
-    SandRoom &room {GetContainingRoom(p.x, p.y)};
-    return room.grid.GetProperties(room.ToIndex(p));
-}
-
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Setting functions.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-void SandWorld::SetCell(int x, int y, Element id) {
+void SandWorld::SetCell(int x, int y, Element id, ColourProperties &colours) {
     roomID_t roomID {ContainingRoomID(sf::Vector2i(x, y))};
     if (VALID_ROOM(roomID)) {
         SandRoom &room {GetRoom(roomID)};
-        room.SetCell(x, y, id);
+        room.SetCell(x, y, id, colours.Pick());
     }
 }
 
-void SandWorld::SetArea(int x, int y, int w, int h, Element id) {
+void SandWorld::SetArea(int x, int y, int w, int h, Element id, ColourProperties &colours) {
     SandRoom *room {nullptr};
     roomID_t roomID {-1}, prevRoomID {-1};
     for (int yi = y; yi <= y + h; ++yi) {
@@ -132,7 +124,7 @@ void SandWorld::SetArea(int x, int y, int w, int h, Element id) {
                     room = &GetRoom(roomID);
                     prevRoomID = roomID;
                 }
-                room->SetCell(xi, yi, id);
+                room->SetCell(xi, yi, id, colours.Pick(xi, yi));
             }
         }
     }

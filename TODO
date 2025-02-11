@@ -1,4 +1,5 @@
 Functionality:
+    [ ] Standardise the spawning of rooms so that newly spawned rooms don't cause others to despawn UNEXPECTEDLY 
     [ ] Fix the time delay between painting elements - when dragging, the reload period is ignored
     [ ] Clean up the FPS display code
     [ ] Trial Verlet Integration on the particle system

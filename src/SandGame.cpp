@@ -35,6 +35,7 @@ void Mouse::Reset() {
 SandGame::SandGame() : xMinRooms(-2), xMaxRooms(2),
                        yMinRooms( 0), yMaxRooms(3),
                        world(-2, 2, 0, 3),
+                       properties(),
                        screen{constants::screenWidth, constants::screenHeight, 
                                 constants::viewWidth, constants::viewHeight, "Falling Sand"} {
     gridImage.create(constants::roomWidth, constants::roomHeight);
@@ -127,13 +128,13 @@ void SandGame::Run() {
 void SandGame::Step(float dt) {
     if (dt > 1 / 60.f) dt = 1 / 60.f; // DEBUG: Remove this for release.
     for (roomID_t id = 0; id < world.rooms.Range(); ++id) { // TODO: This needs to be adjusted for rooms despawning.
-        SandWorker worker {id, world, &world.GetRoom(id), dt};
+        SandWorker worker {id, world, &world.GetRoom(id), properties, dt};
         worker.UpdateRoom();
     }
 
     for (roomID_t id = 0; id < world.rooms.Range(); ++id) {
         world.rooms[id]->ConsolidateMovement(world.rooms);
-        world.rooms[id]->ConsolidateActions();
+        world.rooms[id]->ConsolidateActions(properties);
     }
 }
 
@@ -142,7 +143,7 @@ void SandGame::Step(float dt) {
 void SandGame::SetMouseState(Mouse &mouse, sf::Event &event, sf::Vector2i position) {
     switch (event.type) {
         case sf::Event::MouseButtonPressed:
-            if      (event.mouseButton.button == sf::Mouse::Left  ) { mouse.state = MouseState::DRAWING; }
+            if      (event.mouseButton.button == sf::Mouse::Left  ) { mouse.state = MouseState::DRAWING;  }
             else if (event.mouseButton.button == sf::Mouse::Middle) { mouse.state = MouseState::DRAGGING; }
             mouse.prevPos = position;
             break;
@@ -160,7 +161,7 @@ void SandGame::SetMouseState(Mouse &mouse, sf::Event &event, sf::Vector2i positi
             int number {KEY_TO_NUMBER(event.key.code)};
             if (number >= 0 && number <= Element::count - 1)
                 mouse.brush = static_cast<Element>(number);
-                mouse.brushInfo = world.properties.brushes[mouse.brush];
+                mouse.brushInfo = properties.brushes[mouse.brush];
             break; }
         default:
             // Nothing
@@ -179,10 +180,9 @@ void SandGame::Paint(Mouse &mouse) {
 void SandGame::Paint(Lerp &stroke, Element type, int radius) {
     for (sf::Vector2i pos : stroke) {
         if (radius == 1) {
-            world.SetCell(pos.x, pos.y, type); // TODO: Cache the room that the mouse is in.
+            world.SetCell(pos.x, pos.y, type, properties.colours[type]); // TODO: Cache the room that the mouse is in.
         } else {
-            world.SetArea(pos.x - (radius - 1), pos.y - (radius - 1),
-                            2 * radius, 2 * radius, type);
+            world.SetArea(pos.x - (radius - 1), pos.y - (radius - 1), 2 * radius, 2 * radius, type, properties.colours[type]);
         }
     }
 }

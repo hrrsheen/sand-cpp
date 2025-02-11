@@ -4,7 +4,6 @@
 #include "Cell.hpp"
 #include "Chunks.hpp"
 #include "Elements/Names.hpp"
-#include "Elements/ElementProperties.hpp"
 #include "Particles.hpp"
 #include "Utility/Hashes.hpp"
 #include <limits>
@@ -14,6 +13,7 @@
 
 using roomID_t = int;
 
+class ElementProperties;
 class Rooms;
 
 struct Move {
@@ -42,7 +42,7 @@ private:
     std::vector<std::pair<size_t, Element>> queuedActions;
 
 public:
-    SandRoom(int _x, int _y, int _width, int _height, const ElementProperties * properties);
+    SandRoom(int _x, int _y, int _width, int _height);
 
     // Access functions.
     CellState& GetCell(int index);
@@ -50,8 +50,7 @@ public:
     CellState& GetCell(sf::Vector2i p);
 
     // Setting functions.
-    void SetCell(int index, Element id);
-    void SetCell(int _x, int _y, Element id);
+    void SetCell(int wx, int wy, Element id, sf::Color colour);
 
     // Querying the grid.
     bool IsEmpty(int _x, int _y);
@@ -70,7 +69,7 @@ public:
     void QueueAction(size_t i, Element transform);
 
     void ConsolidateMovement(Rooms &rooms);
-    void ConsolidateActions();
+    void ConsolidateActions(ElementProperties &properties);
 
 };
 
@@ -89,7 +88,7 @@ public:
     Rooms(size_t max) : maxRooms(max) {}
 
     // Inserts a new room and returns the index at which it was added. Returns -1 if no room is added.
-    roomID_t NewRoom(int x, int y, int width, int height, const ElementProperties* properties);
+    roomID_t NewRoom(int x, int y, int width, int height);
 
     // Removes the room at the given index and returns the number of active rooms.
     void RemoveRoom(size_t index);

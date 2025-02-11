@@ -1,10 +1,11 @@
 #include "Constants.hpp"
+#include "Elements/ElementBehaviours.hpp"
 #include "SandWorker.hpp"
 #include "Utility/Physics.hpp"
 #include "Utility/Random.hpp"
 
-SandWorker::SandWorker(roomID_t id, SandWorld &world, SandRoom *room, float _dt) :
-    del(id, world, room), dt(_dt) {}
+SandWorker::SandWorker(roomID_t id, SandWorld &world, SandRoom *room, ElementProperties &properties, float _dt) :
+    del(id, world, room, properties), dt(_dt) {}
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Simulation.
@@ -147,13 +148,13 @@ bool SandWorker::SpreadDownSide(sf::Vector2i p) {
     // Determine whether the down-left cell is empty or displaceable.
     if (VALID_ROOM(left)) {
         CellState leftCell {del.GetCell(leftPos)};
-        bool empty = del.GetRoom(left)->IsEmpty(p) || del.room->grid.CanDisplace(thisCell.id, leftCell.id);
+        bool empty = del.GetRoom(left)->IsEmpty(p) || del.properties.CanDisplace(thisCell.id, leftCell.id);
         left = BoolToID(left, empty);
     }
     // Determine whether the down-right cell is empty or displaceable.
     if (VALID_ROOM(right)) {
         CellState rightCell {del.GetCell(rightPos)};
-        bool empty = del.GetRoom(right)->IsEmpty(p) || del.room->grid.CanDisplace(thisCell.id, rightCell.id);
+        bool empty = del.GetRoom(right)->IsEmpty(p) || del.properties.CanDisplace(thisCell.id, rightCell.id);
         right = BoolToID(right, empty);
     }
 
@@ -202,7 +203,7 @@ bool SandWorker::SpreadUpSide(sf::Vector2i p) {
 
 bool SandWorker::SpreadSide(sf::Vector2i p) {
     sf::Vector2i lookAhead {1, 0};
-    int spreadRate = del.room->grid.SpreadRate(del.room->ToIndex(p));
+    int spreadRate = del.properties.constants[del.GetCell(p).id].spreadRate; // TODO: Perhaps pass a cell reference into move functions.
 
     auto [ left,  leftDst] = del.PathEmpty<PathOpts::SKIP | PathOpts::SPAWN>(p, p - spreadRate * lookAhead);
     auto [right, rightDst] = del.PathEmpty<PathOpts::SKIP | PathOpts::SPAWN>(p, p + spreadRate * lookAhead);
@@ -230,8 +231,8 @@ bool SandWorker::SpreadSide(sf::Vector2i p) {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 bool SandWorker::PerformActions(sf::Vector2i p, CellState &cell, ConstProperties &prop) {
-    // if      (ActOnSelf (p, cell, prop)) { return true; } 
-    // else if (ActOnOther(p, cell, prop)) { return true; }
+    if      (ActOnSelf (p, cell, prop, del)) { return true; } 
+    else if (ActOnOther(p, cell, prop, del)) { return true; }
 
     return false;
 }
