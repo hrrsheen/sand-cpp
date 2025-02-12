@@ -25,6 +25,8 @@ public:
 
     ElementProperties &properties;
 
+    float dt;
+
 public:
     WorldDelegate(roomID_t id, SandWorld &_world, SandRoom *_room, ElementProperties &_properties);
 

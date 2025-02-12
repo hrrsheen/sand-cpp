@@ -13,8 +13,6 @@ class SandWorker {
 private:
     WorldDelegate del;
 
-    float dt;
-
 public:
     SandWorker(roomID_t id, SandWorld &world, SandRoom *room, ElementProperties &properties, float _dt);
 

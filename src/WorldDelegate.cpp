@@ -8,6 +8,8 @@ inline roomID_t BoolToID(roomID_t id, bool valid) {
 WorldDelegate::WorldDelegate(roomID_t id, SandWorld &_world, SandRoom *_room, ElementProperties &_properties) :
     thisID(id), world(_world), room(_room), properties(_properties) {}
 
+void WorldDelegate::SetDeltaTime(float _dt) { dt = _dt; }
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // Chunk manipulation
 ////////////////////////////////////////////////////////////////////////////////////////

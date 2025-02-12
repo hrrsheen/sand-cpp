@@ -5,7 +5,9 @@
 #include "Utility/Random.hpp"
 
 SandWorker::SandWorker(roomID_t id, SandWorld &world, SandRoom *room, ElementProperties &properties, float _dt) :
-    del(id, world, room, properties), dt(_dt) {}
+    del(id, world, room, properties) {
+    del.SetDeltaTime(_dt);
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Simulation.
@@ -117,8 +119,8 @@ bool SandWorker::FallDown(sf::Vector2i p) {
     size_t iCell    = del.CellIndex(p);
     CellState &cell = del.room->GetCell(iCell);
 
-    cell.ApplyAcceleration(constants::accelGravity, dt);
-    sf::Vector2i deltaP {AccelerateProbability(cell.velocity, dt)};
+    cell.ApplyAcceleration(constants::accelGravity, del.dt);
+    sf::Vector2i deltaP {AccelerateProbability(cell.velocity, del.dt)};
 
     roomID_t roomID;
     sf::Vector2i dst;
@@ -246,7 +248,7 @@ void SandWorker::ProcessParticles() {
         // Calcualte the particle's next position (before any collisions).
         Particle &particle {del.room->particles[i]};
         sf::Vector2i oldP {particle.Position()};
-        particle.Integrate(dt);
+        particle.Integrate(del.dt);
 
         sf::Vector2i    dst;
         roomID_t        roomID;

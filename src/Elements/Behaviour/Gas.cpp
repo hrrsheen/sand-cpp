@@ -4,9 +4,104 @@
 #include "Utility/Random.hpp"
 #include <unordered_set>
 
+/////////////////////////////////////////////////////////////////////////////////////
+// Fire functions
+/////////////////////////////////////////////////////////////////////////////////////
+
+bool FireActOnSelf(sf::Vector2i p, CellState &cell, ConstProperties &prop, WorldDelegate &del) {
+    size_t self = del.room->ToIndex(p);
+
+    if (cell.health <= 0) {
+        if (Probability(20))
+            del.room->QueueAction(self, Element::smoke);
+        else
+            del.room->QueueAction(self, Element::air);
+
+        return true;
+    }
+    del.room->grid.colour[self] = del.properties.Colour(Element::fire); // Recolour fire every frame.
+    cell.health -= (500.f + static_cast<float>(QuickRandInt(200))) * del.dt;
+
+    del.KeepContainingAlive(p.x, p.y);
+    return false;   
+}
+
+bool FireActOnOther(sf::Vector2i p, CellState &cell, ConstProperties &prop, WorldDelegate &del) {
+    size_t self = del.room->ToIndex(p);
+
+    bool acted = false;
+    // Iterate over all cells that the fire can affect.
+    for (const sf::Vector2i dp : prop.actionSet) {
+        sf::Vector2i otherP {p + dp};
+        roomID_t roomID = del.ContainingRoomID(otherP);
+        if (VALID_ROOM(roomID)) {
+            SandRoom  *otherRoom = del.GetRoom(roomID);
+            size_t     other     = otherRoom->ToIndex(otherP);
+            CellState &otherCell = otherRoom->GetCell(other);
+
+            // Action code.
+            float flammability = del.properties.constants[otherCell.id].flammability;
+            if (flammability > 0.f) {
+                cell.health += flammability * del.dt;
+                if (otherCell.health <= 0.f)
+                    otherRoom->QueueAction(other, Element::fire);
+                else
+                    otherCell.health -= flammability * del.dt;
+
+                acted = true;
+            }
+        }
+    }
+
+    return acted;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Smoke functions
+/////////////////////////////////////////////////////////////////////////////////////
+
+bool SmokeActOnSelf(sf::Vector2i p, CellState &cell, ConstProperties &prop, WorldDelegate &del) {
+    size_t self = del.room->ToIndex(p);
+
+    if (cell.health <= 0) {
+        del.room->QueueAction(self, Element::air);
+        return true;
+    }
+
+    cell.health -= (100.f + static_cast<float>(QuickRandRange(-50, 50))) * del.dt;
+
+    del.KeepContainingAlive(p.x, p.y);
+    return false;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Spark functions
+/////////////////////////////////////////////////////////////////////////////////////
+
+bool SparkActOnSelf(sf::Vector2i p, CellState &cell, ConstProperties &prop, WorldDelegate &del) {
+    size_t self = del.room->ToIndex(p);
+
+    if (cell.health <= 0) {
+        del.room->QueueAction(self, Element::air);
+        return true;
+    }
+
+    del.room->grid.colour[self] = del.properties.Colour(Element::spark); // Recolour spark every frame.
+
+    float randFalloff = static_cast<float>(RandInt(5000));
+    cell.health -= (10.f + randFalloff) * del.dt;
+
+    del.KeepContainingAlive(p.x, p.y);
+    return false;   
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Explosion functions
+/////////////////////////////////////////////////////////////////////////////////////
+
 using cached_points = std::unordered_set<sf::Vector2i, Vector2iHash>;
 
-bool CacheCell(sf::Vector2i point, cached_points cachedCells) {
+bool CacheCell(sf::Vector2i point, cached_points &cachedCells) {
     if (cachedCells.find(point) != cachedCells.end()) {
         return true;
     }
